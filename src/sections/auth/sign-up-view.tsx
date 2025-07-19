@@ -1,74 +1,181 @@
 import { useState, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton'; // Required for password visibility toggle
-import InputAdornment from '@mui/material/InputAdornment'; // Required for password visibility
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'src/routes/hooks';
 
-import { Iconify } from 'src/components/iconify'; // Assuming Iconify is still used for eye icons
+import { Iconify } from 'src/components/iconify';
+
+import {
+  verifyOtp,
+  registerUser,
+  finalizeSignup,
+  clearAuthError,
+} from '../../redux/auth/auth.actions';
+
+import type { RootState, AppDispatch } from '../../redux/types';
 
 // ----------------------------------------------------------------------
 
 export function SignUpView() {
   const router = useRouter();
+  const dispatch: AppDispatch = useDispatch();
 
+  const { loading, error, registrationMessage, otpVerified } = useSelector(
+    (state: RootState) => state.auth
+  );
+
+  // State for form inputs
   const [email, setEmail] = useState('');
+  const [first_name, setFirstName] = useState('');
+  const [last_name, setLastName] = useState('');
   const [otp, setOtp] = useState('');
+  const [country, setCountry] = useState(''); // New state for country
+  const [state, setState] = useState('');     // New state for state/province
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
   // State to manage the current step of the sign-up process
-  const [currentStep, setCurrentStep] = useState('email'); // 'email', 'otp', 'setPassword'
+  // Added 'profileDetails' step
+  const [currentStep, setCurrentStep] = useState<'register' | 'otp' | 'profileDetails' | 'setPassword'>('register');
+
+  // State to hold the session_id received after registration/OTP verification
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // New state for confirm password visibility
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
 
-  const handleSendOtp = useCallback(() => {
-    // In a real application, you would send an API request here
-    // to your backend to send an OTP to the provided email.
-    console.log('Sending OTP to:', email);
-    // Simulate OTP sent successfully
-    setCurrentStep('otp'); // Move to the OTP verification step
-    // You might want to add a timer for OTP resend functionality here
-  }, [email]);
 
-  const handleVerifyOtp = useCallback(() => {
-    // In a real application, you would send an API request here
-    // to your backend to verify the entered OTP.
-    console.log('Verifying OTP:', otp, 'for email:', email);
-    // Simulate OTP verification success
-    // On successful verification, move to the password setup step
+  // --- Step 1: Handle Registration (Send OTP) ---
+  const handleRegister = useCallback(async () => {
+    dispatch(clearAuthError());
+
+    if (!email || !first_name || !last_name) {
+      // Consider using a local error state or Material-UI's helperText for validation
+      console.error('Email, first name, and last name are required for registration.');
+      return;
+    }
+
+    const result = await dispatch(
+      registerUser({ email, first_name, last_name })
+    );
+
+    if (result.success) {
+      // Ensure result.data.data exists and has session_id
+      if (result.data?.data?.session_id) {
+        setSessionId(result.data.data.session_id);
+      } else {
+        console.warn('Session ID not found in registration response.');
+        // Handle scenario where session_id is not returned (e.g., show error, prevent step change)
+      }
+      setCurrentStep('otp');
+    } else {
+      console.error('Registration failed:', result.error);
+    }
+  }, [email, first_name, last_name, dispatch]);
+
+
+  // --- Step 2: Handle OTP Verification ---
+  const handleVerifyOtp = useCallback(async () => {
+    dispatch(clearAuthError());
+
+    if (otp.length !== 6) {
+      console.error('OTP must be 6 digits long.');
+      return;
+    }
+    if (!sessionId) {
+      console.error('Session ID missing for OTP verification. Please restart registration.');
+      // You might want to redirect to the register step or show a critical error
+      return;
+    }
+
+    const result = await dispatch(
+      verifyOtp({ session_id: sessionId, otp })
+    );
+
+    if (result.success) {
+      // OTP verified successfully, move to collect profile details
+      setCurrentStep('profileDetails'); // Navigate to new step
+    } else {
+      console.error('OTP verification failed:', result.error);
+    }
+  }, [otp, sessionId, dispatch]);
+
+
+  // --- Step 3: Handle Profile Details Collection (New Step) ---
+  const handleCollectProfileDetails = useCallback(() => {
+    dispatch(clearAuthError());
+
+    if (!country || !state) {
+      // You might want to display a local validation message here
+      console.error('Country and State are required.');
+      return;
+    }
+
+    // No API call here. Just move to the next step.
     setCurrentStep('setPassword');
-  }, [otp, email]); // router is no longer needed here since we are not navigating away
+  }, [country, state, dispatch]); // Add dependencies
 
-  const handleSetPassword = useCallback(() => {
+
+  // --- Step 4: Handle Finalizing Signup (Setting Password) ---
+  const handleFinalizeSignup = useCallback(async () => {
+    dispatch(clearAuthError());
+
     if (password !== confirmPassword) {
       setPasswordError("Passwords don't match.");
       return;
     }
+    if (password.length < 8) {
+      setPasswordError('Password must be at least 8 characters long.');
+      return;
+    }
+    if (!/[0-9]/.test(password) || !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      setPasswordError('Password must contain at least one number and one special character.');
+      return;
+    }
+    setPasswordError(''); // Clear error if all checks pass
 
-    // In a real application, you would send an API request here
-    // to your backend to save the user's new password, along with their email.
-    console.log('Setting password:', password, 'for email:', email);
+    if (!sessionId) {
+      console.error('Session ID missing for signup finalization. Please restart registration.');
+      return;
+    }
 
-    // Simulate password set successfully
-    // On successful password setup, navigate to the dashboard or a success page
-    router.push('/'); // Navigate to the home/dashboard page after setting password
-  }, [password, confirmPassword, email, router]);
+    // Dispatch the Redux action to finalize signup, including country and state
+    const result = await dispatch(
+      finalizeSignup({
+        session_id: sessionId,
+        password: password,
+        country: country, // Pass country
+        state: state,     // Pass state
+      })
+    );
 
-  const renderEmailInput = (
+    if (result.success) {
+      console.log('User signed up and logged in successfully!');
+      router.push('/');
+    } else {
+      console.error('Signup finalization failed:', result.error);
+    }
+  }, [password, confirmPassword, sessionId, country, state, dispatch, router]);
+
+
+  // --- Render Forms based on currentStep ---
+
+  const renderRegisterInput = (
     <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'flex-end',
-        flexDirection: 'column',
-      }}
+      component="form"
+      onSubmit={(e) => { e.preventDefault(); handleRegister(); }}
+      sx={{ display: 'flex', alignItems: 'flex-end', flexDirection: 'column' }}
     >
       <TextField
         fullWidth
@@ -77,31 +184,54 @@ export function SignUpView() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         sx={{ mb: 3 }}
-        slotProps={{
-          inputLabel: { shrink: true },
-        }}
+        slotProps={{ inputLabel: { shrink: true } }}
+        required
       />
+      <TextField
+        fullWidth
+        name="first_name"
+        label="First Name"
+        value={first_name}
+        onChange={(e) => setFirstName(e.target.value)}
+        sx={{ mb: 3 }}
+        slotProps={{ inputLabel: { shrink: true } }}
+        required
+      />
+      <TextField
+        fullWidth
+        name="last_name"
+        label="Last Name"
+        value={last_name}
+        onChange={(e) => setLastName(e.target.value)}
+        sx={{ mb: 3 }}
+        slotProps={{ inputLabel: { shrink: true } }}
+        required
+      />
+
+      {error && (
+        <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       <Button
         fullWidth
         size="large"
         variant="contained"
         color="primary"
-        onClick={handleSendOtp}
-        disabled={!email} // Disable button if email is empty
+        type="submit"
+        disabled={loading || !email || !first_name || !last_name}
       >
-        Send OTP
+        {loading ? <CircularProgress size={24} color="inherit" /> : 'Register & Send OTP'}
       </Button>
     </Box>
   );
 
   const renderOtpInput = (
     <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'flex-end',
-        flexDirection: 'column',
-      }}
+      component="form"
+      onSubmit={(e) => { e.preventDefault(); handleVerifyOtp(); }}
+      sx={{ display: 'flex', alignItems: 'flex-end', flexDirection: 'column' }}
     >
       <TextField
         fullWidth
@@ -110,41 +240,88 @@ export function SignUpView() {
         value={otp}
         onChange={(e) => setOtp(e.target.value)}
         sx={{ mb: 3 }}
-        slotProps={{
-          inputLabel: { shrink: true },
-        }}
-        helperText="A 6-digit code has been sent to your email."
+        slotProps={{ inputLabel: { shrink: true } }}
+        helperText={registrationMessage || "A 6-digit code has been sent to your email."}
+        required
       />
+
+      {error && (
+        <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       <Button
         fullWidth
         size="large"
         variant="contained"
         color="primary"
-        onClick={handleVerifyOtp}
-        disabled={otp.length !== 6} // Disable button if OTP is not 6 digits (assuming 6 digits)
+        type="submit"
+        disabled={loading || otp.length !== 6}
       >
-        Verify OTP
+        {loading ? <CircularProgress size={24} color="inherit" /> : 'Verify OTP'}
       </Button>
 
-      <Link
-        variant="body2"
-        color="primary"
-        sx={{ mt: 1.5, cursor: 'pointer' }}
-        onClick={handleSendOtp} // Allow resending OTP
-      >
+      <Link variant="subtitle2" sx={{ ml: 0.5, cursor: 'pointer' }} onClick={() => handleRegister()} >
+    
         Resend OTP
       </Link>
     </Box>
   );
 
+  // --- New: Render Profile Details Input ---
+  const renderProfileDetailsInput = (
+    <Box
+      component="form"
+      onSubmit={(e) => { e.preventDefault(); handleCollectProfileDetails(); }}
+      sx={{ display: 'flex', alignItems: 'flex-end', flexDirection: 'column' }}
+    >
+      <TextField
+        fullWidth
+        name="country"
+        label="Country"
+        value={country}
+        onChange={(e) => setCountry(e.target.value)}
+        sx={{ mb: 3 }}
+        slotProps={{ inputLabel: { shrink: true } }}
+        required
+      />
+      <TextField
+        fullWidth
+        name="state"
+        label="State / Province"
+        value={state}
+        onChange={(e) => setState(e.target.value)}
+        sx={{ mb: 3 }}
+        slotProps={{ inputLabel: { shrink: true } }}
+        required
+      />
+
+      {error && (
+        <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      <Button
+        fullWidth
+        size="large"
+        variant="contained"
+        color="primary"
+        type="submit"
+        disabled={loading || !country || !state}
+      >
+        {loading ? <CircularProgress size={24} color="inherit" /> : 'Continue'}
+      </Button>
+    </Box>
+  );
+
+
   const renderSetPasswordForm = (
     <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'flex-end',
-        flexDirection: 'column',
-      }}
+      component="form"
+      onSubmit={(e) => { e.preventDefault(); handleFinalizeSignup(); }}
+      sx={{ display: 'flex', alignItems: 'flex-end', flexDirection: 'column' }}
     >
       <TextField
         fullWidth
@@ -154,7 +331,7 @@ export function SignUpView() {
         value={password}
         onChange={(e) => {
           setPassword(e.target.value);
-          setPasswordError(''); // Clear error on change
+          setPasswordError('');
         }}
         sx={{ mb: 3 }}
         slotProps={{
@@ -170,6 +347,7 @@ export function SignUpView() {
           },
         }}
         helperText="Password must be at least 8 characters long, contain a number, and a special character."
+        required
       />
 
       <TextField
@@ -180,7 +358,7 @@ export function SignUpView() {
         value={confirmPassword}
         onChange={(e) => {
           setConfirmPassword(e.target.value);
-          setPasswordError(''); // Clear error on change
+          setPasswordError('');
         }}
         sx={{ mb: 3 }}
         slotProps={{
@@ -196,8 +374,15 @@ export function SignUpView() {
           },
         }}
         error={!!passwordError}
-        helperText={passwordError}
+        helperText={passwordError || (password && confirmPassword && password !== confirmPassword ? "Passwords do not match." : "")}
+        required
       />
+
+      {error && (
+        <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       <Button
         fullWidth
@@ -205,25 +390,25 @@ export function SignUpView() {
         type="submit"
         color="primary"
         variant="contained"
-        onClick={handleSetPassword}
-        // Disable if passwords don't match or are empty, or if password error exists
-        disabled={!password || !confirmPassword || password !== confirmPassword || !!passwordError}
+        disabled={loading || !password || !confirmPassword || password !== confirmPassword || !!passwordError}
       >
-        Set Password
+        {loading ? <CircularProgress size={24} color="inherit" /> : 'Set Password'}
       </Button>
     </Box>
   );
 
   const renderContent = () => {
     switch (currentStep) {
-      case 'email':
-        return renderEmailInput;
+      case 'register':
+        return renderRegisterInput;
       case 'otp':
         return renderOtpInput;
+      case 'profileDetails': // New case
+        return renderProfileDetailsInput;
       case 'setPassword':
         return renderSetPasswordForm;
       default:
-        return renderEmailInput;
+        return renderRegisterInput;
     }
   };
 
@@ -239,8 +424,9 @@ export function SignUpView() {
         }}
       >
         <Typography variant="h5">
-          {currentStep === 'email' && 'Sign up'}
+          {currentStep === 'register' && 'Sign up'}
           {currentStep === 'otp' && 'Verify Your Email'}
+          {currentStep === 'profileDetails' && 'Tell Us More'} {/* New title */}
           {currentStep === 'setPassword' && 'Set Your Password'}
         </Typography>
         <Typography
@@ -249,15 +435,16 @@ export function SignUpView() {
             color: 'text.secondary',
           }}
         >
-          {currentStep === 'email' && (
+          {currentStep === 'register' && (
             <>
               Already have an account?
-              <Link variant="subtitle2" sx={{ ml: 0.5 }} onClick={() => router.push('/sign-in')}>
+              <Link variant="subtitle2" sx={{ ml: 0.5, cursor: 'pointer' }} onClick={() => router.push('/sign-in')}>
                 Sign in
               </Link>
             </>
           )}
           {currentStep === 'otp' && 'Enter the code sent to your email.'}
+          {currentStep === 'profileDetails' && 'Just a few more details to get started.'} {/* New message */}
           {currentStep === 'setPassword' && 'Please set a strong password for your account.'}
         </Typography>
       </Box>

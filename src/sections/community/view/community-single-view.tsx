@@ -1,176 +1,104 @@
 import { useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux'; // Import Redux hooks
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
-import Alert from '@mui/material/Alert'; // Added for error display
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import AlertTitle from '@mui/material/AlertTitle'; // Added for consistent error display
 import CardContent from '@mui/material/CardContent';
-import CircularProgress from '@mui/material/CircularProgress'; // Added for loading indicator
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Iconify } from 'src/components/iconify';
 
-// Assuming you have a type for comments
-interface IComment {
-  id: string;
-  author: {
-    name: string;
-    avatar: string; // URL to avatar image
-  };
-  content: string;
-  createdAt: string; // Date string or Date object
-}
+// Import Redux actions and types
+import {
+  addComment,
+  fetchSinglePost,
+  clearCommunityError,
+} from '../../../redux/community/community.actions';
 
-// Reusing IPostItem from your previous component for the main post
-// Make sure IPostItem is correctly defined and available in this scope.
-// For example:
-// interface IPostItem {
-//   id: string;
-//   title: string;
-//   author: { name: string }; // Assuming author is just a name here from IPostItem
-//   postedAt: string; // Assuming IPostItem has a postedAt field
-//   coverUrl: string; // Just an example, from original PostItem
+import type { AppDispatch } from '../../../redux/types';
+// Use your Redux Post type directly
+
+// We can simplify the types here by using the Redux Post type directly,
+// as it should now contain all necessary fields for display.
+// If IPostItem from '../post-item' is still needed for other components, keep it.
+// For this view, we'll primarily rely on `CommunityPostType`.
+
+// Example of how you might map your reducer's Post type to a display type
+// interface ICommunityPostDetailDisplay extends CommunityPostType {
+//   // Any additional client-side computed properties if needed
 // }
-import type { IPostItem } from '../post-item';
-
-
-// Extended type for a single community post to include comments and views
-interface ICommunityPostDetail extends IPostItem {
-  description: string; // Detailed description of the post
-  comments: IComment[];
-  viewCount: number;
-}
 
 
 export function CommunityPostDetailView() {
-  const [newComment, setNewComment] = useState('');
-  const { id } = useParams<{ id: string }>(); // Specify type for useParams
-  const [post, setPost] = useState<ICommunityPostDetail | null>(null); // Type post state
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null); // Type error state
+  const dispatch: AppDispatch = useDispatch();
+  const { id } = useParams<{ id: string }>();
 
+  // Get selectedPost, loading, and error from Redux store
+  const { selectedPost: post, loading, error } = useSelector((state:any) => state.community);
+
+  // Assuming you have user information in your auth state for adding comments
+  const currentUser = useSelector((state: any) => state.auth.user); // Get current user from auth state
+  const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated);
+
+  const [newCommentContent, setNewCommentContent] = useState(''); // Renamed for clarity
+
+  // Effect to fetch single post when ID changes or component mounts
   useEffect(() => {
-    // const fetchPost = async () => {
-    //   if (!id) { // Ensure ID exists before fetching
-    //     setLoading(false);
-    //     setError(new Error('Post ID is missing from URL.'));
-    //     return;
-    //   }
-    //   try {
-    //     setLoading(true);
-    //     setError(null); // Clear previous errors
-    //     // Replace with your actual API call
-    //     const response = await fetch(`/api/community/posts/${id}`);
-    //     if (!response.ok) {
-    //       const errorData = await response.json(); // Try to get more specific error
-    //       throw new Error(errorData.message || `Failed to fetch post (Status: ${response.status})`);
-    //     }
-    //     const data: ICommunityPostDetail = await response.json();
-    //     setPost(data);
-    //   } catch (err) {
-    //     if (err instanceof Error) {
-    //       setError(err);
-    //     } else {
-    //       setError(new Error('An unknown error occurred.'));
-    //     }
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
-
-    // fetchPost();
-
- 
-    const data: ICommunityPostDetail = {
-      "id": "comm_post_001",
-      "title": "Best Places to Find Authentic Nigerian Street Food in Lagos",
-      "description": "Hey GidiNest Community! 👋 I'm a huge fan of street food and always on the lookout for the best spots in Lagos. What are your go-to places for delicious, authentic Nigerian street food? Thinking about things like Suya, Akara, Ewa Agoyin, Boli, and more! Share your hidden gems and tips on what makes them special. Let's build a guide together!",
-      "author": {
-        "name": "FoodieExplorerNG",
-        "avatarUrl": "/assets/images/avatars/avatar_1.jpg"
-      },
-      "postedAt": "2025-07-16T14:30:00Z",
-      "coverUrl": "/assets/images/cover/community_food_lagos.jpg",
-      "viewCount": 1258,
-      "comments": [
-        {
-          "id": "comment_01",
-          "author": {
-            "name": "LagosEats",
-            "avatar": "/assets/images/avatars/avatar_2.jpg"
-          },
-          "content": "You HAVE to check out the Suya stand at Glover Road, Ikoyi, opposite the old Park 'n' Shop. Their beef suya is out of this world! 🔥 Always fresh and perfectly spiced.",
-          "createdAt": "2025-07-16T15:05:00Z"
-        },
-        {
-          "id": "comment_02",
-          "author": {
-            "name": "MamaBolaFan",
-            "avatar": "/assets/images/avatars/avatar_3.jpg"
-          },
-          "content": "For Ewa Agoyin, nothing beats Mama Bola's spot in Surulere. It's a small shack, but the beans are cooked perfectly soft, and the sauce is divine. She's usually there from 8 AM to 2 PM.",
-          "createdAt": "2025-07-16T16:10:00Z"
-        },
-        {
-          "id": "comment_03",
-          "author": {
-            "name": "GrillMaster",
-            "avatar": "/assets/images/avatars/avatar_4.jpg"
-          },
-          "content": "If you're in Lekki, the Boli and Groundnut seller near Spar is amazing. The plantain is always ripe and grilled to perfection. Don't forget to grab some roasted fish too!",
-          "createdAt": "2025-07-16T18:45:00Z"
-        },
-        {
-          "id": "comment_04",
-          "author": {
-            "name": "JustATourist",
-            "avatar": "/assets/images/avatars/avatar_5.jpg"
-          },
-          "content": "Are there any good spots around Victoria Island for first-timers? Looking for something safe and delicious!",
-          "createdAt": "2025-07-17T09:00:00Z"
-        }
-      ],
-      totalViews: 0,
-      totalShares: 0,
-      totalComments: 0,
-      totalFavorites: 0
-    }; 
-    setPost(data);
-    setLoading(false);
-
-  }, [id]); // Dependency array: re-run effect if ID changes
-
-  const handleAddComment = useCallback(() => {
-    if (newComment.trim() && post) { // Ensure post exists before adding comment
-      // In a real application, you'd send this to an API
-      console.log(`Adding new comment to post ${post.id}:`, newComment);
-      // Optimistically update UI or re-fetch comments after successful API call
-      // For now, just clear the input:
-      setNewComment('');
-
-      // Example of optimistic update (for demonstration, remove in real app if re-fetching):
-      // const tempId = Date.now().toString(); // Temporary ID
-      // const tempComment: IComment = {
-      //   id: tempId,
-      //   author: { name: "Current User", avatar: "/path/to/current-user-avatar.jpg" }, // Replace with actual user info
-      //   content: newComment.trim(),
-      //   createdAt: new Date().toISOString(),
-      // };
-      // setPost((prevPost) =>
-      //   prevPost ? { ...prevPost, comments: [...prevPost.comments, tempComment] } : prevPost
-      // );
+    if (id) {
+      dispatch(fetchSinglePost(id));
     }
-  }, [newComment, post]); // Add post to dependency array
+  }, [dispatch, id]);
+
+  // Effect to clear errors after a delay
+  // eslint-disable-next-line consistent-return
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        dispatch(clearCommunityError());
+      }, 5000); // Clear error message after 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [error, dispatch]);
+
+
+  const handleAddComment = useCallback(async () => {
+    if (!newCommentContent.trim() || !id || !isAuthenticated) {
+      // Add more specific validation/alerts here if needed
+      if (!isAuthenticated) alert('You must be logged in to comment.');
+      else if (!newCommentContent.trim()) alert('Comment cannot be empty.');
+      return;
+    }
+ 
+    // Dispatch the addComment action
+    const result = await dispatch(addComment(id, {
+      content: newCommentContent.trim(),
+    }));
+
+   
+    if (result.success) {
+      setNewCommentContent(''); // Clear the input field on success
+      // The Redux reducer for ADD_COMMENT_SUCCESS will automatically update 'selectedPost.comments'
+      // no need to manually update local state like `setPost`
+      dispatch(fetchSinglePost(id));
+    } else {
+      // Error handling is managed by Redux state, which will display the Alert
+      console.error('Failed to add comment:', result.error);
+    }
+  }, [newCommentContent, id, dispatch, isAuthenticated, currentUser?.id]);
 
   // --- Render Logic for Loading, Error, and Not Found States ---
-  if (loading) {
+  if (loading && !post) { // Show loading only if post is null (initial load)
     return (
       <DashboardContent>
         <Box display="flex" justifyContent="center" alignItems="center" height="calc(100vh - 200px)">
@@ -185,8 +113,8 @@ export function CommunityPostDetailView() {
     return (
       <DashboardContent>
         <Alert severity="error">
-          <Typography variant="h6">Error loading post:</Typography>
-          <Typography>{error.message}</Typography>
+          <AlertTitle>Error loading post:</AlertTitle>
+          <Typography>{error}</Typography> {/* error from redux is string */}
         </Alert>
         <Button onClick={() => window.location.reload()} sx={{ mt: 2 }}>Try Again</Button>
       </DashboardContent>
@@ -197,13 +125,25 @@ export function CommunityPostDetailView() {
     return (
       <DashboardContent>
         <Alert severity="warning">
-          <Typography variant="h6">Post not found.</Typography>
+          <AlertTitle>Post not found.</AlertTitle>
           <Typography>The community discussion you are looking for does not exist.</Typography>
         </Alert>
         <Button href="/community" sx={{ mt: 2 }}>Back to Community</Button>
       </DashboardContent>
     );
   }
+
+  // Helper function to render a common info item
+  const renderInfoItem = (value: string | number | undefined | null, icon: string, label: string) => (
+    <Stack direction="row" alignItems="center" spacing={0.5}>
+      {/* <Iconify icon={icon} width={20} /> */}
+      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+        {typeof value === 'number' ? value : (value || 0)} {label} {/* Handle undefined/null */}
+      </Typography>
+    </Stack>
+  );
+
+  console.log(post)
 
   // --- Main Content Render (only if post is successfully loaded) ---
   return (
@@ -213,32 +153,26 @@ export function CommunityPostDetailView() {
           {post.title}
         </Typography>
         <Typography variant="subtitle2" sx={{ color: 'text.secondary', mb: 2 }}>
-          By {post.author.name} | {post.postedAt}
+          By {post.author_first_name} | {new Date(post.created_at).toLocaleDateString()}
         </Typography>
 
         <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-          <Stack direction="row" alignItems="center" spacing={0.5}>
-            <Iconify icon="solar:eye-bold" width={20} />
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              {post.viewCount} views
-            </Typography>
-          </Stack>
+          {renderInfoItem(post.comments?.length, 'solar:chat-round-dots-bold', 'comments')}
+          {renderInfoItem(post.likes?.length, 'solar:heart-bold', 'likes')} {/* Assuming 'likes' array exists */}
 
           <Button
             size="small"
             color="inherit"
             startIcon={<Iconify icon="solar:share-bold" />}
             onClick={() => {
-              // Share functionality: e.g., using Web Share API
               if (navigator.share) {
                 navigator.share({
                   title: post.title,
-                  text: post.description.substring(0, 100) + '...', // Short preview
+                  text: post.content.substring(0, 100) + '...', // Use post.content
                   url: window.location.href,
                 }).then(() => console.log('Successful share'))
                   .catch((error_) => console.log('Error sharing', error_));
               } else {
-                // Fallback for browsers that don't support Web Share API
                 navigator.clipboard.writeText(window.location.href);
                 alert('Link copied to clipboard!');
               }
@@ -251,21 +185,21 @@ export function CommunityPostDetailView() {
         <Divider sx={{ my: 3 }} />
 
         <Typography variant="body1" sx={{ lineHeight: 1.75, mb: 4 }}>
-          {post.description}
+          {post.content} {/* Use post.content for the main body */}
         </Typography>
 
         <Divider sx={{ my: 3 }} />
 
         {/* Comments Section */}
         <Typography variant="h5" sx={{ mb: 3 }}>
-          Comments ({post.comments?.length || 0}) {/* Use optional chaining for safety */}
+          Comments ({post.comments?.length || 0})
         </Typography>
 
         <Stack spacing={3} sx={{ mb: 5 }}>
-          {post.comments && post.comments.length > 0 ? ( // Check if comments exist and are not empty
-            post.comments.map((comment) => (
+          {post.comments && post.comments.length > 0 ? (
+            post.comments.map((comment:any) => (
               <Box key={comment.id} sx={{ display: 'flex', gap: 2 }}>
-                <Avatar src={comment.author.avatar} alt={comment.author.name} />
+                <Avatar src="/assets/images/avatars/avatar_default.jpg" alt={comment.author_first_name} />  
                 <Card sx={{ flexGrow: 1, bgcolor: 'background.neutral' }}>
                   <CardContent sx={{ pb: '16px !important' }}>
                     <Stack
@@ -275,10 +209,10 @@ export function CommunityPostDetailView() {
                       sx={{ mb: 1 }}
                     >
                       <Typography variant="subtitle2">
-                        {comment.author.name}
+                        {comment.author_first_name}
                       </Typography>
                       <Typography variant="caption" sx={{ color: 'text.disabled' }}>
-                        {comment.createdAt}
+                        {new Date(comment.created_at).toLocaleString()}
                       </Typography>
                     </Stack>
                     <Typography variant="body2">
@@ -296,27 +230,30 @@ export function CommunityPostDetailView() {
         </Stack>
 
         {/* Add New Comment Section */}
+     
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-          <Avatar alt="Current User" src="/assets/images/avatars/avatar_default.jpg" /> {/* Replace with actual user avatar source */}
+          <Avatar  src="/assets/images/avatars/avatar_default.jpg" />
           <TextField
             fullWidth
             multiline
             rows={3}
             placeholder="Write a comment..."
             variant="outlined"
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
+            value={newCommentContent}
+            onChange={(e) => setNewCommentContent(e.target.value)}
+            disabled={loading} // Disable input while adding comment
           />
           <Button
             variant="contained"
             color="primary"
             onClick={handleAddComment}
-            disabled={!newComment.trim()}
+            disabled={!newCommentContent.trim() || loading}
             sx={{ flexShrink: 0, height: 56 }}
           >
-            Post
+            {loading ? <CircularProgress size={24} /> : 'Post'}
           </Button>
         </Box>
+       
       </Box>
     </DashboardContent>
   );

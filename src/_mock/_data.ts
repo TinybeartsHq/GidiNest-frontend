@@ -14,8 +14,8 @@ import {
 // ----------------------------------------------------------------------
 
 export const _myAccount = {
-  displayName: 'Olamide Financial', // A more Nigerian-sounding name
-  email: 'olamide.f@gidinest.cc', // GidiNest domain
+  displayName: 'test user', // A more Nigerian-sounding name
+  email: 'test@test.com', // GidiNest domain
   photoURL: '/assets/images/avatar/avatar-gidinest-user.webp', // Placeholder for a GidiNest-specific user avatar
 };
 
@@ -152,21 +152,7 @@ export const _langs = [
     label: 'English',
     icon: '/assets/icons/flags/ic-flag-en.svg', // English is primary
   },
-  {
-    value: 'ha',
-    label: 'Hausa',
-    icon: '/assets/icons/flags/ic-flag-ng.svg', // Nigerian flag for local languages
-  },
-  {
-    value: 'ig',
-    label: 'Igbo',
-    icon: '/assets/icons/flags/ic-flag-ng.svg',
-  },
-  {
-    value: 'yo',
-    label: 'Yoruba',
-    icon: '/assets/icons/flags/ic-flag-ng.svg',
-  },
+ 
 ];
 
 // ----------------------------------------------------------------------

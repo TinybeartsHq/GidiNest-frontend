@@ -1,81 +1,88 @@
-import { useState, useCallback } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 
+import {Chip} from '@mui/material';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
-// For external links like Paystack
 import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';
-import Alert from '@mui/material/Alert'; // For info messages in modals
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog'; // For Modals
-import Select from '@mui/material/Select'; // For bank selection
+import Dialog from '@mui/material/Dialog';
+import Select from '@mui/material/Select';
 import TableRow from '@mui/material/TableRow';
-import MenuItem from '@mui/material/MenuItem'; // For select options
+import MenuItem from '@mui/material/MenuItem';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
-import TextField from '@mui/material/TextField'; // For form inputs in modals
+import TextField from '@mui/material/TextField';
 import Pagination from '@mui/material/Pagination';
 import Typography from '@mui/material/Typography';
-import InputLabel from '@mui/material/InputLabel'; // For select label
-import AlertTitle from '@mui/material/AlertTitle'; // For alert titles
+import InputLabel from '@mui/material/InputLabel';
+import AlertTitle from '@mui/material/AlertTitle';
 import CardContent from '@mui/material/CardContent';
-import DialogTitle from '@mui/material/DialogTitle'; // For Modal Title
-import FormControl from '@mui/material/FormControl'; // For select
-import DialogContent from '@mui/material/DialogContent'; // For Modal Content
-import DialogActions from '@mui/material/DialogActions'; // For Modal Actions
+import DialogTitle from '@mui/material/DialogTitle';
+import FormControl from '@mui/material/FormControl';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 import TableContainer from '@mui/material/TableContainer';
+import CircularProgress from '@mui/material/CircularProgress';
 
-import { _products } from 'src/_mock';
+import { useRouter } from 'src/routes/hooks';
+
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { AnalyticsWidgetSummary } from '../analytics-widget-summary';
+// Import your Redux actions
+import {
+  getSavingsGoals,
+  createSavingsGoal,
+  clearSavingsError,
+  initiateWithdrawal,
+  getRecentTransactions,
+} from '../../../redux/savings/savings.actions';
 
-// --- Mock Data (as provided) ---
-const _gidiNestSavingsSummary = {
-  totalBalance: 750000,
-  currency: '₦',
-  lastUpdated: 'July 15, 2025',
-};
+// Import your AppDispatch type
+import type { AppDispatch } from '../../../redux/types'; // Make sure you have this type defined for dispatch
 
-const _gidiNestRecentTransactions = [
-  { id: 'tx1', type: 'Deposit', amount: 50000, date: '2025-07-14', description: 'To Education Fund via Bank Transfer' },
-  { id: 'tx2', type: 'Withdrawal', amount: 10000, date: '2025-07-13', description: 'From Emergency Buffer' },
-  { id: 'tx3', type: 'Deposit', amount: 20000, date: '2025-07-12', description: 'To Vacation Goal via Paystack' },
-  { id: 'tx4', type: 'Deposit', amount: 15000, date: '2025-07-10', description: 'To Retirement Plan via Flutterwave' },
-  { id: 'tx5', type: 'Withdrawal', amount: 5000, date: '2025-07-09', description: 'General Savings transfer' },
-  { id: 'tx6', type: 'Deposit', amount: 30000, date: '2025-07-08', description: 'To New Car Goal via Bank Transfer' },
-];
-
-const _gidiNestSavingsGoals = _products.slice(0, 4).map((product, index) => ({
-  id: product.id,
-  name: product.name,
-  currentAmount: product.amount,
-  targetAmount: product.amount ? product.amount * 2 : product.amount * 1.5,
-  progress: Math.floor((product.amount / (product.amount ? product.amount * 2 : product.amount * 1.5)) * 100),
-  icon: product.coverUrl,
-  status: product.status === 'popular' ? 'Active' : 'New',
-}));
-
+// --- Mock Data (for banks, will likely come from an API in a real app or a static config) ---
 const _nigerianBanks = [
-  { value: 'access', label: 'Access Bank' },
-  { value: 'zenith', label: 'Zenith Bank' },
-  { value: 'gtb', label: 'Guaranty Trust Bank (GTBank)' },
-  { value: 'uba', label: 'United Bank for Africa (UBA)' },
-  { value: 'firstbank', label: 'First Bank of Nigeria' },
-  { value: 'fcmb', label: 'FCMB' },
-  { value: 'stanbic', label: 'Stanbic IBTC Bank' },
-  { value: 'union', label: 'Union Bank' },
-  { value: 'kuda', label: 'Kuda Bank' },
-  { value: 'palmpay', label: 'PalmPay (Microfinance Bank)' },
+  { value: 'access', label: 'Access Bank', code: '044' },
+  { value: 'zenith', label: 'Zenith Bank', code: '057' },
+  { value: 'gtb', label: 'Guaranty Trust Bank (GTBank)', code: '058' },
+  { value: 'uba', label: 'United Bank for Africa (UBA)', code: '033' },
+  { value: 'firstbank', label: 'First Bank of Nigeria', code: '011' },
+  { value: 'fcmb', label: 'FCMB', code: '214' },
+  { value: 'stanbic', label: 'Stanbic IBTC Bank', code: '221' },
+  { value: 'union', label: 'Union Bank', code: '032' },
+  { value: 'kuda', label: 'Kuda Bank', code: '000027' },
+  { value: 'palmpay', label: 'PalmPay (Microfinance Bank)', code: '120001' },
   // Add more banks as needed
 ];
+
+
+// Replace with your actual Paystack Public Key
+const PAYSTACK_PUBLIC_KEY = 'pk_test_YOUR_PAYSTACK_PUBLIC_KEY'; // ⚠️ IMPORTANT: Replace this with your actual Paystack Test/Live Public Key
 
 // ----------------------------------------------------------------------
 
 export function SavingsView() {
+  const dispatch: AppDispatch = useDispatch();
+  const router = useRouter();
+
+  // Select data and loading/error states from Redux store
+  const {
+    summary,
+    goals, // This should be populated by getSavingsGoals action
+    transactions,
+    loading,
+    error,
+  } = useSelector((state: any) => state.savings); // Adjust 'state.savings' to your actual Redux state path
+
+  const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated); // Assuming auth state exists
+
   // --- State for Modals ---
   const [openDepositModal, setOpenDepositModal] = useState(false);
   const [openWithdrawModal, setOpenWithdrawModal] = useState(false);
@@ -87,62 +94,150 @@ export function SavingsView() {
   // --- State for Withdrawal Form ---
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
   const [withdrawalAccountNum, setWithdrawalAccountNum] = useState('');
-  const [withdrawalBank, setWithdrawalBank] = useState('');
+  const [withdrawalBank, setWithdrawalBank] = useState(''); // Stores the 'value' (e.g., 'zenith')
+  const [withdrawalBankCode, setWithdrawalBankCode] = useState(''); // Stores the 'code' (e.g., '057')
 
   // --- State for Create Goal Form ---
   const [goalName, setGoalName] = useState('');
   const [goalTargetAmount, setGoalTargetAmount] = useState('');
 
+  // --- Effects to Fetch Data on Component Mount ---
+  useEffect(() => {
+    // Only fetch data if authenticated
+    if (isAuthenticated) {
+      dispatch(getSavingsGoals());
+      dispatch(getRecentTransactions());
+    } else if (isAuthenticated === false) { // If authentication status is explicitly false
+      router.push('/login'); // Redirect to login page
+    }
+  }, [dispatch, isAuthenticated, router]);
+
+  // --- Error Handling Cleanup ---
+  // eslint-disable-next-line consistent-return
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        dispatch(clearSavingsError());
+      }, 5000); // Clear error message after 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [error, dispatch]);
+
   // --- Handlers for Modals ---
   const handleOpenDepositModal = useCallback(() => setOpenDepositModal(true), []);
-  const handleCloseDepositModal = useCallback(() => setOpenDepositModal(false), []);
+  const handleCloseDepositModal = useCallback(() => {
+    setOpenDepositModal(false);
+    setDepositAmount(''); // Clear form on close
+  }, []);
 
   const handleOpenWithdrawModal = useCallback(() => setOpenWithdrawModal(true), []);
-  const handleCloseWithdrawModal = useCallback(() => setOpenWithdrawModal(false), []);
-
-  const handleOpenCreateGoalModal = useCallback(() => setOpenCreateGoalModal(true), []);
-  const handleCloseCreateGoalModal = useCallback(() => setOpenCreateGoalModal(false), []);
-
-  // --- Handlers for Form Submissions ---
-  const handleSubmitDeposit = useCallback(() => {
-    // In a real app, you'd send depositAmount to your API
-    console.log('Initiating deposit for:', depositAmount);
-    // Logic for integrating with Paystack or showing bank details
-    alert(`Deposit of ${_gidiNestSavingsSummary.currency}${depositAmount} initiated! Please follow instructions.`);
-    setDepositAmount(''); // Clear form
-    handleCloseDepositModal();
-  }, [depositAmount, handleCloseDepositModal]);
-
-  const handleSubmitWithdrawal = useCallback(() => {
-    // In a real app, send withdrawalAmount, accountNum, bank to API
-    console.log(`Initiating withdrawal of ${withdrawalAmount} to ${withdrawalAccountNum} (${withdrawalBank})`);
-    alert(`Withdrawal of ${_gidiNestSavingsSummary.currency}${withdrawalAmount} to ${withdrawalAccountNum} initiated. Please note, this transaction is linked to your BVN for security.`);
+  const handleCloseWithdrawModal = useCallback(() => {
+    setOpenWithdrawModal(false);
     setWithdrawalAmount('');
     setWithdrawalAccountNum('');
     setWithdrawalBank('');
-    handleCloseWithdrawModal();
-  }, [withdrawalAmount, withdrawalAccountNum, withdrawalBank, handleCloseWithdrawModal]);
+    setWithdrawalBankCode('');
+  }, []);
 
-  const handleSubmitCreateGoal = useCallback(() => {
-    // In a real app, send goalName, goalTargetAmount to API
-    console.log(`Creating new goal: ${goalName} with target ${_gidiNestSavingsSummary.currency}${goalTargetAmount}`);
-    alert(`New savings goal "${goalName}" with a target of ${_gidiNestSavingsSummary.currency}${goalTargetAmount} created!`);
+  const handleOpenCreateGoalModal = useCallback(() => setOpenCreateGoalModal(true), []);
+  const handleCloseCreateGoalModal = useCallback(() => {
+    setOpenCreateGoalModal(false);
     setGoalName('');
     setGoalTargetAmount('');
-    handleCloseCreateGoalModal();
-  }, [goalName, goalTargetAmount, handleCloseCreateGoalModal]);
+  }, []);
+
+  // You'll need to dynamically get the user's email for the config
+  const userEmail = useSelector((state: any) => state.auth.user?.email || 'customer@example.com'); 
 
 
-  // --- Unused (from original) ---
-  const [sortBy, setSortBy] = useState('newest');
-  const [openFilter, setOpenFilter] = useState(false);
-  const [filters, setFilters] = useState({});
 
-  const handleOpenFilter = useCallback(() => { setOpenFilter(true); }, []);
-  const handleCloseFilter = useCallback(() => { setOpenFilter(false); }, []);
-  const handleSort = useCallback((newSort: string) => { setSortBy(newSort); }, []);
-  const handleSetFilters = useCallback((updateState: Partial<any>) => { setFilters((prevValue) => ({ ...prevValue, ...updateState })); }, []);
+  const handleSubmitDeposit = useCallback(() => {
+    if (parseFloat(depositAmount) <= 0 || isNaN(parseFloat(depositAmount))) {
+      alert('Please enter a valid deposit amount.');
+      return;
+    }
 
+    alert("Redirect to paystack")
+    // Initiate the Paystack payment popup
+    // initializePayment(handlePaystackSuccess, handlePaystackClose);
+  }, [depositAmount]);
+
+  const handleSubmitWithdrawal = useCallback(async () => {
+    if (parseFloat(withdrawalAmount) <= 0 || isNaN(parseFloat(withdrawalAmount)) || !withdrawalAccountNum || !withdrawalBankCode) {
+      alert('Please fill in all withdrawal details.');
+      return;
+    }
+
+    // Call the Redux action for withdrawal
+    const result = await dispatch(initiateWithdrawal({
+      amount: parseFloat(withdrawalAmount),
+      accountNumber: withdrawalAccountNum,
+      bankCode: withdrawalBankCode,
+      // You might need to pass user ID from auth state here
+    }));
+
+    if (result.success) {
+      alert(`Withdrawal of ${summary?.currency}${withdrawalAmount} to ${withdrawalAccountNum} initiated. Please note, this transaction is linked to your BVN for security.`);
+      dispatch(getRecentTransactions()); // Refresh transactions
+      handleCloseWithdrawModal();
+    } else {
+      alert(`Withdrawal failed: ${result.error || 'An unknown error occurred.'}`);
+    }
+  }, [withdrawalAmount, withdrawalAccountNum, withdrawalBankCode, handleCloseWithdrawModal, dispatch, summary?.currency]);
+
+  const handleSubmitCreateGoal = useCallback(async () => {
+    if (!goalName.trim() || parseFloat(goalTargetAmount) <= 0 || isNaN(parseFloat(goalTargetAmount))) {
+      alert('Please provide a valid goal name and target amount.');
+      return;
+    }
+
+    // Call the Redux action to create a goal
+    const result = await dispatch(createSavingsGoal({
+      name: goalName,
+      target_amount: parseFloat(goalTargetAmount),
+      // Add any other default properties your backend expects, e.g., 'currentAmount: 0'
+    }));
+
+    if (result.success) {
+      // alert(`New savings goal "${goalName}" with a target of ${summary?.currency}${parseFloat(goalTargetAmount).toLocaleString()} created!`);
+      handleCloseCreateGoalModal();
+      dispatch(getSavingsGoals()); // Refresh goals list to show the new goal
+    } else {
+      alert(`Failed to create goal: ${result.error || 'An unknown error occurred.'}`);
+    }
+  }, [goalName, goalTargetAmount, handleCloseCreateGoalModal, dispatch, summary?.currency]);
+
+  // Helper function to format currency
+  const formatCurrency = useCallback((amount: number | null | undefined, currency = '₦') => {
+    if (amount === null || amount === undefined) return `${currency}0`;
+    const numericAmount = parseFloat(String(amount));
+    if (isNaN(numericAmount)) return `${currency}0`;
+    return `${currency}${numericAmount.toLocaleString('en-NG', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    })}`;
+  }, []);
+
+  // Handle bank selection to also set the bank code for withdrawal
+  const handleWithdrawalBankChange = useCallback((event: { target: { value: string; }; }) => {
+    const selectedBankValue = event.target.value;
+    setWithdrawalBank(selectedBankValue);
+    const bank = _nigerianBanks.find(b => b.value === selectedBankValue);
+    if (bank) {
+      setWithdrawalBankCode(bank.code);
+    } else {
+      setWithdrawalBankCode('');
+    }
+  }, []);
+
+  const currentSummary = summary || { totalBalance: 0, currency: '₦', lastUpdated: 'N/A' };
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const goalsWithImages = useMemo(() => goals.map((goal: any) => ({
+      ...goal,
+      icon: `/assets/images/cover/cover-${Math.floor(Math.random() * 24) + 1}.webp`
+    })), [goals]);
+  
   return (
     <DashboardContent>
       <Typography variant="h4" sx={{ mb: 2 }}>
@@ -152,23 +247,32 @@ export function SavingsView() {
         Manage your savings, track your progress, and make financial transactions securely.
       </Typography>
 
+      {/* Error Alert */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          <AlertTitle>Error</AlertTitle>
+          {error}
+        </Alert>
+      )}
+
       <Grid container spacing={3}>
         {/* Total Savings Balance Widget */}
-        <Grid size={{xs:12,sm:6,md:4}}> {/* Updated 'size' to 'xs', 'sm', 'md' */}
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <AnalyticsWidgetSummary
             title="Total Savings Balance"
-            percent={_gidiNestSavingsSummary.totalBalance > 0 ? 0 : 0}
-            total={`${_gidiNestSavingsSummary.currency} ${_gidiNestSavingsSummary.totalBalance.toLocaleString()}`}
+            percent={0} // This percentage would come from your API for a meaningful trend
+            total={formatCurrency(currentSummary.totalBalance, currentSummary.currency)}
             icon={<img alt="Savings Balance" src="/assets/icons/glass/ic-glass-bag.svg" />}
             chart={{
+              // Placeholder chart data; replace with actual trend data from your backend
               categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-              series: [22, 8, 35, 50, 82, 84, 77, 12],
+              series: [0, 0, 0, 0, 0, 0, 0, 0],
             }}
           />
         </Grid>
 
         {/* Deposit & Withdrawal Actions */}
-        <Grid size={{ xs: 12, sm: 6, md: 8 }}> {/* Updated 'size' to 'xs', 'sm', 'md' */}
+        <Grid size={{ xs: 12, sm: 6, md: 8 }}>
           <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', p: 3 }}>
             <Typography variant="h6" sx={{ mb: 2, ml: 3 }}>Quick Actions</Typography>
             <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
@@ -176,7 +280,7 @@ export function SavingsView() {
                 variant="contained"
                 color="primary"
                 size="large"
-                onClick={handleOpenDepositModal} // Linked to Deposit Modal
+                onClick={handleOpenDepositModal}
                 startIcon={<img alt="Deposit" src="/assets/icons/glass/ic-glass-buy.svg" style={{ width: 24, height: 24 }} />}
               >
                 Deposit Funds
@@ -185,7 +289,7 @@ export function SavingsView() {
                 variant="outlined"
                 color="secondary"
                 size="large"
-                onClick={handleOpenWithdrawModal} // Linked to Withdrawal Modal
+                onClick={handleOpenWithdrawModal}
                 startIcon={<img alt="Withdrawal" src="/assets/icons/glass/ic-glass-message.svg" style={{ width: 24, height: 24 }} />}
               >
                 Withdraw Funds
@@ -194,7 +298,7 @@ export function SavingsView() {
                 variant="outlined"
                 color="inherit"
                 size="large"
-                onClick={handleOpenCreateGoalModal} // Linked to Create Goal Modal
+                onClick={handleOpenCreateGoalModal}
                 startIcon={<img alt="New Goal" src="/assets/icons/glass/ic-glass-bag.svg" style={{ width: 24, height: 24 }} />}
               >
                 Create New Goal
@@ -204,39 +308,58 @@ export function SavingsView() {
         </Grid>
 
         {/* Savings Goals Overview */}
-        <Grid size={{ xs: 12 }}> {/* Updated 'size' to 'xs' */}
+        <Grid size={{ xs: 12, }}>
           <Typography variant="h5" sx={{ mb: 3, mt: 5 }}>Your Active Savings Goals</Typography>
         </Grid>
-        {_gidiNestSavingsGoals.map((goal) => (
-          <Grid key={goal.id} size={{ xs :12,sm:6,md:3}}> {/* Updated 'size' to 'xs', 'sm', 'md' */}
-            <Card>
-              <CardContent>
-                <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-                  <Box component="img" src={goal.icon} alt={goal.name} sx={{ width: 48, height: 48, borderRadius: 1.5, flexShrink: 0 }} />
-                  <Box>
-                    <Typography variant="subtitle1">{goal.name}</Typography>
-                    <Typography variant="body2" color="text.secondary">{goal.status}</Typography>
-                  </Box>
-                </Stack>
-                <Typography variant="h6" sx={{ color: 'primary.main' }}>
-                  {_gidiNestSavingsSummary.currency} {goal.currentAmount.toLocaleString()}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Target: {_gidiNestSavingsSummary.currency} {goal.targetAmount.toLocaleString()}
-                </Typography>
-                <Box sx={{ mt: 1, height: 8, borderRadius: 1, bgcolor: 'grey.300' }}>
-                  <Box sx={{ height: '100%', width: `${goal.progress}%`, borderRadius: 1, bgcolor: 'primary.main' }} />
-                </Box>
-                <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'text.secondary' }}>
-                  {goal.progress}% progress
-                </Typography>
-              </CardContent>
-            </Card>
+        {goals.length === 0 && !loading ? (
+          <Grid size={{ xs: 12 }}>
+            <Alert severity="info">
+              You haven&apos;t created any savings goals yet. Click &quot;Create New Goal&quot; to get started! 🚀
+            </Alert>
           </Grid>
-        ))}
+        ) : (
+            goalsWithImages.map((goal: any) => ( // Ensure your API returns goals in this structure
+            <Grid key={goal.id} size={{ xs: 12, sm: 6, md: 3 }}>
+              <Card>
+                <CardContent>
+                  <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+                    {/* Assuming goal.icon is available, otherwise use a default */}
+                    <Box component="img" src={goal.icon || '/assets/images/cover/cover-24.webp'} alt={goal.name} sx={{ width: 48, height: 48, borderRadius: 1.5, flexShrink: 0 }} />
+                      <Box>
+                        <Typography variant="subtitle1">{goal.name}</Typography>
+                        <Chip
+                          label={goal.status || 'Active'}
+                          color={goal.status?.toLowerCase() === 'paused' ? 'warning' : 'success'}
+                          size="small"
+                          sx={{ mt: 0.5, fontWeight: 500, textTransform: 'capitalize' }}
+                        />
+                      </Box>
+                  </Stack>
+                  <Typography variant="h6" sx={{ color: 'primary.main' }}>
+                    {formatCurrency(goal.currentAmount, currentSummary.currency)}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Target: {formatCurrency(goal.target_amount, currentSummary.currency)}
+                  </Typography>
+                  <Box sx={{ mt: 1, height: 8, borderRadius: 1, bgcolor: 'grey.300' }}>
+                    <Box sx={{
+                      height: '100%',
+                      width: `${Math.min(100, Math.floor((goal.currentAmount / goal.targetAmount) * 100)) || 0}%`, // Calculate and cap progress
+                      borderRadius: 1,
+                      bgcolor: 'primary.main'
+                    }} />
+                  </Box>
+                  <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'text.secondary' }}>
+                    {Math.min(100, Math.floor((goal.currentAmount / goal.targetAmount) * 100)) || 0}% progress
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))
+        )}
 
         {/* Savings History / Recent Transactions */}
-        <Grid size={{xs:12}}> {/* Updated 'size' to 'xs' */}
+        <Grid size={{ xs: 12 }}>
           <Typography variant="h5" sx={{ mb: 3, mt: 5 }}>Savings Transaction History</Typography>
           <Card>
             <TableContainer component={Paper}>
@@ -250,28 +373,38 @@ export function SavingsView() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {_gidiNestRecentTransactions.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                    >
-                      <TableCell component="th" scope="row">
-                        {row.date}
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant="subtitle2"
-                          color={row.type === 'Deposit' ? 'success.main' : 'error.main'}
-                        >
-                          {row.type}
+                  {transactions.length === 0 && !loading ? (
+                    <TableRow>
+                      <TableCell colSpan={4} align="center">
+                        <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>
+                          No recent transactions found.
                         </Typography>
                       </TableCell>
-                      <TableCell>{row.description}</TableCell>
-                      <TableCell align="right">
-                        {_gidiNestSavingsSummary.currency} {row.amount.toLocaleString()}
-                      </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    transactions.map((row: any) => ( // Ensure your API returns transactions in this structure
+                      <TableRow
+                        key={row.id}
+                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                      >
+                        <TableCell component="th" scope="row">
+                          {new Date(row.date).toLocaleDateString()} {/* Format date */}
+                        </TableCell>
+                        <TableCell>
+                          <Typography
+                            variant="subtitle2"
+                            color={row.type === 'Deposit' ? 'success.main' : 'error.main'}
+                          >
+                            {row.type}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>{row.description}</TableCell>
+                        <TableCell align="right">
+                          {formatCurrency(row.amount, currentSummary.currency)}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -281,7 +414,8 @@ export function SavingsView() {
           </Card>
         </Grid>
 
-        <Pagination count={5} color="primary" sx={{ mt: 8, mx: 'auto', mb: 5 }} />
+        {/* Pagination (currently static, needs dynamic update based on API) */}
+        <Pagination count={1} color="primary" sx={{ mt: 8, mx: 'auto', mb: 5 }} />
       </Grid>
 
       {/* --- Deposit Funds Modal --- */}
@@ -324,9 +458,9 @@ export function SavingsView() {
             onClick={handleSubmitDeposit}
             variant="contained"
             color="primary"
-            disabled={!depositAmount || parseFloat(depositAmount) <= 0}
+            disabled={!depositAmount || parseFloat(depositAmount) <= 0 || loading}
           >
-            Proceed with Deposit
+            {loading ? <CircularProgress size={24} /> : 'Proceed with Deposit'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -369,7 +503,7 @@ export function SavingsView() {
               id="withdrawal-bank-select"
               value={withdrawalBank}
               label="Bank Name"
-              onChange={(e) => setWithdrawalBank(e.target.value)}
+              onChange={handleWithdrawalBankChange}
             >
               {_nigerianBanks.map((bank) => (
                 <MenuItem key={bank.value} value={bank.value}>
@@ -387,9 +521,9 @@ export function SavingsView() {
             onClick={handleSubmitWithdrawal}
             variant="contained"
             color="primary"
-            disabled={!withdrawalAmount || parseFloat(withdrawalAmount) <= 0 || !withdrawalAccountNum || !withdrawalBank}
+            disabled={!withdrawalAmount || parseFloat(withdrawalAmount) <= 0 || !withdrawalAccountNum || !withdrawalBank || loading}
           >
-            Submit Withdrawal
+            {loading ? <CircularProgress size={24} /> : 'Submit Withdrawal'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -420,7 +554,7 @@ export function SavingsView() {
             inputProps={{ min: 1 }}
           />
           <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-            Set a clear target to help you stay motivated!
+            Set a clear target to help you stay motivated! ✨
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -431,9 +565,9 @@ export function SavingsView() {
             onClick={handleSubmitCreateGoal}
             variant="contained"
             color="primary"
-            disabled={!goalName.trim() || !goalTargetAmount || parseFloat(goalTargetAmount) <= 0}
+            disabled={!goalName.trim() || !goalTargetAmount || parseFloat(goalTargetAmount) <= 0 || loading}
           >
-            Create Goal
+            {loading ? <CircularProgress size={24} /> : 'Create Goal'}
           </Button>
         </DialogActions>
       </Dialog>

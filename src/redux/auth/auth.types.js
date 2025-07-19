@@ -1,0 +1,22 @@
+// src/redux/auth/auth.types.js
+export const LOGIN_REQUEST = 'LOGIN_REQUEST';
+export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
+export const LOGIN_FAILURE = 'LOGIN_FAILURE';
+export const LOGOUT = 'LOGOUT';
+export const SET_AUTHENTICATED = 'SET_AUTHENTICATED';
+
+// New Registration Flow Types
+export const REGISTER_REQUEST = 'REGISTER_REQUEST';
+export const REGISTER_SUCCESS = 'REGISTER_SUCCESS';
+export const REGISTER_FAILURE = 'REGISTER_FAILURE';
+
+export const VERIFY_OTP_REQUEST = 'VERIFY_OTP_REQUEST';
+export const VERIFY_OTP_SUCCESS = 'VERIFY_OTP_SUCCESS';
+export const VERIFY_OTP_FAILURE = 'VERIFY_OTP_FAILURE';
+
+export const FINALIZE_SIGNUP_REQUEST = 'FINALIZE_SIGNUP_REQUEST';
+export const FINALIZE_SIGNUP_SUCCESS = 'FINALIZE_SIGNUP_SUCCESS';
+export const FINALIZE_SIGNUP_FAILURE = 'FINALIZE_SIGNUP_FAILURE';
+
+// Clear authentication errors
+export const CLEAR_AUTH_ERROR = 'CLEAR_AUTH_ERROR';

@@ -20,16 +20,13 @@ import { SvgColor } from 'src/components/svg-color';
 export type IPostItem = {
   id: string;
   title: string;
-  coverUrl: string;
-  totalViews: number;
-  description: string;
-  totalShares: number;
-  totalComments: number;
-  totalFavorites: number;
-  postedAt: string | number | null;
+  views_count?: string;
+  description?: string;
+  likes_count?: string;
+  created_at: string | number | null;
   author: {
     name: string;
-    avatarUrl: string;
+    avatarUrl?: string;
   };
 };
 
@@ -93,9 +90,9 @@ export function PostItem({
       }}
     >
       {[
-        { number: post.totalComments, icon: 'solar:chat-round-dots-bold' },
-        { number: post.totalViews, icon: 'solar:eye-bold' },
-        { number: post.totalShares, icon: 'solar:share-bold' },
+        { number: post.views_count, icon: 'solar:chat-round-dots-bold' },
+        { number: post.views_count, icon: 'solar:eye-bold' },
+        { number: post.views_count, icon: 'solar:share-bold' },
       ].map((info, _index) => (
         <Box
           key={_index}
@@ -118,7 +115,7 @@ export function PostItem({
     <Box
       component="img"
       alt={post.title}
-      src={post.coverUrl}
+      src={`/assets/images/cover/cover-${Math.floor(Math.random() * 24) + 1}.webp`}
       sx={{
         top: 0,
         width: 1,
@@ -142,7 +139,7 @@ export function PostItem({
         }),
       }}
     >
-      {fDate(post.postedAt)}
+      {fDate(post.created_at)}
     </Typography>
   );
 
@@ -168,13 +165,14 @@ export function PostItem({
         sx={(theme) => ({
           position: 'relative',
           pt: 'calc(100% * 3 / 4)',
+          width:'100%',
           ...((latestPostLarge || latestPost) && {
             pt: 'calc(100% * 4 / 3)',
             '&:after': {
               top: 0,
               content: "''",
               width: '100%',
-              height: '100%',
+              height: '100%', 
               position: 'absolute',
               bgcolor: varAlpha(theme.palette.grey['900Channel'], 0.72),
             },
@@ -182,7 +180,7 @@ export function PostItem({
           ...(latestPostLarge && {
             pt: {
               xs: 'calc(100% * 4 / 3)',
-              sm: 'calc(100% * 3 / 4.66)',
+              sm: 'calc(100% * 6.2 / 4.66)',
             },
           }),
         })}

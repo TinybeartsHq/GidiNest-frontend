@@ -1,18 +1,19 @@
+import { useSelector, useDispatch } from 'react-redux';
 import React, { useState, useEffect, useCallback } from 'react';
 
 import Grid from '@mui/material/Grid';
-import Dialog from '@mui/material/Dialog'; // Import Dialog for the modal
+import Dialog from '@mui/material/Dialog';
 import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import { Box, Alert, Slide, Stack, Button, TextField, CircularProgress } from '@mui/material';
+import { Box, Alert, Stack, Button, TextField, CircularProgress } from '@mui/material';
+
+import { useRouter } from 'src/routes/hooks';
 
 // Sticking to ONLY these existing mock data imports
 import { _posts, _tasks, _traffic } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
-
-import { Iconify } from 'src/components/iconify';
 
 import { AnalyticsNews } from '../analytics-news';
 import { AnalyticsTasks } from '../analytics-tasks';
@@ -22,79 +23,141 @@ import { AnalyticsWidgetSummary } from '../analytics-widget-summary';
 import { AnalyticsTrafficBySite } from '../analytics-traffic-by-site';
 import { AnalyticsCurrentSubject } from '../analytics-current-subject';
 import { AnalyticsConversionRates } from '../analytics-conversion-rates';
+import { updateBVN ,
+  fetchUserProfile
+} from '../../../redux/userProfile/userProfile.actions';
+import { getSavingsGoals, getDashboardAnalytics, } from '../../../redux/savings/savings.actions';
 
-
+import type { AppDispatch } from '../../../redux/types';
 
 export function OverviewAnalyticsView() {
-
   // State to manage modal visibility
-    const [openBvnModal, setOpenBvnModal] = useState(false);
-    // State for BVN input
-    const [bvn, setBvn] = useState('');
-    // State for verification status (e.g., 'idle', 'loading', 'success', 'error')
-    const [verificationStatus, setVerificationStatus] = useState('idle');
-    // State to simulate user verification status (this would come from auth context/backend)
-    const [isAccountVerified, setIsAccountVerified] = useState(false); // Assume unverified initially for demo
-  
-    // Effect to check verification status on component mount
-    useEffect(() => {
-      // Simulate fetching user's verification status from a backend
-      const checkVerificationStatus = () => {
-        // In a real app: fetch from API
-        // For simulation: assume user is NOT verified unless they've just completed the process
-        const storedVerification = localStorage.getItem('gidinest_account_verified');
-        if (storedVerification === 'true') {
-          setIsAccountVerified(true);
-        } else {
-          setIsAccountVerified(false);
-          setOpenBvnModal(true); // Open modal if not verified
-        }
-      };
-  
-      checkVerificationStatus();
-    }, []); // Empty dependency array ensures this runs once on mount
-  
-    const handleBvnInputChange = useCallback((event: { target: { value: string; }; }) => {
-      // Allow only numbers and limit length to 11 for BVN
-      const value = event.target.value.replace(/\D/g, ''); // Remove non-digits
-      if (value.length <= 11) {
-        setBvn(value);
-      }
-    }, []);
-  
-    const handleVerifyBvn = useCallback(() => {
-      if (bvn.length !== 11) {
-        setVerificationStatus('error');
-        return;
-      }
-  
-      setVerificationStatus('loading');
-  
-      // Simulate API call for BVN verification
-      setTimeout(() => {
-        // Simulate success or failure randomly, or based on a specific BVN
-        const isBvnValid = bvn === '12345678901' || Math.random() > 0.5; // Example: '12345678901' is always valid
-  
-        if (isBvnValid) {
-          setVerificationStatus('success');
-          setIsAccountVerified(true);
-          localStorage.setItem('gidinest_account_verified', 'true'); // Persist verification
-          setTimeout(() => setOpenBvnModal(false), 1500); // Close modal after success message
-        } else {
-          setVerificationStatus('error');
-          setIsAccountVerified(false);
-          localStorage.setItem('gidinest_account_verified', 'false'); // Persist verification failed
-        }
-      }, 2000); // Simulate network delay
-    }, [bvn]);
-  
-    const handleCloseBvnModal = useCallback(() => {
-      if (verificationStatus !== 'loading') { // Prevent closing during verification
-        setOpenBvnModal(false);
-        setVerificationStatus('idle'); // Reset status when closing
-        setBvn(''); // Clear BVN input
-      }
-    }, [verificationStatus]);
+  const [openBvnModal, setOpenBvnModal] = useState(false);
+  // State for BVN input
+  const [bvn, setBvn] = useState('');
+  // State for verification status (e.g., 'idle', 'loading', 'success', 'error')
+  const [verificationStatus, setVerificationStatus] = useState('idle');
+  // State to simulate user verification status (this would come from auth context/backend)
+  const [isAccountVerified, setIsAccountVerified] = useState(false); // Assume unverified initially for demo
+
+  // Get data and status from Redux store
+  const { dashboardAnalytics, loading, error } = useSelector((state: any) => state.savings);
+  const { profile: userProfile} = useSelector((state: any) => state.profile);
+  const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated);
+
+  const dispatch: AppDispatch = useDispatch();
+  const router = useRouter();
+
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      await dispatch(fetchUserProfile());
+    };
+
+    fetchProfile();
+  }, [dispatch]);
+
+
+  useEffect(() => {
+    if (userProfile && !userProfile.has_bvn) {
+      setOpenBvnModal(true);
+    }
+  }, [userProfile]);
+ 
+
+  const handleBvnInputChange = useCallback((event: { target: { value: string; }; }) => {
+    const value = event.target.value.replace(/\D/g, '');
+    if (value.length <= 11) {
+      setBvn(value);
+    }
+  }, []);
+
+  const handleVerifyBvn = useCallback(async () => {
+    if (bvn.length !== 11) {
+      setVerificationStatus('error');
+      return;
+    }
+
+    setVerificationStatus('loading');
+
+    const result = await dispatch(updateBVN(bvn));
+    if (result.success) {
+      setVerificationStatus('success');// Exit editing mode on successful save
+      setIsAccountVerified(true);
+      // The Redux reducer will update userProfile, and the useEffect will resync editedProfile
+    }
+    else{
+      setVerificationStatus('error');
+      setIsAccountVerified(false);
+    }
+
+ 
+  }, [bvn]);
+
+  const handleCloseBvnModal = useCallback(() => {
+    if (verificationStatus !== 'loading') {
+      setOpenBvnModal(false);
+      setVerificationStatus('idle');
+      setBvn('');
+    }
+  }, [verificationStatus]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(getDashboardAnalytics());
+      dispatch(getSavingsGoals());
+    } else if (isAuthenticated === false) {
+      router.push('/sign-in');
+    }
+  }, [dispatch, isAuthenticated, router]);
+
+
+  const formatCurrency = (amount: string | number | null | undefined, currency = '₦') => {
+    console.log(amount)
+    if (currency == "NGN") currency = '₦'
+    if (amount === null || amount === undefined) return `${currency}0`;
+    const numericAmount = parseFloat(String(amount));
+    return `${currency}${numericAmount.toLocaleString('en-NG', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    })}`;
+  };
+
+  if (loading && !dashboardAnalytics) {
+    return (
+      <DashboardContent maxWidth="xl">
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+          <CircularProgress size={60} />
+          <Typography variant="h5" sx={{ ml: 2 }}>Loading your dashboard...</Typography>
+        </Box>
+      </DashboardContent>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardContent maxWidth="xl">
+        <Alert severity="error" sx={{ my: 4 }}>
+          <Typography variant="h6">Error loading dashboard data:</Typography>
+          <Typography>{error}</Typography>
+          <Button onClick={() => dispatch(getDashboardAnalytics())} sx={{ mt: 1 }}>Retry</Button>
+        </Alert>
+      </DashboardContent>
+    );
+  }
+
+  const analyticsData = dashboardAnalytics || {
+    total_savings_balance: '0.00',
+    currency: '₦',
+    active_savings_goals: 0,
+    monthly_contributions: '0',
+    goals_achieved_ytd: 0,
+    monthly_contributions_change_percent: 0.0,
+    goals_achieved_ytd_change_percent: 0.0,
+  };
+
+
+  console.log(dashboardAnalytics)
 
 
   return (
@@ -104,72 +167,72 @@ export function OverviewAnalyticsView() {
       </Typography>
 
       <Grid container spacing={3}>
-        {/* Row 1: Key Financial Summaries - Repurposing existing data structure */}
+        {/* Row 1: Key Financial Summaries - Populated with Redux data */}
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <AnalyticsWidgetSummary
-            title="Total Savings Balance (₦)" // GidiNest title
-            percent={2.6}
-            total={714000}
-            icon={<img alt="Weekly sales" src="/assets/icons/glass/ic-glass-bag.svg" />} // Original icon path
+            title="Total Savings Balance"
+            percent={analyticsData.monthly_contributions_change_percent} // Using a relevant percentage
+            total={formatCurrency(analyticsData.total_savings_balance, analyticsData.currency)}
+            icon={<img alt="Savings Balance" src="/assets/icons/glass/ic-glass-bag.svg" />}
             chart={{
               categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-              series: [22, 8, 35, 50, 82, 84, 77, 12],
+              series: [0, 0, 0, 0, 0, 0, 0, 0], // Set to zeros
             }}
           />
         </Grid>
 
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <AnalyticsWidgetSummary
-            title="Active Savings Goals" // GidiNest title
-            percent={-0.1}
-            total={6} // Small number for active goals
+            title="Active Savings Goals"
+            percent={0} // No direct percentage from API for this, setting to 0
+            total={analyticsData.active_savings_goals}
             color="secondary"
-            icon={<img alt="New users" src="/assets/icons/glass/ic-glass-users.svg" />} // Original icon path
+            icon={<img alt="Active Goals" src="/assets/icons/glass/ic-glass-users.svg" />}
             chart={{
               categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-              series: [56, 47, 40, 62, 73, 30, 23, 54],
+              series: [0, 0, 0, 0, 0, 0, 0, 0], // Set to zeros
             }}
           />
         </Grid>
 
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <AnalyticsWidgetSummary
-            title="Monthly Contributions (₦)" // GidiNest title
-            percent={2.8}
-            total={1723315} // Can represent accumulated monthly contributions
+            title="Monthly Contributions"
+            percent={analyticsData.monthly_contributions_change_percent}
+            total={formatCurrency(analyticsData.monthly_contributions, analyticsData.currency)}
             color="warning"
-            icon={<img alt="Purchase orders" src="/assets/icons/glass/ic-glass-buy.svg" />} // Original icon path
+            icon={<img alt="Monthly Contributions" src="/assets/icons/glass/ic-glass-buy.svg" />}
             chart={{
               categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-              series: [40, 70, 50, 28, 70, 75, 7, 64],
+              series: [0, 0, 0, 0, 0, 0, 0, 0], // Set to zeros
             }}
           />
         </Grid>
 
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <AnalyticsWidgetSummary
-            title="Goals Achieved (YTD)" // GidiNest title
-            percent={3.6}
-            total={234} // Can represent number of goals achieved
-            color="error" // Reusing 'error' color
-            icon={<img alt="Messages" src="/assets/icons/glass/ic-glass-message.svg" />} // Original icon path
+            title="Goals Achieved (YTD)"
+            percent={analyticsData.goals_achieved_ytd_change_percent}
+            total={analyticsData.goals_achieved_ytd.toString()}
+            color="error"
+            icon={<img alt="Goals Achieved" src="/assets/icons/glass/ic-glass-message.svg" />}
             chart={{
               categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-              series: [56, 30, 23, 54, 47, 40, 62, 73],
+              series: [0, 0, 0, 0, 0, 0, 0, 0], // Set to zeros
             }}
           />
         </Grid>
 
-        {/* Row 2: Charts for Savings Distribution and Growth - Repurposing existing data structure */}
+        {/* Row 2: Charts for Savings Distribution and Growth - Set to zeros/empty */}
         <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <AnalyticsCurrentVisits
-            title="Savings Distribution by Goal" // GidiNest title
+            title="Savings Distribution by Goal"
             chart={{
               series: [
-                { label: 'Education Fund', value: 3500 }, // Repurposing labels for goals
-                { label: 'Home Savings', value: 2500 },
-                { label: 'Emergency Fund', value: 1500 },
-                { label: 'Travel Fund', value: 500 },
+                { label: 'Education Fund', value: 0 },
+                { label: 'Home Savings', value: 0 },
+                { label: 'Emergency Fund', value: 0 },
+                { label: 'Travel Fund', value: 0 },
               ],
             }}
           />
@@ -177,28 +240,28 @@ export function OverviewAnalyticsView() {
 
         <Grid size={{ xs: 12, md: 6, lg: 8 }}>
           <AnalyticsWebsiteVisits
-            title="Savings Growth Over Time" // GidiNest title
-            subheader="(+15%) than last quarter" // Financial subheader
+            title="Savings Growth Over Time"
+            subheader="(Data currently unavailable)"
             chart={{
               categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
               series: [
-                { name: 'Total Savings', data: [43, 33, 22, 37, 67, 68, 37, 24, 55] }, // Repurposing series names
-                { name: 'Monthly Deposits', data: [51, 70, 47, 67, 40, 37, 24, 70, 24] },
+                { name: 'Total Savings', data: [0, 0, 0, 0, 0, 0, 0, 0, 0] },
+                { name: 'Monthly Deposits', data: [0, 0, 0, 0, 0, 0, 0, 0, 0] },
               ],
             }}
           />
         </Grid>
 
-        {/* Row 3: Goal Progress and Categories Performance - Repurposing existing data structure */}
+        {/* Row 3: Goal Progress and Categories Performance - Set to zeros/empty */}
         <Grid size={{ xs: 12, md: 6, lg: 8 }}>
           <AnalyticsConversionRates
-            title="Goal Progress Status" // GidiNest title
-            subheader="Overview of your savings goals" // Financial subheader
+            title="Goal Progress Status"
+            subheader="Overview of your savings goals"
             chart={{
-              categories: ['Education', 'Housing', 'Health', 'Travel', 'Emergency'], // Repurposing categories
+              categories: ['Education', 'Housing', 'Health', 'Travel', 'Emergency'],
               series: [
-                { name: 'Progress (₦)', data: [44, 55, 41, 64, 22] }, // Repurposing series data
-                { name: 'Target (₦)', data: [53, 32, 33, 52, 13] },
+                { name: 'Progress (₦)', data: [0, 0, 0, 0, 0] },
+                { name: 'Target (₦)', data: [0, 0, 0, 0, 0] },
               ],
             }}
           />
@@ -206,13 +269,13 @@ export function OverviewAnalyticsView() {
 
         <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <AnalyticsCurrentSubject
-            title="Savings Categories Performance" // GidiNest title
+            title="Savings Categories Performance"
             chart={{
-              categories: ['Education', 'Housing', 'Health', 'Travel', 'Lifestyle', 'Investments'], // Repurposing categories
+              categories: ['Education', 'Housing', 'Health', 'Travel', 'Lifestyle', 'Investments'],
               series: [
-                { name: 'Efficiency Score', data: [80, 50, 30, 40, 100, 20] }, // Repurposing series names and data
-                { name: 'Goal Attainment', data: [20, 30, 40, 80, 20, 80] },
-                { name: 'Savings Rate', data: [44, 76, 78, 13, 43, 10] },
+                { name: 'Efficiency Score', data: [0, 0, 0, 0, 0, 0] },
+                { name: 'Goal Attainment', data: [0, 0, 0, 0, 0, 0] },
+                { name: 'Savings Rate', data: [0, 0, 0, 0, 0, 0] },
               ],
             }}
           />
@@ -220,41 +283,34 @@ export function OverviewAnalyticsView() {
 
         {/* Row 4: Financial Tips and Recent Activity - Using _posts and _timeline */}
         <Grid size={{ xs: 12, md: 12, lg: 12 }}>
-          <AnalyticsNews title="GidiNest Financial Tips" list={_posts.slice(0, 5)} /> {/* Using _posts */}
+          <AnalyticsNews title="GidiNest Financial Tips" list={_posts.slice(0, 5)} />
         </Grid>
-
 
         {/* Row 5: Top Savings Goal Categories and Upcoming Financial Reminders - Using _traffic and _tasks */}
-        <Grid size={{ xs: 12, md: 12, lg: 12 }}>
-          <AnalyticsTrafficBySite title="Top Savings Goal Categories" list={_traffic} /> {/* Using _traffic */}
+        {/* <Grid size={{ xs: 12, md: 12, lg: 12 }}>
+          <AnalyticsTrafficBySite title="Top Savings Goal Categories" list={_traffic} />
         </Grid>
 
         <Grid size={{ xs: 12, md: 12, lg: 12 }}>
-          <AnalyticsTasks title="Upcoming Financial Reminders" list={_tasks} /> {/* Using _tasks */}
-        </Grid>
+          <AnalyticsTasks title="Upcoming Financial Reminders" list={_tasks} />
+        </Grid> */}
       </Grid>
-
-
-
-
 
       {/* BVN Verification Modal */}
       <Dialog
-        open={openBvnModal && !isAccountVerified} // Only open if not verified
+        open={openBvnModal && !isAccountVerified}
         onClose={handleCloseBvnModal}
         aria-labelledby="bvn-verification-title"
- 
-        disableEscapeKeyDown={verificationStatus === 'loading'} // Prevent closing during loading
+        disableEscapeKeyDown={verificationStatus === 'loading'}
         PaperProps={{
           sx: {
-            minWidth: { xs: '90%', sm: 400 }, // Responsive width
-            p: 2, // Padding
+            minWidth: { xs: '90%', sm: 400 },
+            p: 2,
           },
         }}
       >
         <DialogTitle id="bvn-verification-title" sx={{ pb: 1 }}>
           <Stack direction="row" alignItems="center" spacing={1}>
-            {/* <Iconify icon="eva:trending-down-fill" width={28} color="primary.main" /> */}
             <Typography variant="h6">Verify Your Account</Typography>
           </Stack>
         </DialogTitle>
@@ -288,35 +344,33 @@ export function OverviewAnalyticsView() {
           {verificationStatus === 'success' && (
             <Alert severity="success" sx={{ mb: 2 }}>
               Account successfully verified! 🎉
-            
-          </Alert>
+            </Alert>
           )}
 
-        {verificationStatus === 'error' && bvn.length === 11 && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            Verification failed. Please check your BVN and try again.
-          </Alert>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={handleCloseBvnModal}
-          color="inherit"
-          disabled={verificationStatus === 'loading'}
-        >
-          Later
-        </Button>
-        <Button
-          onClick={handleVerifyBvn}
-          variant="contained"
-          color="primary"
-          disabled={bvn.length !== 11 || verificationStatus === 'loading'}
-        >
-          {verificationStatus === 'loading' ? 'Verifying...' : 'Verify Now'}
-        </Button>
-      </DialogActions>
-    </Dialog>
-
+          {verificationStatus === 'error' && bvn.length === 11 && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              Verification failed. Please check your BVN and try again.
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={handleCloseBvnModal}
+            color="inherit"
+            disabled={verificationStatus === 'loading'}
+          >
+            Later
+          </Button>
+          <Button
+            onClick={handleVerifyBvn}
+            variant="contained"
+            color="primary"
+            disabled={bvn.length !== 11 || verificationStatus === 'loading'}
+          >
+            {verificationStatus === 'loading' ? 'Verifying...' : 'Verify Now'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </DashboardContent>
   );
 }
