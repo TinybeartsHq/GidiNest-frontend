@@ -108,7 +108,7 @@ export function SavingsView() {
       dispatch(getSavingsGoals());
       dispatch(getRecentTransactions());
     } else if (isAuthenticated === false) { // If authentication status is explicitly false
-      router.push('/login'); // Redirect to login page
+      router.push('/sign-in'); // Redirect to login page
     }
   }, [dispatch, isAuthenticated, router]);
 

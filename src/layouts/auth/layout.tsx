@@ -146,7 +146,7 @@ export function AuthLayout({
 
 const backgroundStyles = (): CSSObject => ({
   zIndex: 1,
-  opacity: 0.24,
+  opacity: 0.54,
   width: '100%',
   height: '100%',
   content: "''",
@@ -154,5 +154,5 @@ const backgroundStyles = (): CSSObject => ({
   backgroundSize: 'cover',
   backgroundRepeat: 'no-repeat',
   backgroundPosition: 'center center',
-  backgroundImage: 'url(/assets/background/overlay.jpg)',
+  backgroundImage: 'url(/assets/background/2147919267.jpg)',
 });
