@@ -1,5 +1,6 @@
 import type { IconButtonProps } from '@mui/material/IconButton';
 
+import { Link } from 'react-router-dom';
 import { useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -129,7 +130,14 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
         <Divider sx={{ borderStyle: 'dashed' }} />
 
         <Box sx={{ p: 1 }}>
-          <Button fullWidth color="error" size="medium" variant="text">
+          <Button
+            fullWidth
+            color="error"
+            size="medium"
+            variant="text"
+            component={Link} // Use the Link component
+            to="/logout"   // Specify the destination path
+          >
             Logout
           </Button>
         </Box>

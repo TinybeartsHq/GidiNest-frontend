@@ -1,0 +1,14 @@
+import { CONFIG } from 'src/config-global';
+
+import { TipsView } from 'src/sections/tips/view';
+
+
+export default function Page() {
+  return (
+    <>
+      <title>{`Tips and FAQ - ${CONFIG.appName}`}</title>
+
+      <TipsView />
+    </>
+  );
+}

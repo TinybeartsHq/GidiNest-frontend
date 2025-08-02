@@ -163,7 +163,7 @@ export function OverviewAnalyticsView() {
   return (
     <DashboardContent maxWidth="xl">
       <Typography variant="h4" sx={{ mb: { xs: 3, md: 5 } }}>
-        Welcome to your GidiNest! 👋
+        Welcome {userProfile?.first_name}!
       </Typography>
 
       <Grid container spacing={3}>
@@ -283,7 +283,7 @@ export function OverviewAnalyticsView() {
 
         {/* Row 4: Financial Tips and Recent Activity - Using _posts and _timeline */}
         <Grid size={{ xs: 12, md: 12, lg: 12 }}>
-          <AnalyticsNews title="GidiNest Financial Tips" list={_posts.slice(0, 5)} />
+          <AnalyticsNews title="Financial Tips" list={_posts.slice(0, 5)} />
         </Grid>
 
         {/* Row 5: Top Savings Goal Categories and Upcoming Financial Reminders - Using _traffic and _tasks */}

@@ -1,67 +1,78 @@
 import { useState, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux'; // Import useSelector to access auth state
+import { useDispatch, useSelector } from 'react-redux';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
-import Alert from '@mui/material/Alert'; // For error messages
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import ToggleButton from '@mui/material/ToggleButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import CircularProgress from '@mui/material/CircularProgress'; // For loading indicator
+import CircularProgress from '@mui/material/CircularProgress';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 import { useRouter } from 'src/routes/hooks';
 
 import { Iconify } from 'src/components/iconify';
 
-import { loginUser } from '../../redux/auth/auth.actions'; // Adjust path
+import { loginUser } from '../../redux/auth/auth.actions';
 
-import type { RootState, AppDispatch } from '../../redux/types'; // Adjust path to your types.ts file
+import type { RootState, AppDispatch } from '../../redux/types';
 
 
 export function SignInView() {
   const router = useRouter();
   const dispatch: AppDispatch = useDispatch();
 
-  // Access loading and error state from Redux auth reducer
   const { loading, error } = useSelector((state: RootState) => state.auth);
 
-  // State for form inputs
-  const [email, setEmail] = useState('');
+  // State for login type and identifier
+  const [loginType, setLoginType] = useState<'email' | 'phone'>('email');
+  const [loginIdentifier, setLoginIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSignIn = useCallback(async () => {
     // Basic validation
-    if (!email || !password) {
-      // You might want to dispatch a local error action or set a local state for validation errors
-      console.error('Email and password are required.');
+    if (!loginIdentifier || !password) {
+      console.error('Email/Phone number and password are required.');
       return;
     }
 
     const credentials = {
-      login_type:"password",
-      email,    // Use state variable
-      password, // Use state variable
+      login_type: 'password',
+      password,
+      login_with: loginType,
+      email: loginType === 'email' ? loginIdentifier: "",
+      phone: loginType === 'phone' ? loginIdentifier : "",
+      
+    
     };
 
     const loginSuccessful = await dispatch(loginUser(credentials));
 
     if (loginSuccessful) {
       console.log('User signed in successfully!');
-      router.push('/'); // Redirect to home/dashboard on successful sign-in
+      router.push('/');
     } else {
       console.error('Sign-in failed. Error handled by Redux state.');
-      // Error message will be displayed via the Alert component
     }
-  }, [dispatch, router, email, password]); // Add email and password to dependencies
+  }, [dispatch, router, loginIdentifier, password, loginType]);
+
+  const handleLoginTypeToggle = (event: React.MouseEvent<HTMLElement>, newLoginType: 'email' | 'phone') => {
+    if (newLoginType !== null) {
+      setLoginType(newLoginType);
+      setLoginIdentifier(''); // Clear identifier when toggling type
+    }
+  };
 
   const renderForm = (
     <Box
-      component="form" // Use form element for better semantics and accessibility
+      component="form"
       onSubmit={(e) => {
-        e.preventDefault(); // Prevent default form submission
+        e.preventDefault();
         handleSignIn();
       }}
       sx={{
@@ -70,17 +81,37 @@ export function SignInView() {
         flexDirection: 'column',
       }}
     >
+      {/* Login Type Toggle */}
+      <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mb: 3 }}>
+        <ToggleButtonGroup
+          value={loginType}
+          exclusive
+          onChange={handleLoginTypeToggle}
+          aria-label="login type"
+          fullWidth
+        >
+          <ToggleButton value="email" aria-label="sign in with email" sx={{ flexGrow: 1 }}>
+            Email
+          </ToggleButton>
+          <ToggleButton value="phone" aria-label="sign in with phone number" sx={{ flexGrow: 1 }}>
+            Phone Number
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
+
+      {/* Dynamic Login Identifier Field */}
       <TextField
         fullWidth
-        name="email"
-        label="Email address"
-        value={email} // Controlled component: bind value to state
-        onChange={(e) => setEmail(e.target.value)} // Update state on change
+        name={loginType === 'email' ? 'email' : 'phone_number'}
+        label={loginType === 'email' ? 'Email address' : 'Phone Number'}
+        value={loginIdentifier}
+        onChange={(e) => setLoginIdentifier(e.target.value)}
+        type={loginType === 'email' ? 'email' : 'tel'} // 'tel' is better for mobile keyboards
         sx={{ mb: 3 }}
         slotProps={{
           inputLabel: { shrink: true },
         }}
-        required // Make field required
+        required
       />
 
       <Link variant="body2" color="inherit" sx={{ mb: 1.5 }}>
@@ -91,8 +122,8 @@ export function SignInView() {
         fullWidth
         name="password"
         label="Password"
-        value={password} // Controlled component: bind value to state
-        onChange={(e) => setPassword(e.target.value)} // Update state on change
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
         type={showPassword ? 'text' : 'password'}
         slotProps={{
           inputLabel: { shrink: true },
@@ -107,10 +138,9 @@ export function SignInView() {
           },
         }}
         sx={{ mb: 3 }}
-        required // Make field required
+        required
       />
 
-      {/* Display error message from Redux state */}
       {error && (
         <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
           {error}
@@ -120,11 +150,10 @@ export function SignInView() {
       <Button
         fullWidth
         size="large"
-        type="submit" // Set type to submit for form submission
+        type="submit"
         color="primary"
         variant="contained"
-        disabled={loading} // Disable button while loading
-      // onClick={handleSignIn} // No longer needed if type="submit" on form
+        disabled={loading}
       >
         {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign in'}
       </Button>

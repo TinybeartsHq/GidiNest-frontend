@@ -5,9 +5,13 @@ import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
 import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -24,8 +28,6 @@ import {
 
 import type { RootState, AppDispatch } from '../../redux/types';
 
-// ----------------------------------------------------------------------
-
 export function SignUpView() {
   const router = useRouter();
   const dispatch: AppDispatch = useDispatch();
@@ -36,19 +38,16 @@ export function SignUpView() {
 
   // State for form inputs
   const [email, setEmail] = useState('');
+  const [phone_number, setPhoneNumber] = useState(''); // New state for phone number
   const [first_name, setFirstName] = useState('');
   const [last_name, setLastName] = useState('');
   const [otp, setOtp] = useState('');
-  const [country, setCountry] = useState(''); // New state for country
-  const [state, setState] = useState('');     // New state for state/province
+  const [country, setCountry] = useState('');
+  const [state, setState] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // State to manage the current step of the sign-up process
-  // Added 'profileDetails' step
   const [currentStep, setCurrentStep] = useState<'register' | 'otp' | 'profileDetails' | 'setPassword'>('register');
-
-  // State to hold the session_id received after registration/OTP verification
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   const [showPassword, setShowPassword] = useState(false);
@@ -56,33 +55,48 @@ export function SignUpView() {
   const [passwordError, setPasswordError] = useState('');
 
 
+  const countryStateData = {
+    'Nigeria': [
+      'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno',
+      'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'Gombe', 'Imo',
+      'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos',
+      'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau', 'Rivers',
+      'Sokoto', 'Taraba', 'Yobe', 'Zamfara'
+    ],
+  };
+
+
   // --- Step 1: Handle Registration (Send OTP) ---
   const handleRegister = useCallback(async () => {
     dispatch(clearAuthError());
 
-    if (!email || !first_name || !last_name) {
-      // Consider using a local error state or Material-UI's helperText for validation
-      console.error('Email, first name, and last name are required for registration.');
+    if ((!email && !phone_number) || !first_name || !last_name) {
+      console.error('Email or phone number, first name, and last name are required for registration.');
       return;
     }
 
+    const registrationData = {
+      first_name,
+      last_name,
+      phone:phone_number,
+      email
+    };
+
     const result = await dispatch(
-      registerUser({ email, first_name, last_name })
+      registerUser(registrationData)
     );
 
     if (result.success) {
-      // Ensure result.data.data exists and has session_id
       if (result.data?.data?.session_id) {
         setSessionId(result.data.data.session_id);
       } else {
         console.warn('Session ID not found in registration response.');
-        // Handle scenario where session_id is not returned (e.g., show error, prevent step change)
       }
       setCurrentStep('otp');
     } else {
       console.error('Registration failed:', result.error);
     }
-  }, [email, first_name, last_name, dispatch]);
+  }, [email, phone_number, first_name, last_name, dispatch]);
 
 
   // --- Step 2: Handle OTP Verification ---
@@ -95,7 +109,6 @@ export function SignUpView() {
     }
     if (!sessionId) {
       console.error('Session ID missing for OTP verification. Please restart registration.');
-      // You might want to redirect to the register step or show a critical error
       return;
     }
 
@@ -104,8 +117,7 @@ export function SignUpView() {
     );
 
     if (result.success) {
-      // OTP verified successfully, move to collect profile details
-      setCurrentStep('profileDetails'); // Navigate to new step
+      setCurrentStep('profileDetails');
     } else {
       console.error('OTP verification failed:', result.error);
     }
@@ -117,14 +129,12 @@ export function SignUpView() {
     dispatch(clearAuthError());
 
     if (!country || !state) {
-      // You might want to display a local validation message here
       console.error('Country and State are required.');
       return;
     }
 
-    // No API call here. Just move to the next step.
     setCurrentStep('setPassword');
-  }, [country, state, dispatch]); // Add dependencies
+  }, [country, state, dispatch]);
 
 
   // --- Step 4: Handle Finalizing Signup (Setting Password) ---
@@ -143,20 +153,19 @@ export function SignUpView() {
       setPasswordError('Password must contain at least one number and one special character.');
       return;
     }
-    setPasswordError(''); // Clear error if all checks pass
+    setPasswordError('');
 
     if (!sessionId) {
       console.error('Session ID missing for signup finalization. Please restart registration.');
       return;
     }
 
-    // Dispatch the Redux action to finalize signup, including country and state
     const result = await dispatch(
       finalizeSignup({
         session_id: sessionId,
-        password: password,
-        country: country, // Pass country
-        state: state,     // Pass state
+        password,
+        country,
+        state,
       })
     );
 
@@ -179,14 +188,27 @@ export function SignUpView() {
     >
       <TextField
         fullWidth
+        name="phone_number"
+        label="Phone Number"
+        value={phone_number}
+        placeholder='08082737272'
+        onChange={(e) => setPhoneNumber(e.target.value)}
+        sx={{ mb: 3 }}
+        slotProps={{ inputLabel: { shrink: true } }}
+        required
+      />
+      <TextField
+        fullWidth
         name="email"
         label="Email address"
         value={email}
+        placeholder='test@test.com'
         onChange={(e) => setEmail(e.target.value)}
         sx={{ mb: 3 }}
         slotProps={{ inputLabel: { shrink: true } }}
         required
       />
+    
       <TextField
         fullWidth
         name="first_name"
@@ -220,7 +242,7 @@ export function SignUpView() {
         variant="contained"
         color="primary"
         type="submit"
-        disabled={loading || !email || !first_name || !last_name}
+        disabled={loading || (!email && !phone_number) || !first_name || !last_name}
       >
         {loading ? <CircularProgress size={24} color="inherit" /> : 'Register & Send OTP'}
       </Button>
@@ -241,7 +263,7 @@ export function SignUpView() {
         onChange={(e) => setOtp(e.target.value)}
         sx={{ mb: 3 }}
         slotProps={{ inputLabel: { shrink: true } }}
-        helperText={registrationMessage || "A 6-digit code has been sent to your email."}
+        helperText={registrationMessage || "A 6-digit code has been sent to your provided contact methods."}
         required
       />
 
@@ -263,39 +285,48 @@ export function SignUpView() {
       </Button>
 
       <Link variant="subtitle2" sx={{ ml: 0.5, cursor: 'pointer' }} onClick={() => handleRegister()} >
-    
         Resend OTP
       </Link>
     </Box>
   );
 
-  // --- New: Render Profile Details Input ---
   const renderProfileDetailsInput = (
     <Box
       component="form"
       onSubmit={(e) => { e.preventDefault(); handleCollectProfileDetails(); }}
       sx={{ display: 'flex', alignItems: 'flex-end', flexDirection: 'column' }}
     >
-      <TextField
-        fullWidth
-        name="country"
-        label="Country"
-        value={country}
-        onChange={(e) => setCountry(e.target.value)}
-        sx={{ mb: 3 }}
-        slotProps={{ inputLabel: { shrink: true } }}
-        required
-      />
-      <TextField
-        fullWidth
-        name="state"
-        label="State / Province"
-        value={state}
-        onChange={(e) => setState(e.target.value)}
-        sx={{ mb: 3 }}
-        slotProps={{ inputLabel: { shrink: true } }}
-        required
-      />
+
+      <FormControl fullWidth sx={{ mb: 3 }} required>
+        <InputLabel>Country</InputLabel>
+        <Select
+          name="country"
+          value={country}
+          label="Country"
+          onChange={(e) => {
+            setCountry(e.target.value);
+            setState('');
+          }}
+        >
+          <MenuItem value="Ghana">Ghana</MenuItem>
+          <MenuItem value="Kenya">Kenya</MenuItem>
+          <MenuItem value="Nigeria">Nigeria</MenuItem>
+        </Select>
+      </FormControl>
+
+      <FormControl fullWidth sx={{ mb: 3 }} required disabled={!country}>
+        <InputLabel>State / Province</InputLabel>
+        <Select
+          name="state"
+          value={state}
+          label="State / Province"
+          onChange={(e) => setState(e.target.value)}
+        >
+          {country && countryStateData[country as keyof typeof countryStateData]?.map((s) => (
+            <MenuItem key={s} value={s}>{s}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
 
       {error && (
         <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
@@ -403,7 +434,7 @@ export function SignUpView() {
         return renderRegisterInput;
       case 'otp':
         return renderOtpInput;
-      case 'profileDetails': // New case
+      case 'profileDetails':
         return renderProfileDetailsInput;
       case 'setPassword':
         return renderSetPasswordForm;
@@ -425,8 +456,8 @@ export function SignUpView() {
       >
         <Typography variant="h5">
           {currentStep === 'register' && 'Sign up'}
-          {currentStep === 'otp' && 'Verify Your Email'}
-          {currentStep === 'profileDetails' && 'Tell Us More'} {/* New title */}
+          {currentStep === 'otp' && 'Verify Your Account'}
+          {currentStep === 'profileDetails' && 'Tell Us More'}
           {currentStep === 'setPassword' && 'Set Your Password'}
         </Typography>
         <Typography
@@ -443,8 +474,8 @@ export function SignUpView() {
               </Link>
             </>
           )}
-          {currentStep === 'otp' && 'Enter the code sent to your email.'}
-          {currentStep === 'profileDetails' && 'Just a few more details to get started.'} {/* New message */}
+          {currentStep === 'otp' && 'Enter the code sent to your provided contact methods.'}
+          {currentStep === 'profileDetails' && 'Just a few more details to get started.'}
           {currentStep === 'setPassword' && 'Please set a strong password for your account.'}
         </Typography>
       </Box>

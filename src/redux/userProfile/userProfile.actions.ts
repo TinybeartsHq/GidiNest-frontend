@@ -24,10 +24,10 @@ export interface UserProfileData {
     first_name: string;
     last_name: string;
     email: string;
-    phone_number: string;
+    phone: string;
     bvn: string;
     account_tier: 'Basic' | 'Standard' | 'Premium';
-    dob: string; // YYYY-MM-DD format usually
+    bvn_dob: string; // YYYY-MM-DD format usually
     is_verified: boolean;
     
     // Add any other fields your user profile might have

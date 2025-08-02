@@ -5,11 +5,32 @@
     <link rel="icon" href="/favicon.ico" />
     <meta name="theme-color" content="#000000" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Minimal UI Kit</title>
+    <title>Gidinest</title>
   </head>
 
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.async = true;
+
+        // Pass your public key as a data attribute on the script tag
+        const public_key = "2ea9c001-b352-4f5e-8779-24a8e6a021e2";
+        const widgetUrl = 'https://js.cuoral.com/inline.js';
+
+
+        script.dataset.cuoralKey = public_key;
+        script.dataset.enable_chat_widget = true;
+        script.dataset.enable_user_intelligence = false;
+        script.src = widgetUrl;
+
+        document.head.appendChild(script);
+      });
+    </script>
+    
   </body>
 </html>

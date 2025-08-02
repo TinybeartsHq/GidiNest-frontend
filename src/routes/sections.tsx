@@ -20,11 +20,13 @@ export const SignInPage = lazy(() => import('src/pages/auth/sign-in'));
 export const SignUpPage = lazy(() => import('src/pages/auth/sign-up'));
 export const ProductsPage = lazy(() => import('src/pages/products'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
+export const Logout = lazy(() => import('src/pages/auth/logout'));
+
 
 export const SavingsPage = lazy(() => import('src/pages/savings'));
 export const TransactionsView = lazy(() => import('src/pages/transactions'));
 export const UserProfileView = lazy(() => import('src/pages/profile'));
-
+export const TipsView = lazy(() => import('src/pages/tips'));
 
 
 const renderFallback = () => (
@@ -65,6 +67,7 @@ export const routesSection: RouteObject[] = [
       { path: 'community/:id', element: <CommunityPostDetailPage /> },
       { path: 'transactions', element: <TransactionsView /> }, 
       { path: 'profile', element: <UserProfileView /> },
+      { path: 'tips', element: <TipsView /> },
     ],
   }, 
   {
@@ -72,6 +75,15 @@ export const routesSection: RouteObject[] = [
     element: (
       <AuthLayout>
         <SignInPage />
+      </AuthLayout>
+    ),
+  },
+
+  {
+    path: 'logout',
+    element: (
+      <AuthLayout>
+        <Logout />
       </AuthLayout>
     ),
   },

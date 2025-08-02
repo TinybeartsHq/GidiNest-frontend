@@ -54,5 +54,10 @@ export const navData = [
     path: '/profile',
     icon: icon('ic-user'),
   },
+  {
+    title: 'Tips and FAQ',
+    path: '/tips',
+    icon: icon('ic-notification-chat'),
+  },
   
 ];

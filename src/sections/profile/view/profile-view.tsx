@@ -44,7 +44,7 @@ export function UserProfileView() {
 
   // Get user profile data and state from Redux store
   const { profile: userProfile, loading, error, updating } = useSelector((state: any) => state.profile);
- 
+
 
   const [isEditing, setIsEditing] = useState(false);
   // Edited profile state, initialized from userProfile when available
@@ -52,12 +52,13 @@ export function UserProfileView() {
 
   // Effect to fetch user profile when component mounts or loggedInUser changes
   useEffect(() => {
-      dispatch(fetchUserProfile());
- 
+    dispatch(fetchUserProfile());
+
   }, [dispatch]); // Re-fetch if loggedInUser ID changes
 
   // Sync Redux profile with local editedProfile when Redux profile updates
   useEffect(() => {
+    console.log(userProfile)
     if (userProfile) {
       setEditedProfile(userProfile);
     }
@@ -91,7 +92,7 @@ export function UserProfileView() {
   const handleSaveProfile = useCallback(async () => {
     if (editedProfile) {
       // Dispatch the update action
-      const result = await dispatch(updateUserProfile( editedProfile));
+      const result = await dispatch(updateUserProfile(editedProfile));
       if (result.success) {
         setIsEditing(false); // Exit editing mode on successful save
         // The Redux reducer will update userProfile, and the useEffect will resync editedProfile
@@ -195,12 +196,13 @@ export function UserProfileView() {
       <Card component={Paper} elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 2 }}>
         <Grid container spacing={4}>
           <Grid
+ 
             size={{ xs: 12, md: 4 }}
             sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
           >
             <Avatar
               alt={`${userProfile.first_name} ${userProfile.last_name}`}
-              src={"data:image/png;base64,"+userProfile.image || '/assets/images/avatars/avatar_default.jpg'} // Fallback avatar
+              src={"data:image/png;base64," + userProfile.image || '/assets/images/avatars/avatar_default.jpg'} // Fallback avatar
               sx={{ width: 120, height: 120, mb: 2, border: `4px solid ${theme.palette.background.paper}`, boxShadow: theme.shadows[3] }}
             />
             <Typography variant="h6" gutterBottom>
@@ -218,10 +220,16 @@ export function UserProfileView() {
             />
           </Grid>
 
-          <Grid  size={{ xs: 12, md: 8 }}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Typography variant="h5" sx={{ mb: 3 }}>
               Personal Information
             </Typography>
+
+            {/* Added Note */}
+            <Alert severity="info" sx={{ mb: 3 }}>
+              Important: Please ensure these details match the information on your BVN to avoid verification issues.
+            </Alert>
+
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
@@ -258,10 +266,11 @@ export function UserProfileView() {
                 <TextField
                   fullWidth
                   label="Phone Number"
-                  name="phone_number"
-                  value={editedProfile?.phone_number || ''}
+                  name="phone"
+                  value={editedProfile?.phone || ''}
                   onChange={handleFieldChange}
-                  disabled={!isEditing || updating}
+                  disabled
+                  // disabled={!isEditing || updating}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }} >
@@ -270,9 +279,10 @@ export function UserProfileView() {
                   label="Date of Birth"
                   name="dob"
                   type="date"
-                  value={editedProfile?.dob || ''}
+                  value={editedProfile?.bvn_dob || ''}
                   onChange={handleFieldChange}
-                  disabled={!isEditing || updating}
+                  disabled
+                  // disabled={!isEditing || updating}
                   InputLabelProps={{
                     shrink: true,
                   }}

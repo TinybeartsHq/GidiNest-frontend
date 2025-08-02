@@ -157,7 +157,7 @@ export function CommunityPostDetailView() {
         </Typography>
 
         <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-          {renderInfoItem(post.comments?.length, 'solar:chat-round-dots-bold', 'comments')}
+          {/* {renderInfoItem(post.comments?.length, 'solar:chat-round-dots-bold', 'comments')} */}
           {renderInfoItem(post.likes?.length, 'solar:heart-bold', 'likes')} {/* Assuming 'likes' array exists */}
 
           <Button
@@ -191,7 +191,7 @@ export function CommunityPostDetailView() {
         <Divider sx={{ my: 3 }} />
 
         {/* Comments Section */}
-        <Typography variant="h5" sx={{ mb: 3 }}>
+        {/* <Typography variant="h5" sx={{ mb: 3 }}>
           Comments ({post.comments?.length || 0})
         </Typography>
 
@@ -227,11 +227,11 @@ export function CommunityPostDetailView() {
               No comments yet. Be the first to start a discussion!
             </Typography>
           )}
-        </Stack>
+        </Stack> */}
 
         {/* Add New Comment Section */}
      
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+        {/* <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
           <Avatar  src="/assets/images/avatars/avatar_default.jpg" />
           <TextField
             fullWidth
@@ -252,7 +252,7 @@ export function CommunityPostDetailView() {
           >
             {loading ? <CircularProgress size={24} /> : 'Post'}
           </Button>
-        </Box>
+        </Box> */}
        
       </Box>
     </DashboardContent>

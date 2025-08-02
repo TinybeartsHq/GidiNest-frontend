@@ -93,7 +93,7 @@ export function CommunityView() { // Removed communityPosts prop
         }}
       >
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
-          GidiNest Community Forum 🤝
+        Community Forum 🤝
         </Typography>
         <Button
           variant="contained"
@@ -104,7 +104,7 @@ export function CommunityView() { // Removed communityPosts prop
           component={RouterLink}
           href="/community/new-post" // Assuming a route for creating new posts
         >
-          Start New Discussion
+          Create a post
         </Button>
       </Box>
 
