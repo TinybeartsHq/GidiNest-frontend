@@ -41,6 +41,7 @@ export const loginUser = (credentials) => async (dispatch) => {
         const access = response.data.data.token.access
 
         localStorage.setItem('accessToken', access);
+        localStorage.setItem('user', JSON.stringify(user));
         if (refresh) {
             localStorage.setItem('refreshToken', refresh);
         }

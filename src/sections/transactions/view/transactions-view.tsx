@@ -136,7 +136,7 @@ export function TransactionsView() {
 
   const notFound = !dataFiltered.length && !!filterName && !loading; // Adjust notFound logic
 
-
+  console.log(dataFiltered)
   return (
     <DashboardContent>
       <Box
@@ -199,10 +199,11 @@ export function TransactionsView() {
                 onSelectAllRows={(checked) => handleSelectAllRows(checked)}
                 headLabel={[
                   // { id: 'id', label: 'Transaction ID' },
-                  { id: 'timestamp', label: 'Date' },
+                
                   { id: 'name', label: 'Description' }, // Assuming 'name' is the description
                 
                   { id: 'transaction_type_display', label: 'Type' }, // 'role' mapped to 'Type'
+                  { id: 'timestamp', label: 'Date' },
                   { id: 'amount', label: 'Amount (₦)', align: 'right' },
                   // { id: 'status', label: 'Status', align: 'center' },
                   { id: '' },

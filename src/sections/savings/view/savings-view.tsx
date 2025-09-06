@@ -281,7 +281,7 @@ export function SavingsView() {
         <Grid size={{ xs: 12, sm: 6, md: 8 }}>
           <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', p: 3 }}>
             <Typography variant="h6" sx={{ mb: 2, ml: 3 }}>Quick Actions</Typography>
-            <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
+            <Stack direction="row" spacing={3} justifyContent="center" flexWrap="wrap">
               <Button
                 variant="outlined"
                 color="primary"
@@ -422,14 +422,15 @@ export function SavingsView() {
                         sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                       >
                         <TableCell component="th" scope="row">
-                          {new Date(row.date).toLocaleDateString()} {/* Format date */}
+                          {new Date(row.timestamp).toLocaleDateString()} {/* Format date */}
                         </TableCell>
                         <TableCell>
                           <Typography
                             variant="subtitle2"
-                            color={row.type === 'Deposit' ? 'success.main' : 'error.main'}
+                            color={row.type === 'contribution' ? 'success.main' : 'error.main'}
+                            sx={{ textTransform: 'capitalize' }}  
                           >
-                            {row.type}
+                            {row.transaction_type}
                           </Typography>
                         </TableCell>
                         <TableCell>{row.description}</TableCell>
@@ -442,9 +443,9 @@ export function SavingsView() {
                 </TableBody>
               </Table>
             </TableContainer>
-            <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end' }}>
+            {/* <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end' }}>
               <Button variant="text" color="primary">View All History</Button>
-            </Box>
+            </Box> */}
           </Card>
         </Grid>
 

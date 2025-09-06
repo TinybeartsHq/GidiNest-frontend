@@ -20,18 +20,12 @@ import { Iconify } from 'src/components/iconify';
 // DEFINE AND EXPORT TransactionProps HERE
 export type TransactionProps = {
   id: string; // Unique ID for the row (original user ID, or a true unique transaction ID)
-  avatarUrl: string; // Used for icon or initials related to the transaction
-  name: string; // Repurposed for Transaction Description/Title
-  company: string; // Repurposed for Transaction Category/Source/Destination (e.g., "Food", "Transport")
-  role: string; // Repurposed for Transaction Type (e.g., 'Debit', 'Credit')
-  isVerified: boolean; // Repurposed for a transaction verification status (e.g., confirmed by bank)
-  status: 'Completed' | 'Pending' | 'Failed'; // Actual transaction status
-  createdAt: string; // Repurposed for Transaction Date/Time
-  balance: number; // Repurposed for Transaction Amount
-  email: string; // Can be a transaction reference or payer's email
-  phoneNumber: string; // Can be a conceptual phone number related to the transaction
-  address: string; // Can be detailed transaction notes
-};
+  goal_name: string; // Repurposed for Transaction Description/Title
+  transaction_type: 'contribution' | 'withdrawal'; // Actual transaction status
+  timestamp: string; // Repurposed for Transaction Date/Time
+  goal_current_amount: number; // Repurposed for Transaction Amount
+  amount: number; // Transaction Amount
+}
 
 type TransactionTableRowProps = {
   row: TransactionProps;
@@ -48,14 +42,11 @@ export function TransactionTableRow({
 
   const {
     id,
-    avatarUrl,
-    name, // Transaction Description
-    company, // Transaction Category
-    role, // Transaction Type (Debit/Credit)
-    // isVerified, // Not directly displayed, but part of the type
-    status,
-    createdAt, // Date & Time
-    balance,
+    goal_name,
+    transaction_type, // Transaction Description
+    timestamp, // Transaction Category
+    goal_current_amount, // Transaction Type (Debit/Credit)
+    amount
   } = row;
 
   const [open, setOpen] = useState(null);
@@ -69,7 +60,7 @@ export function TransactionTableRow({
   }, []);
 
   // Determine color for transaction type
-  const transactionTypeColor = role === 'Credit' ? theme.palette.success.main : theme.palette.error.main;
+  const transactionTypeColor = transaction_type === 'contribution' ? theme.palette.success.main : theme.palette.error.main;
   // Determine color for transaction status
   const transactionStatusColor =
     status === 'Completed'
@@ -104,83 +95,84 @@ export function TransactionTableRow({
         <Checkbox checked={selected} onChange={onSelectRow} />
       </TableCell>
 
-      {/* Transaction ID & Avatar/Icon */}
-      <TableCell sx={{ minWidth: 160 }}>
-        <Stack direction="row" alignItems="center" spacing={2}>
-          
-          <Typography variant="subtitle2" noWrap>
-            {id.substring(id.length - 8).toUpperCase()} {/* Short Transaction ID */}
-          </Typography>
-        </Stack>
-      </TableCell>
+    
 
       {/* Description & Category */}
       <TableCell sx={{ minWidth: 220 }}>
         <Link color="inherit" underline="hover" noWrap variant="body2" sx={{ fontWeight: 'fontWeightMedium' }}>
-          {name} {/* Main description, bolder for prominence */}
+          {goal_name} {/* Main description, bolder for prominence */}
         </Link>
-        <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
-          {company} {/* Sub-description/category */}
+   
+      </TableCell>
+
+      {/* Transaction ID & Avatar/Icon */}
+
+      <TableCell align="left" sx={{ minWidth: 120 }}>
+        <Typography variant="subtitle1" sx={{ color: transactionTypeColor, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', textCapitalize: 'capitalize' }}>
+
+          {transaction_type}
         </Typography>
+
       </TableCell>
 
       {/* Date & Time */}
       <TableCell sx={{ minWidth: 120 }}>
         <Typography variant="body2" noWrap>
-          {new Date(createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+          {new Date(timestamp).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
         </Typography>
         <Typography variant="caption" color="text.secondary" noWrap>
-          {new Date(createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+          {new Date(timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
         </Typography>
       </TableCell>
+
+      
 
       {/* Amount & Type */}
       <TableCell align="right" sx={{ minWidth: 140 }}>
         <Typography variant="subtitle1" sx={{ color: transactionTypeColor, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
       
-          ₦{balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          ₦{amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
         </Typography>
       
       </TableCell>
 
       {/* Status */}
-      <TableCell align="center" sx={{ minWidth: 100 }}>
+      {/* <TableCell align="center" sx={{ minWidth: 100 }}>
         <Chip
           label={status}
           color={getStatusChipColor(status)}
           size="small"
           sx={{ textTransform: 'capitalize' }}
         />
-      </TableCell>
+      </TableCell> */}
 
       {/* Actions */}
-      <TableCell align="right" sx={{ width: 40 }}>
+      {/* <TableCell align="right" sx={{ width: 40 }}>
         <IconButton onClick={handleOpenMenu}>
           <Iconify icon="eva:more-vertical-fill" />
         </IconButton>
-      </TableCell>
+      </TableCell> */}
 
       {/* Popover Menu */}
-      <Popover
+      {/* <Popover
         open={!!open}
         anchorEl={open}
         onClose={handleCloseMenu}
         anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         PaperProps={{
-          sx: { width: 160, p: 0 }, // Slightly wider popover
+          sx: { width: 160, p: 0 },  
         }}
       >
         <MenuItem onClick={handleCloseMenu}>
-          <Iconify icon="solar:settings-bold-duotone" sx={{ mr: 2 }} /> {/* New icon for View Details */}
+          <Iconify icon="solar:settings-bold-duotone" sx={{ mr: 2 }} /> 
           View Details
         </MenuItem>
 
-        <MenuItem onClick={handleCloseMenu} sx={{ color: 'error.main' }}>
-          <Iconify icon="solar:settings-bold-duotone" sx={{ mr: 2 }} /> {/* New icon for Dispute */}
+        <MenuItem onClick={handleCloseMenu} sx={{ color: 'error.main' }}>  
           Dispute
         </MenuItem>
-      </Popover>
+      </Popover> */}
     </TableRow>
   );
 }

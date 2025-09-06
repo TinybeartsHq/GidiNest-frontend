@@ -12,23 +12,30 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
 
+
+
+
     <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.async = true;
+      (() => {
+        const s = document.createElement('script');
+        s.src = 'https://js.cuoral.com/inline.js';
+        s.defer = true;
+        s.dataset.cuoralKey = "2ea9c001-b352-4f5e-8779-24a8e6a021e2";
+        s.dataset.enable_user_intelligence = true;
+        s.dataset.enable_chat_widget = true;
 
-        // Pass your public key as a data attribute on the script tag
-        const public_key = "2ea9c001-b352-4f5e-8779-24a8e6a021e2";
-        const widgetUrl = 'https://js.cuoral.com/inline.js';
+        try {
+          const tm = JSON.parse(localStorage.getItem("user") || "{}");
+          if (tm.first_name) s.dataset.first_name = tm.first_name;
+          if (tm.last_name) s.dataset.last_name = tm.last_name;
+          if (tm.email) s.dataset.email = tm.email;
+        } catch (e) { }
 
-
-        script.dataset.cuoralKey = public_key;
-        script.src = widgetUrl;
-
-        document.head.appendChild(script);
-      });
+        document.head.appendChild(s);
+      })();
     </script>
+
+ 
     
   </body>
 </html>
