@@ -1,6 +1,7 @@
 import type { IconButtonProps } from '@mui/material/IconButton';
 
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -16,7 +17,7 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 import { useRouter, usePathname } from 'src/routes/hooks';
 
 import { _myAccount } from 'src/_mock';
-
+ 
 // ----------------------------------------------------------------------
 
 export type AccountPopoverProps = IconButtonProps & {
@@ -38,6 +39,9 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     setOpenPopover(event.currentTarget);
   }, []);
+
+
+  const { profile: userProfile, loading, error, updating } = useSelector((state: any) => state.profile);
 
   const handleClosePopover = useCallback(() => {
     setOpenPopover(null);
@@ -65,7 +69,8 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
         }}
         {...other}
       >
-        <Avatar src={_myAccount.photoURL} alt={_myAccount.displayName} sx={{ width: 1, height: 1 }}>
+        <Avatar src={userProfile?.image?"data:image/png;base64," + userProfile?.image: '/assets/images/avatars/avatar_default.jpg'} alt={_myAccount.displayName} sx={{ width: 1, height: 1 }}>
+
           {_myAccount.displayName.charAt(0).toUpperCase()}
         </Avatar>
       </IconButton>
@@ -84,11 +89,11 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
       >
         <Box sx={{ p: 2, pb: 1.5 }}>
           <Typography variant="subtitle2" noWrap>
-            {_myAccount?.displayName}
+            {userProfile?.first_name} {userProfile?.last_name}
           </Typography>
 
           <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-            {_myAccount?.email}
+            {userProfile?.email}
           </Typography>
         </Box>
 

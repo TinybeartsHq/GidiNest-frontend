@@ -27,7 +27,7 @@ export interface UserProfileData {
     phone: string;
     bvn: string;
     account_tier: 'Basic' | 'Standard' | 'Premium';
-    bvn_dob: string; // YYYY-MM-DD format usually
+    dob: string; // YYYY-MM-DD format usually
     is_verified: boolean;
     
     // Add any other fields your user profile might have

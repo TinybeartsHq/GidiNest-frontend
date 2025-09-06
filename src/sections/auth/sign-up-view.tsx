@@ -44,6 +44,10 @@ export function SignUpView() {
   const [otp, setOtp] = useState('');
   const [country, setCountry] = useState('');
   const [state, setState] = useState('');
+
+  const [dob, setDob] = useState('');
+  const [address, setAddress] = useState('');
+
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -128,10 +132,16 @@ export function SignUpView() {
   const handleCollectProfileDetails = useCallback(() => {
     dispatch(clearAuthError());
 
+    if (!address || !dob) {
+      console.error('Address and Dob are required.');
+      return;
+    }
+
     if (!country || !state) {
       console.error('Country and State are required.');
       return;
     }
+
 
     setCurrentStep('setPassword');
   }, [country, state, dispatch]);
@@ -166,6 +176,8 @@ export function SignUpView() {
         password,
         country,
         state,
+        address,
+        dob
       })
     );
 
@@ -177,9 +189,7 @@ export function SignUpView() {
     }
   }, [password, confirmPassword, sessionId, country, state, dispatch, router]);
 
-
-  // --- Render Forms based on currentStep ---
-
+ 
   const renderRegisterInput = (
     <Box
       component="form"
@@ -295,7 +305,31 @@ export function SignUpView() {
       component="form"
       onSubmit={(e) => { e.preventDefault(); handleCollectProfileDetails(); }}
       sx={{ display: 'flex', alignItems: 'flex-end', flexDirection: 'column' }}
-    >
+    >   
+
+      <TextField
+        fullWidth
+        label="Date of Birth"
+        name="dob"
+        type="date"
+        value={dob}
+        onChange={(e) => setDob(e.target.value)}
+        sx={{ mb: 3 }}
+        slotProps={{ inputLabel: { shrink: true } }}
+        required
+      />
+
+      <TextField
+        fullWidth
+        name="address"
+        label="Home Address"
+        value={address}
+        onChange={(e) => setAddress(e.target.value)}
+        sx={{ mb: 3 }}
+        slotProps={{ inputLabel: { shrink: true } }}
+        required
+      />
+
 
       <FormControl fullWidth sx={{ mb: 3 }} required>
         <InputLabel>Country</InputLabel>
@@ -308,8 +342,7 @@ export function SignUpView() {
             setState('');
           }}
         >
-          <MenuItem value="Ghana">Ghana</MenuItem>
-          <MenuItem value="Kenya">Kenya</MenuItem>
+        
           <MenuItem value="Nigeria">Nigeria</MenuItem>
         </Select>
       </FormControl>

@@ -1,5 +1,8 @@
 // src/redux/savings/savings.reducer.js
 import {
+    GET_WALLET_REQUEST,
+    GET_WALLET_SUCCESS,
+    GET_WALLET_FAILURE,
     CLEAR_SAVINGS_ERROR,
     INITIATE_DEPOSIT_REQUEST,
     INITIATE_DEPOSIT_SUCCESS,
@@ -20,9 +23,17 @@ import {
     GET_DASHBOARD_ANALYTICS_REQUEST,
     GET_DASHBOARD_ANALYTICS_SUCCESS,
     GET_DASHBOARD_ANALYTICS_FAILURE,
+
     GET_RECENT_TRANSACTIONS_REQUEST,
     GET_RECENT_TRANSACTIONS_SUCCESS,
     GET_RECENT_TRANSACTIONS_FAILURE,
+
+
+    INITIATE_WALLET_WITHDRAWAL_SUCCESS,
+    INITIATE_WALLET_WITHDRAWAL_REQUEST,
+    INITIATE_WALLET_WITHDRAWAL_FAILURE,
+
+
 } from './savings.types';
 
 const initialState = {
@@ -59,25 +70,30 @@ const savingsReducer = (state = initialState, action: { type: any; payload: any;
         case CREATE_SAVINGS_GOAL_REQUEST:
         case INITIATE_DEPOSIT_REQUEST:
         case INITIATE_WITHDRAWAL_REQUEST:
+        case INITIATE_WALLET_WITHDRAWAL_REQUEST:
+        case GET_WALLET_REQUEST:
             return { ...state, loading: true, error: null };
-
         case GET_SAVINGS_SUMMARY_SUCCESS:
             return { ...state, loading: false, summary: action.payload };
         case GET_RECENT_TRANSACTIONS_SUCCESS:
             return { ...state, loading: false, transactions: action.payload };
         case CREATE_SAVINGS_GOAL_SUCCESS:
             return { ...state, loading: false, goals: [...state.goals, action.payload] }; // Add new goal to array
+        case GET_WALLET_SUCCESS:
+            return { ...state, loading: false, wallet: action.payload };
         case INITIATE_DEPOSIT_SUCCESS:
         case INITIATE_WITHDRAWAL_SUCCESS:
-            return { ...state, loading: false }; // Loading done for actions
-
+        case INITIATE_WALLET_WITHDRAWAL_SUCCESS:
+            return { ...state, loading: false };
         case GET_SAVINGS_SUMMARY_FAILURE:
         case GET_RECENT_TRANSACTIONS_FAILURE:
         case CREATE_SAVINGS_GOAL_FAILURE:
         case INITIATE_DEPOSIT_FAILURE:
         case INITIATE_WITHDRAWAL_FAILURE:
+        case INITIATE_WALLET_WITHDRAWAL_FAILURE:
+        case GET_WALLET_FAILURE:
             return { ...state, loading: false, error: action.payload };
-
+   
         case CLEAR_SAVINGS_ERROR:
             return { ...state, error: null };
 

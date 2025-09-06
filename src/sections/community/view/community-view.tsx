@@ -93,19 +93,17 @@ export function CommunityView() { // Removed communityPosts prop
         }}
       >
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
-        Community Forum 🤝
+        Community
         </Typography>
-        <Button
+        {/* <Button
           variant="contained"
           color="primary"
           startIcon={<Iconify icon="mingcute:add-line" />}
-          // You might want to add an onClick handler here to navigate to a "Create New Post" page or open a modal
-          // For now, let's just make it a link:
           component={RouterLink}
           href="/community/new-post" // Assuming a route for creating new posts
         >
           Create a post
-        </Button>
+        </Button> */}
       </Box>
 
       {/* Error Alert */}

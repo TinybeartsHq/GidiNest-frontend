@@ -24,6 +24,9 @@ export const Logout = lazy(() => import('src/pages/auth/logout'));
 
 
 export const SavingsPage = lazy(() => import('src/pages/savings'));
+export const SingleSavingsGoalView = lazy(() => import('src/pages/savingsdetail'));
+
+
 export const TransactionsView = lazy(() => import('src/pages/transactions'));
 export const UserProfileView = lazy(() => import('src/pages/profile'));
 export const TipsView = lazy(() => import('src/pages/tips'));
@@ -63,6 +66,7 @@ export const routesSection: RouteObject[] = [
       { path: 'user', element: <UserPage /> },
       { path: 'products', element: <ProductsPage /> },
       { path: 'savings', element: <SavingsPage /> },
+      { path: 'savings/:id', element: <SingleSavingsGoalView /> },
       { path: 'community', element: <CommunityPage /> },
       { path: 'community/:id', element: <CommunityPostDetailPage /> },
       { path: 'transactions', element: <TransactionsView /> }, 

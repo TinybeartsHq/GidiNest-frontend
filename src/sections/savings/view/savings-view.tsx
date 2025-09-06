@@ -1,3 +1,5 @@
+// React Router Link
+// React Router Link
 import { useSelector, useDispatch } from 'react-redux';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 
@@ -34,14 +36,17 @@ import { useRouter } from 'src/routes/hooks';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
+import { FundsActionModal } from './fundmodal';
 import { AnalyticsWidgetSummary } from '../analytics-widget-summary';
 // Import your Redux actions
 import {
+  getWallet,
   getSavingsGoals,
   createSavingsGoal,
   clearSavingsError,
-  initiateWithdrawal,
   getRecentTransactions,
+  initiateWalletWithdrawal,
+  initiateWithdrawal
 } from '../../../redux/savings/savings.actions';
 
 // Import your AppDispatch type
@@ -63,11 +68,6 @@ const _nigerianBanks = [
 ];
 
 
-// Replace with your actual Paystack Public Key
-const PAYSTACK_PUBLIC_KEY = 'pk_test_YOUR_PAYSTACK_PUBLIC_KEY'; // ⚠️ IMPORTANT: Replace this with your actual Paystack Test/Live Public Key
-
-// ----------------------------------------------------------------------
-
 export function SavingsView() {
   const dispatch: AppDispatch = useDispatch();
   const router = useRouter();
@@ -77,6 +77,7 @@ export function SavingsView() {
     summary,
     goals, // This should be populated by getSavingsGoals action
     transactions,
+    wallet,
     loading,
     error,
   } = useSelector((state: any) => state.savings); // Adjust 'state.savings' to your actual Redux state path
@@ -87,6 +88,8 @@ export function SavingsView() {
   const [openDepositModal, setOpenDepositModal] = useState(false);
   const [openWithdrawModal, setOpenWithdrawModal] = useState(false);
   const [openCreateGoalModal, setOpenCreateGoalModal] = useState(false);
+  const [openGoalInfoModal, setOpenGoalInfoModal] = useState(false);
+  const [openFundsModal, setOpenFundsModal] = useState(false);
 
   // --- State for Deposit Form ---
   const [depositAmount, setDepositAmount] = useState('');
@@ -100,19 +103,20 @@ export function SavingsView() {
   // --- State for Create Goal Form ---
   const [goalName, setGoalName] = useState('');
   const [goalTargetAmount, setGoalTargetAmount] = useState('');
+  const [actionType, setActionType] = useState<'add' | 'withdraw'>('add'); // 'add' or 'withdraw'
+  const [goalData, setGoalData] = useState<any>(null);
 
-  // --- Effects to Fetch Data on Component Mount ---
+  
   useEffect(() => {
-    // Only fetch data if authenticated
     if (isAuthenticated) {
+      dispatch(getWallet());
       dispatch(getSavingsGoals());
       dispatch(getRecentTransactions());
-    } else if (isAuthenticated === false) { // If authentication status is explicitly false
-      router.push('/sign-in'); // Redirect to login page
+    } else if (isAuthenticated === false) {
+      router.push('/sign-in');
     }
   }, [dispatch, isAuthenticated, router]);
 
-  // --- Error Handling Cleanup ---
   // eslint-disable-next-line consistent-return
   useEffect(() => {
     if (error) {
@@ -139,28 +143,31 @@ export function SavingsView() {
     setWithdrawalBankCode('');
   }, []);
 
+
+  const handleCloseGoalInfoModal = useCallback(() => {
+    setOpenGoalInfoModal(false)
+  }, []);
+
+  const handleOpenAddFundsModal = () => {
+    // open another modal or trigger action to add funds from wallet
+    setActionType('add');
+    setOpenFundsModal(true);
+  };
+  const handleWithdrawToWallet = async () => {
+    // API call to withdraw goal funds into user's wallet
+    setActionType('withdraw');
+    setOpenFundsModal(true);
+  };
+
+
+  
+
   const handleOpenCreateGoalModal = useCallback(() => setOpenCreateGoalModal(true), []);
   const handleCloseCreateGoalModal = useCallback(() => {
     setOpenCreateGoalModal(false);
     setGoalName('');
     setGoalTargetAmount('');
   }, []);
-
-  // You'll need to dynamically get the user's email for the config
-  const userEmail = useSelector((state: any) => state.auth.user?.email || 'customer@example.com'); 
-
-
-
-  const handleSubmitDeposit = useCallback(() => {
-    if (parseFloat(depositAmount) <= 0 || isNaN(parseFloat(depositAmount))) {
-      alert('Please enter a valid deposit amount.');
-      return;
-    }
-
-    alert("Redirect to paystack")
-    // Initiate the Paystack payment popup
-    // initializePayment(handlePaystackSuccess, handlePaystackClose);
-  }, [depositAmount]);
 
   const handleSubmitWithdrawal = useCallback(async () => {
     if (parseFloat(withdrawalAmount) <= 0 || isNaN(parseFloat(withdrawalAmount)) || !withdrawalAccountNum || !withdrawalBankCode) {
@@ -169,13 +176,12 @@ export function SavingsView() {
     }
 
     // Call the Redux action for withdrawal
-    const result = await dispatch(initiateWithdrawal({
+    const result = await dispatch(initiateWalletWithdrawal({
       amount: parseFloat(withdrawalAmount),
-      accountNumber: withdrawalAccountNum,
-      bankCode: withdrawalBankCode,
-      // You might need to pass user ID from auth state here
+      account_number: withdrawalAccountNum,
+      bank_name: withdrawalBankCode,
     }));
-
+ 
     if (result.success) {
       alert(`Withdrawal of ${summary?.currency}${withdrawalAmount} to ${withdrawalAccountNum} initiated. Please note, this transaction is linked to your BVN for security.`);
       dispatch(getRecentTransactions()); // Refresh transactions
@@ -195,7 +201,6 @@ export function SavingsView() {
     const result = await dispatch(createSavingsGoal({
       name: goalName,
       target_amount: parseFloat(goalTargetAmount),
-      // Add any other default properties your backend expects, e.g., 'currentAmount: 0'
     }));
 
     if (result.success) {
@@ -222,9 +227,9 @@ export function SavingsView() {
   const handleWithdrawalBankChange = useCallback((event: { target: { value: string; }; }) => {
     const selectedBankValue = event.target.value;
     setWithdrawalBank(selectedBankValue);
-    const bank = _nigerianBanks.find(b => b.value === selectedBankValue);
+    const bank = _nigerianBanks.find(b => b.label === selectedBankValue);
     if (bank) {
-      setWithdrawalBankCode(bank.code);
+      setWithdrawalBankCode(bank.label);
     } else {
       setWithdrawalBankCode('');
     }
@@ -232,12 +237,14 @@ export function SavingsView() {
 
   const currentSummary = summary || { totalBalance: 0, currency: '₦', lastUpdated: 'N/A' };
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+   
   const goalsWithImages = useMemo(() => goals.map((goal: any) => ({
       ...goal,
       icon: `/assets/images/cover/cover-${Math.floor(Math.random() * 24) + 1}.webp`
     })), [goals]);
-  
+
+ 
+
   return (
     <DashboardContent>
       <Typography variant="h4" sx={{ mb: 2 }}>
@@ -259,12 +266,11 @@ export function SavingsView() {
         {/* Total Savings Balance Widget */}
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <AnalyticsWidgetSummary
-            title="Total Savings Balance"
-            percent={0} // This percentage would come from your API for a meaningful trend
-            total={formatCurrency(currentSummary.totalBalance, currentSummary.currency)}
+            title="Gidinest Wallet Balance"
+            percent={0}
+            total={formatCurrency(wallet?.wallet?.balance, currentSummary.currency)}
             icon={<img alt="Savings Balance" src="/assets/icons/glass/ic-glass-bag.svg" />}
             chart={{
-              // Placeholder chart data; replace with actual trend data from your backend
               categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
               series: [0, 0, 0, 0, 0, 0, 0, 0],
             }}
@@ -277,7 +283,7 @@ export function SavingsView() {
             <Typography variant="h6" sx={{ mb: 2, ml: 3 }}>Quick Actions</Typography>
             <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
               <Button
-                variant="contained"
+                variant="outlined"
                 color="primary"
                 size="large"
                 onClick={handleOpenDepositModal}
@@ -318,44 +324,72 @@ export function SavingsView() {
             </Alert>
           </Grid>
         ) : (
-            goalsWithImages.map((goal: any) => ( // Ensure your API returns goals in this structure
-            <Grid key={goal.id} size={{ xs: 12, sm: 6, md: 3 }}>
-              <Card>
-                <CardContent>
-                  <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-                    {/* Assuming goal.icon is available, otherwise use a default */}
-                    <Box component="img" src={goal.icon || '/assets/images/cover/cover-24.webp'} alt={goal.name} sx={{ width: 48, height: 48, borderRadius: 1.5, flexShrink: 0 }} />
-                      <Box>
-                        <Typography variant="subtitle1">{goal.name}</Typography>
-                        <Chip
-                          label={goal.status || 'Active'}
-                          color={goal.status?.toLowerCase() === 'paused' ? 'warning' : 'success'}
-                          size="small"
-                          sx={{ mt: 0.5, fontWeight: 500, textTransform: 'capitalize' }}
+            goalsWithImages.map((goal: any) => (
+              <Grid key={goal.id} size={{ xs: 12, sm:6, lg:3 }}>
+                <Card
+                  onClick={() => {
+                    setGoalData(goal);
+                    setOpenGoalInfoModal(true);
+                  }}
+                  sx={{
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: 6,
+                    },
+                  }}
+                >
+                  <CardContent>
+                    {/* Header: Goal Name & Status */}
+                    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+                      <Typography variant="h6" sx={{ fontWeight: 500 }}>
+                        {goal.name}
+                      </Typography>
+                      <Chip
+                        label={goal.status || 'Active'}
+                        color={goal.status?.toLowerCase() === 'paused' ? 'warning' : 'success'}
+                        size="small"
+                        sx={{ textTransform: 'capitalize' }}
+                      />
+                    </Stack>
+
+                    {/* Amounts */}
+                    <Stack spacing={0.5} sx={{ mb: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Current Balance
+                      </Typography>
+                      <Typography variant="h6" color="primary">
+                        {formatCurrency(goal.currentAmount, currentSummary.currency)}
+                      </Typography>
+
+                      <Typography variant="body2" color="text.secondary">
+                        Target: {formatCurrency(goal.target_amount, currentSummary.currency)}
+                      </Typography>
+                    </Stack>
+
+                    {/* Progress Bar */}
+                    <Box sx={{ mt: 1 }}>
+                      <Box sx={{ height: 8, borderRadius: 1, bgcolor: 'grey.300' }}>
+                        <Box
+                          sx={{
+                            height: '100%',
+                            width: `${Math.min(100, Math.floor((goal.currentAmount / goal.targetAmount) * 100)) || 0}%`,
+                            borderRadius: 1,
+                            bgcolor: 'primary.main',
+                            transition: 'width 0.3s ease-in-out',
+                          }}
                         />
                       </Box>
-                  </Stack>
-                  <Typography variant="h6" sx={{ color: 'primary.main' }}>
-                    {formatCurrency(goal.currentAmount, currentSummary.currency)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Target: {formatCurrency(goal.target_amount, currentSummary.currency)}
-                  </Typography>
-                  <Box sx={{ mt: 1, height: 8, borderRadius: 1, bgcolor: 'grey.300' }}>
-                    <Box sx={{
-                      height: '100%',
-                      width: `${Math.min(100, Math.floor((goal.currentAmount / goal.targetAmount) * 100)) || 0}%`, // Calculate and cap progress
-                      borderRadius: 1,
-                      bgcolor: 'primary.main'
-                    }} />
-                  </Box>
-                  <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'text.secondary' }}>
-                    {Math.min(100, Math.floor((goal.currentAmount / goal.targetAmount) * 100)) || 0}% progress
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))
+                      <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                        {Math.min(100, Math.floor((goal.currentAmount / goal.targetAmount) * 100)) || 0}% progress
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))
+
         )}
 
         {/* Savings History / Recent Transactions */}
@@ -416,58 +450,37 @@ export function SavingsView() {
 
         {/* Pagination (currently static, needs dynamic update based on API) */}
         <Pagination count={1} color="primary" sx={{ mt: 8, mx: 'auto', mb: 5 }} />
+
       </Grid>
 
       {/* --- Deposit Funds Modal --- */}
       <Dialog open={openDepositModal} onClose={handleCloseDepositModal} fullWidth maxWidth="sm">
-        <DialogTitle>Deposit Funds to GidiNest</DialogTitle>
+        <DialogTitle>Deposit Funds to your GidiNest Wallet</DialogTitle>
         <DialogContent dividers>
           <Alert severity="info" sx={{ mb: 2 }}>
             <AlertTitle>Bank Transfer Details</AlertTitle>
             Please transfer funds to the account below. Your GidiNest wallet will be credited automatically.
             <br />
             <br />
-            <strong>Account Name:</strong> GidiNest Holdings
+            <strong>Account Name:</strong> {wallet?.wallet?.account_name}
             <br />
-            <strong>Account Number:</strong> 1234567890 (Zenith Bank)
+            <strong>Account Number:</strong> {wallet?.wallet?.account_number}
             <br />
-            <strong>Reference:</strong> Your GidiNest User ID (e.g., GH12345)
-          </Alert>
+            <strong>Bank Name:</strong> {wallet?.wallet?.bank}
 
-          <Typography variant="h6" sx={{ mt: 4, mb: 2 }}>Or, Pay with Paystack</Typography>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Amount (₦)"
-            type="number"
-            fullWidth
-            variant="outlined"
-            value={depositAmount}
-            onChange={(e) => setDepositAmount(e.target.value)}
-            inputProps={{ min: 1 }}
-          />
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-            Powered by Paystack. Securely deposit using your card or bank.
-          </Typography>
+          </Alert>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDepositModal} color="inherit">
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmitDeposit}
-            variant="contained"
-            color="primary"
-            disabled={!depositAmount || parseFloat(depositAmount) <= 0 || loading}
-          >
-            {loading ? <CircularProgress size={24} /> : 'Proceed with Deposit'}
-          </Button>
+     
         </DialogActions>
       </Dialog>
 
       {/* --- Withdraw Funds Modal --- */}
       <Dialog open={openWithdrawModal} onClose={handleCloseWithdrawModal} fullWidth maxWidth="sm">
-        <DialogTitle>Withdraw Funds from GidiNest</DialogTitle>
+        <DialogTitle>Withdraw Funds from GidiNest Wallet</DialogTitle>
         <DialogContent dividers>
           <Alert severity="warning" sx={{ mb: 2 }}>
             <AlertTitle>Important Security Notice</AlertTitle>
@@ -477,7 +490,7 @@ export function SavingsView() {
           <TextField
             autoFocus
             margin="dense"
-            label="Amount (₦)"
+            label="Enter Amount (₦)"
             type="number"
             fullWidth
             variant="outlined"
@@ -506,7 +519,7 @@ export function SavingsView() {
               onChange={handleWithdrawalBankChange}
             >
               {_nigerianBanks.map((bank) => (
-                <MenuItem key={bank.value} value={bank.value}>
+                <MenuItem key={bank.value} value={bank.label}>
                   {bank.label}
                 </MenuItem>
               ))}
@@ -571,6 +584,157 @@ export function SavingsView() {
           </Button>
         </DialogActions>
       </Dialog>
+   
+      <Dialog
+        open={openGoalInfoModal}
+        onClose={handleCloseGoalInfoModal}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Savings Goal Details</DialogTitle>
+
+        <DialogContent dividers>
+          {/* Goal Info */}
+          <Typography variant="h6" gutterBottom>{goalData?.name}</Typography>
+
+          <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+            <Box>
+              <Typography variant="body2" color="text.secondary">Target Amount:</Typography>
+              <Typography variant="subtitle1" color="primary">
+                ₦{Number(goalData?.target_amount).toLocaleString()}
+              </Typography>
+            </Box>
+
+            <Box>
+              <Typography variant="body2" color="text.secondary">Current Amount:</Typography>
+              <Typography variant="subtitle1" color="success.main">
+                ₦{Number(goalData?.amount).toLocaleString()}
+              </Typography>
+            </Box>
+          </Stack>
+
+          <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+            <Box>
+              <Typography variant="body2" color="text.secondary">Interest Rate:</Typography>
+              <Typography variant="subtitle1">
+                {goalData?.interest_rate || 0}% / annum
+              </Typography>
+            </Box>
+
+            <Box>
+              <Typography variant="body2" color="text.secondary">Accrued Interest:</Typography>
+              <Typography variant="subtitle1">
+                ₦{Number(goalData?.accrued_interest || 0).toLocaleString()}
+              </Typography>
+            </Box>
+          </Stack>
+
+          {/* Optional: Progress Bar */}
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+              Progress: {Math.floor((goalData?.amount / goalData?.target_amount) * 100) || 0}%
+            </Typography>
+            <Box sx={{ height: 8, borderRadius: 1, bgcolor: 'grey.300' }}>
+              <Box sx={{
+                width: `${Math.min(100, Math.floor((goalData?.amount / goalData?.target_amount) * 100))}%`,
+                bgcolor: 'primary.main',
+                height: '100%',
+                borderRadius: 1
+              }} />
+            </Box>
+          </Box>
+
+          {/* Add / Withdraw Actions */}
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Actions
+            </Typography>
+
+            <Stack direction="row" spacing={2}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleOpenAddFundsModal} // opens modal or triggers flow to add from Gidinest wallet
+              >
+                Add Funds
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={handleWithdrawToWallet} // triggers withdraw to wallet
+              >
+                Withdraw
+              </Button>
+            </Stack>
+          </Box>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={handleCloseGoalInfoModal} color="inherit">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+
+
+      {openFundsModal && <FundsActionModal
+        open={openFundsModal}
+        onClose={() => setOpenFundsModal(false)}
+        actionType={actionType} // or "withdraw"
+        walletBalance={wallet?.wallet?.balance}
+        goalBalance={goalData?.amount}
+        goalId={goalData?.id}
+        loading={loading}
+        onSubmit={async (amount: any) => {
+ 
+          try {
+            if (actionType === 'add') {
+
+              // Call the Redux action for contribution
+              const result = await dispatch(initiateWithdrawal({
+                goal_id: goalData?.id,
+                amount: parseFloat(amount),
+                transaction_type: "contribution",
+                description: `Contribution to ${goalData.name} savings goal`,
+              }));
+
+              if (result.success) {
+                alert(`Deposit of ${summary?.currency}${amount} to ${goalData.name} initiated.`);
+             
+              } else {
+                alert(`Deposit failed: ${result.error || 'An unknown error occurred.'}`);
+              }
+            } else {
+              // Call the Redux action for withdrawal
+              const result = await dispatch(initiateWithdrawal({
+                goal_id: goalData?.id,
+                amount: parseFloat(amount),
+                transaction_type: "withdrawal",
+                description: `Contribution to ${goalData.name} savings goal`,
+              }));
+
+              if (result.success) {
+                alert(`Withdrawal of ${summary?.currency}${amount} from ${goalData.name} initiated.`);
+
+              } else {
+                alert(`Withdrawal failed: ${result.error || 'An unknown error occurred.'}`);
+              }
+            }
+          } catch (err: any) {
+            alert('An error occurred. Please try again.');
+            console.error('Funds action error:', err);
+          } finally {
+            dispatch(getRecentTransactions()); // Refresh transactions
+            setOpenFundsModal(false)
+          }
+        }}
+      />
+}
+
+
+
+
     </DashboardContent>
   );
 }

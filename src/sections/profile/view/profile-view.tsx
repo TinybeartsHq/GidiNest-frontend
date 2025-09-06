@@ -202,7 +202,7 @@ export function UserProfileView() {
           >
             <Avatar
               alt={`${userProfile.first_name} ${userProfile.last_name}`}
-              src={"data:image/png;base64," + userProfile.image || '/assets/images/avatars/avatar_default.jpg'} // Fallback avatar
+              src={"data:image/png;base64," + userProfile?.image || '/assets/images/avatars/avatar_default.jpg'} // Fallback avatar
               sx={{ width: 120, height: 120, mb: 2, border: `4px solid ${theme.palette.background.paper}`, boxShadow: theme.shadows[3] }}
             />
             <Typography variant="h6" gutterBottom>
@@ -279,7 +279,7 @@ export function UserProfileView() {
                   label="Date of Birth"
                   name="dob"
                   type="date"
-                  value={editedProfile?.bvn_dob || ''}
+                  value={editedProfile?.dob || ''}
                   onChange={handleFieldChange}
                   disabled
                   // disabled={!isEditing || updating}

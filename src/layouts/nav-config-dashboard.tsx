@@ -35,16 +35,6 @@ export const navData = [
   // },
 
   {
-    title: 'Community',
-    path: '/community',
-    icon: icon('ic-blog'),
-    info: (
-      <Label color="error" variant="inverted">
-        +3
-      </Label>
-    ),
-  },
-  {
     title: 'Transactions',
     path: '/transactions',
     icon: icon('ic-disabled'),
@@ -53,6 +43,17 @@ export const navData = [
     title: 'My Profile',
     path: '/profile',
     icon: icon('ic-user'),
+  },
+
+  {
+    title: 'Community',
+    path: '/community',
+    icon: icon('ic-blog'),
+    // info: (
+    //   <Label color="error" variant="inverted">
+    //     +3
+    //   </Label>
+    // ),
   },
   {
     title: 'Tips and FAQ',

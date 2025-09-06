@@ -23,6 +23,14 @@ import {
     GET_RECENT_TRANSACTIONS_REQUEST,
     GET_RECENT_TRANSACTIONS_SUCCESS,
     GET_RECENT_TRANSACTIONS_FAILURE,
+
+    GET_WALLET_REQUEST,
+    GET_WALLET_SUCCESS,
+    GET_WALLET_FAILURE,
+
+    INITIATE_WALLET_WITHDRAWAL_REQUEST,
+    INITIATE_WALLET_WITHDRAWAL_SUCCESS,
+    INITIATE_WALLET_WITHDRAWAL_FAILURE,
 } from './savings.types';
 
 // Action to get dashboard analytics
@@ -70,6 +78,32 @@ export const getSavingsGoals = () => async (dispatch: (arg0: { type: string; pay
         console.error('Error fetching savings goals:', error.response ? error.response.data : error.message);
         dispatch({
             type: GET_SAVINGS_GOALS_FAILURE,
+            payload: error.response?.data?.detail || error.message || 'Network Error',
+        });
+    }
+};
+
+
+// Action to get all wallet info
+export const getWallet = () => async (dispatch: (arg0: { type: string; payload?: any; }) => void) => {
+    dispatch({ type: GET_WALLET_REQUEST });
+    try {
+        const response = await apiClient.get('wallet/balance'); // Use apiClient
+        if (response.data.status) {
+            dispatch({
+                type: GET_WALLET_SUCCESS,
+                payload: response.data.data,
+            });
+        } else {
+            dispatch({
+                type: GET_WALLET_FAILURE,
+                payload: response.data.message || 'Failed to fetch savings goals.',
+            });
+        }
+    } catch (error: any) {
+        console.error('Error fetching wallet:', error.response ? error.response.data : error.message);
+        dispatch({
+            type: GET_WALLET_FAILURE,
             payload: error.response?.data?.detail || error.message || 'Network Error',
         });
     }
@@ -216,6 +250,42 @@ export const initiateWithdrawal = (withdrawalData: any) => async (dispatch: (arg
         return { success: false, error: error.response?.data?.detail || error.message || 'Network Error' };
     }
 };
+
+
+// Action to initiate withdrawal
+export const initiateWalletWithdrawal = (withdrawalData: any) => async (dispatch: (arg0: { type: string; payload?: any; }) => void) => {
+    dispatch({ type: INITIATE_WALLET_WITHDRAWAL_REQUEST });
+    try {
+        const response = await apiClient.post('wallet/withdraw/request', withdrawalData); // Example endpoint
+
+        if (response.data.status) {
+            dispatch({
+                type: INITIATE_WALLET_WITHDRAWAL_SUCCESS,
+                payload: response.data.data,
+            });
+
+            return { success: true };
+
+        } else {
+
+            dispatch({
+                type: INITIATE_WALLET_WITHDRAWAL_FAILURE,
+                payload: response.data.message || 'Failed to initiate withdrawal.',
+            });
+
+            return { success: false, error: response.data.message };
+        }
+    }catch (error: any) {
+        console.error('Error initiating withdrawal:', error.response ? error.response.data : error.message);
+        dispatch({
+            type: INITIATE_WALLET_WITHDRAWAL_FAILURE,
+            payload: error.response?.data?.detail || error.message || 'Network Error',
+        });
+        return { success: false, error: error.response?.data?.detail || error.message || 'Network Error' };
+    }
+};
+
+
 
 // Action to clear savings-related errors
 export const clearSavingsError = () => ({

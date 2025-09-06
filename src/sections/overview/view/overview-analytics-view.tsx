@@ -156,10 +156,6 @@ export function OverviewAnalyticsView() {
     goals_achieved_ytd_change_percent: 0.0,
   };
 
-
-  console.log(dashboardAnalytics)
-
-
   return (
     <DashboardContent maxWidth="xl">
       <Typography variant="h4" sx={{ mb: { xs: 3, md: 5 } }}>

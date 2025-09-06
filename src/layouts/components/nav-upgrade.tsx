@@ -37,16 +37,16 @@ export function NavUpgrade({ sx, ...other }: StackProps) {
         More features?
       </Typography> */}
 
-      <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+      {/* <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
      
         <Box component="strong" sx={{ color: 'text.primary' }}>
-        Are you having an issue?
+          Ready to explore our Loan features?
         </Box>
-      </Typography>
+      </Typography> */}
 
       <Box
         component="img"
-        alt="Minimal dashboard"
+        alt="Gidinest"
         src="/assets/illustrations/illustration-dashboard.webp"
         sx={{ width: 200, my: 2 }}
       />
@@ -57,7 +57,7 @@ export function NavUpgrade({ sx, ...other }: StackProps) {
         variant="contained"
         color="inherit"
       >
-       Contact Us
+       Join Wailist
       </Button>
     </Box>
   );
