@@ -183,7 +183,7 @@ export function SignUpView() {
 
     if (result.success) {
       console.log('User signed up and logged in successfully!');
-      router.push('/');
+      router.push('/dashboard');
     } else {
       console.error('Signup finalization failed:', result.error);
     }
@@ -502,7 +502,7 @@ export function SignUpView() {
           {currentStep === 'register' && (
             <>
               Already have an account?
-              <Link variant="subtitle2" sx={{ ml: 0.5, cursor: 'pointer' }} onClick={() => router.push('/sign-in')}>
+              <Link variant="subtitle2" sx={{ ml: 0.5, cursor: 'pointer' }} onClick={() => router.push('/')}>
                 Sign in
               </Link>
             </>

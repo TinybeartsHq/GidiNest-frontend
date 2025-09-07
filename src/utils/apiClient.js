@@ -5,7 +5,7 @@ import {
     logout
 } from '../redux/auth/auth.actions';
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api/v1/';
+const API_BASE_URL = 'https://api.gidinest.com/api/v1/';
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -36,7 +36,7 @@ export const setupResponseInterceptor = (store) => {
                 console.warn('Unauthorized request. Token might be invalid or expired.');
                 store.dispatch(logout());
                 // Redirect to sign-in page after logout
-                window.location.href = '/sign-in';
+                window.location.href = '/';
             }
             return Promise.reject(error);
         }

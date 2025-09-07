@@ -55,7 +55,7 @@ export function SignInView() {
 
     if (loginSuccessful) {
       console.log('User signed in successfully!');
-      router.push('/');
+      router.push('/dashboard');
     } else {
       console.error('Sign-in failed. Error handled by Redux state.');
     }
@@ -114,9 +114,9 @@ export function SignInView() {
         required
       />
 
-      <Link variant="body2" color="inherit" sx={{ mb: 1.5 }}>
+      {/* <Link variant="body2" color="inherit" sx={{ mb: 1.5 }}>
         Forgot password?
-      </Link>
+      </Link> */}
 
       <TextField
         fullWidth

@@ -35,7 +35,7 @@ export function SetPasswordView() {
 
     // Simulate password set successfully
     // On successful password setup, navigate to the dashboard or a success page
-    router.push('/'); // Navigate to the home/dashboard page after setting password
+    router.push('/dashboard'); // Navigate to the home/dashboard page after setting password
   }, [password, confirmPassword, router]);
 
   const renderSetPasswordForm = (

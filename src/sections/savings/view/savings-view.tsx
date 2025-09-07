@@ -113,7 +113,7 @@ export function SavingsView() {
       dispatch(getSavingsGoals());
       dispatch(getRecentTransactions());
     } else if (isAuthenticated === false) {
-      router.push('/sign-in');
+      router.push('/');
     }
   }, [dispatch, isAuthenticated, router]);
 

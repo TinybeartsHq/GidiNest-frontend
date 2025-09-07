@@ -52,12 +52,12 @@ export function NavUpgrade({ sx, ...other }: StackProps) {
       />
 
       <Button
-        href="#"
+        href="https://gidinest.com/"
         target="_blank"
         variant="contained"
         color="inherit"
       >
-       Join Wailist
+       Join Waitlist
       </Button>
     </Box>
   );

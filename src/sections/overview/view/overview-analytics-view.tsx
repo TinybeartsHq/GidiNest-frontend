@@ -84,6 +84,9 @@ export function OverviewAnalyticsView() {
     if (result.success) {
       setVerificationStatus('success');// Exit editing mode on successful save
       setIsAccountVerified(true);
+
+      await dispatch(fetchUserProfile());
+      
       // The Redux reducer will update userProfile, and the useEffect will resync editedProfile
     }
     else{
@@ -107,7 +110,7 @@ export function OverviewAnalyticsView() {
       dispatch(getDashboardAnalytics());
       dispatch(getSavingsGoals());
     } else if (isAuthenticated === false) {
-      router.push('/sign-in');
+      router.push('/');
     }
   }, [dispatch, isAuthenticated, router]);
 

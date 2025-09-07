@@ -119,7 +119,7 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
             justifyContent: 'center',  
           }}
         >
-          <img src="src/assets/icons/Logo 2.png" width="140" height="45" alt="Logo" />
+          <img src="/assets/icons/Logo 2.png" width="140" height="45" alt="Logo" />
         </Box>
       </div>
       {slots?.topArea}
