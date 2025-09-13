@@ -1,5 +1,6 @@
+import { toast } from 'react-toastify';
 import { useSelector, useDispatch } from 'react-redux';
-import React, { useState, useEffect, useCallback } from 'react';
+import  { useState, useEffect, useCallback } from 'react';
 
 import Grid from '@mui/material/Grid';
 import Dialog from '@mui/material/Dialog';
@@ -84,6 +85,8 @@ export function OverviewAnalyticsView() {
     if (result.success) {
       setVerificationStatus('success');// Exit editing mode on successful save
       setIsAccountVerified(true);
+
+      toast("Account verified successfully")
 
       await dispatch(fetchUserProfile());
       
@@ -223,7 +226,7 @@ export function OverviewAnalyticsView() {
         </Grid>
 
         {/* Row 2: Charts for Savings Distribution and Growth - Set to zeros/empty */}
-        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+        {/* <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <AnalyticsCurrentVisits
             title="Savings Distribution by Goal"
             chart={{
@@ -235,9 +238,9 @@ export function OverviewAnalyticsView() {
               ],
             }}
           />
-        </Grid>
+        </Grid> */}
 
-        <Grid size={{ xs: 12, md: 6, lg: 8 }}>
+        <Grid size={{ xs: 12, md: 12, lg: 12 }}>
           <AnalyticsWebsiteVisits
             title="Savings Growth Over Time"
             subheader="(Data currently unavailable)"
@@ -252,7 +255,7 @@ export function OverviewAnalyticsView() {
         </Grid>
 
         {/* Row 3: Goal Progress and Categories Performance - Set to zeros/empty */}
-        <Grid size={{ xs: 12, md: 6, lg: 8 }}>
+        <Grid size={{ xs: 12, md: 12, lg: 12 }}>
           <AnalyticsConversionRates
             title="Goal Progress Status"
             subheader="Overview of your savings goals"
@@ -265,7 +268,7 @@ export function OverviewAnalyticsView() {
             }}
           />
         </Grid>
-
+{/* 
         <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <AnalyticsCurrentSubject
             title="Savings Categories Performance"
@@ -278,7 +281,7 @@ export function OverviewAnalyticsView() {
               ],
             }}
           />
-        </Grid>
+        </Grid> */}
 
         {/* Row 4: Financial Tips and Recent Activity - Using _posts and _timeline */}
         <Grid size={{ xs: 12, md: 12, lg: 12 }}>

@@ -1,3 +1,4 @@
+import {  toast } from 'react-toastify';
 import { useSelector, useDispatch } from 'react-redux'; // Import Redux hooks
 import React, { useState, useEffect, useCallback } from 'react';
 // Import specific Lucide icons
@@ -95,7 +96,7 @@ export function UserProfileView() {
       const result = await dispatch(updateUserProfile(editedProfile));
       if (result.success) {
         setIsEditing(false); // Exit editing mode on successful save
-        // The Redux reducer will update userProfile, and the useEffect will resync editedProfile
+        toast("Profile Updated successfull")
       }
       // Error handling is managed by Redux state, which will display the Alert
     }
@@ -217,6 +218,12 @@ export function UserProfileView() {
               label={userProfile.has_bvn ? 'BVN Verified' : 'BVN Not Verified'}
               color={userProfile.has_bvn ? 'success' : 'warning'}
               icon={userProfile.has_bvn ? <ShieldCheck size={18} /> : <AlertCircle size={18} />}
+              sx={{ mb: 1 }}
+            />
+            <Chip
+              label={userProfile.email_verified ? 'Email Activated' : 'Email Not Activated'}
+              color={userProfile.email_verified ? 'success' : 'warning'}
+              icon={userProfile.email_verified ? <ShieldCheck size={18} /> : <AlertCircle size={18} />}
             />
           </Grid>
 
@@ -259,7 +266,7 @@ export function UserProfileView() {
                   type="email"
                   value={editedProfile?.email || ''}
                   onChange={handleFieldChange}
-                  disabled={!isEditing || updating}
+                  disabled
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }} >
@@ -282,7 +289,6 @@ export function UserProfileView() {
                   value={editedProfile?.dob || ''}
                   onChange={handleFieldChange}
                   disabled
-                  // disabled={!isEditing || updating}
                   InputLabelProps={{
                     shrink: true,
                   }}

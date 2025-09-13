@@ -29,7 +29,7 @@ export function SignInView() {
   const { loading, error } = useSelector((state: RootState) => state.auth);
 
   // State for login type and identifier
-  const [loginType, setLoginType] = useState<'email' | 'phone'>('email');
+  const [loginType, setLoginType] = useState<'email' | 'phone'>('phone');
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -82,7 +82,7 @@ export function SignInView() {
       }}
     >
       {/* Login Type Toggle */}
-      <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mb: 3 }}>
+      {/* <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mb: 3 }}>
         <ToggleButtonGroup
           value={loginType}
           exclusive
@@ -90,14 +90,15 @@ export function SignInView() {
           aria-label="login type"
           fullWidth
         >
-          <ToggleButton value="email" aria-label="sign in with email" sx={{ flexGrow: 1 }}>
-            Email
-          </ToggleButton>
           <ToggleButton value="phone" aria-label="sign in with phone number" sx={{ flexGrow: 1 }}>
             Phone Number
           </ToggleButton>
+          <ToggleButton value="email" aria-label="sign in with email" sx={{ flexGrow: 1 }}>
+            Email
+          </ToggleButton>
+ 
         </ToggleButtonGroup>
-      </Box>
+      </Box> */}
 
       {/* Dynamic Login Identifier Field */}
       <TextField
@@ -105,6 +106,7 @@ export function SignInView() {
         name={loginType === 'email' ? 'email' : 'phone_number'}
         label={loginType === 'email' ? 'Email address' : 'Phone Number'}
         value={loginIdentifier}
+        placeholder={loginType === 'email' ? 'Enter Your email address' : '08098XXXXXXX'}
         onChange={(e) => setLoginIdentifier(e.target.value)}
         type={loginType === 'email' ? 'email' : 'tel'} // 'tel' is better for mobile keyboards
         sx={{ mb: 3 }}

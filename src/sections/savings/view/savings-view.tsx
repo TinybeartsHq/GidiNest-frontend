@@ -1,9 +1,8 @@
 // React Router Link
-// React Router Link
+import { toast } from 'react-toastify';
 import { useSelector, useDispatch } from 'react-redux';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 
-import {Chip} from '@mui/material';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
@@ -24,6 +23,7 @@ import Pagination from '@mui/material/Pagination';
 import Typography from '@mui/material/Typography';
 import InputLabel from '@mui/material/InputLabel';
 import AlertTitle from '@mui/material/AlertTitle';
+import { ContentCopy } from '@mui/icons-material';
 import CardContent from '@mui/material/CardContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
@@ -31,6 +31,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
+import {Chip, Tooltip, Divider, IconButton, LinearProgress} from '@mui/material';
 
 import { useRouter } from 'src/routes/hooks';
 
@@ -44,9 +45,9 @@ import {
   getSavingsGoals,
   createSavingsGoal,
   clearSavingsError,
+  initiateWithdrawal,
   getRecentTransactions,
-  initiateWalletWithdrawal,
-  initiateWithdrawal
+  initiateWalletWithdrawal
 } from '../../../redux/savings/savings.actions';
 
 // Import your AppDispatch type
@@ -204,7 +205,8 @@ export function SavingsView() {
     }));
 
     if (result.success) {
-      // alert(`New savings goal "${goalName}" with a target of ${summary?.currency}${parseFloat(goalTargetAmount).toLocaleString()} created!`);
+      toast(`New savings goal "${goalName} created`)
+
       handleCloseCreateGoalModal();
       dispatch(getSavingsGoals()); // Refresh goals list to show the new goal
     } else {
@@ -266,7 +268,7 @@ export function SavingsView() {
         {/* Total Savings Balance Widget */}
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <AnalyticsWidgetSummary
-            title="Gidinest Wallet Balance"
+            title="GidiNest Wallet Balance"
             percent={0}
             total={formatCurrency(wallet?.wallet?.balance, currentSummary.currency)}
             icon={<img alt="Savings Balance" src="/assets/icons/glass/ic-glass-bag.svg" />}
@@ -456,26 +458,58 @@ export function SavingsView() {
 
       {/* --- Deposit Funds Modal --- */}
       <Dialog open={openDepositModal} onClose={handleCloseDepositModal} fullWidth maxWidth="sm">
-        <DialogTitle>Deposit Funds to your GidiNest Wallet</DialogTitle>
+        <DialogTitle>
+          Deposit Funds to your GidiNest Wallet
+        </DialogTitle>
+
         <DialogContent dividers>
-          <Alert severity="info" sx={{ mb: 2 }}>
+          <Alert severity="info" sx={{ mb: 3 }}>
             <AlertTitle>Bank Transfer Details</AlertTitle>
             Please transfer funds to the account below. Your GidiNest wallet will be credited automatically.
-            <br />
-            <br />
-            <strong>Account Name:</strong> {wallet?.wallet?.account_name}
-            <br />
-            <strong>Account Number:</strong> {wallet?.wallet?.account_number}
-            <br />
-            <strong>Bank Name:</strong> {wallet?.wallet?.bank}
-
           </Alert>
+
+          <Box sx={{
+            backgroundColor: '#f5f5f5',
+            borderRadius: 2,
+            p: 2,
+            mb: 2,
+            border: '1px solid #ddd'
+          }}>
+            <Stack spacing={2}>
+              <Box>
+                <Typography variant="body2" color="text.secondary">Account Name</Typography>
+                <Typography variant="h6" fontWeight="bold">{wallet?.wallet?.account_name || '—'}</Typography>
+              </Box>
+
+              <Box>
+                <Typography variant="body2" color="text.secondary">Account Number</Typography>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Typography variant="h6" fontWeight="bold">
+                    {wallet?.wallet?.account_number || '—'}
+                  </Typography>
+                  <Tooltip title="Copy account number">
+                    <IconButton
+                      onClick={() => navigator.clipboard.writeText(wallet?.wallet?.account_number || '')}
+                      size="small"
+                    >
+                      <ContentCopy fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+              </Box>
+
+              <Box>
+                <Typography variant="body2" color="text.secondary">Bank Name</Typography>
+                <Typography variant="h6" fontWeight="bold">{wallet?.wallet?.bank || '—'}</Typography>
+              </Box>
+            </Stack>
+          </Box>
         </DialogContent>
+
         <DialogActions>
           <Button onClick={handleCloseDepositModal} color="inherit">
-            Cancel
+            Close
           </Button>
-     
         </DialogActions>
       </Dialog>
 
@@ -549,7 +583,7 @@ export function SavingsView() {
           <TextField
             autoFocus
             margin="dense"
-            label="Goal Name (e.g., New Car, Dream Vacation)"
+            label="Goal Name (e.g., Baby Crib, Hospital bills)"
             type="text"
             fullWidth
             variant="outlined"
@@ -585,84 +619,108 @@ export function SavingsView() {
           </Button>
         </DialogActions>
       </Dialog>
-   
+      
+
+      {/* --- View Savings Goal Modal --- */}
       <Dialog
         open={openGoalInfoModal}
         onClose={handleCloseGoalInfoModal}
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle>Savings Goal Details</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 'bold', fontSize: '1.3rem', pb: 0 }}>
+          Savings Goal Overview
+        </DialogTitle>
 
-        <DialogContent dividers>
-          {/* Goal Info */}
-          <Typography variant="h6" gutterBottom>{goalData?.name}</Typography>
+        <DialogContent dividers sx={{ pt: 2 }}>
+          {/* Goal Name */}
+          <Typography variant="h5" fontWeight={600} gutterBottom>
+            {goalData?.name || "Unnamed Goal"}
+          </Typography>
 
-          <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-            <Box>
-              <Typography variant="body2" color="text.secondary">Target Amount:</Typography>
-              <Typography variant="subtitle1" color="primary">
-                ₦{Number(goalData?.target_amount).toLocaleString()}
+          {/* Goal Info Grid */}
+          <Grid container spacing={2} sx={{ mb: 2 }}>
+            <Grid sx={{ xs: 6 }}>
+              <Typography variant="body2" color="text.secondary">
+                Target Amount
               </Typography>
-            </Box>
-
-            <Box>
-              <Typography variant="body2" color="text.secondary">Current Amount:</Typography>
-              <Typography variant="subtitle1" color="success.main">
-                ₦{Number(goalData?.amount).toLocaleString()}
+              <Typography variant="subtitle1" color="primary" fontWeight={500}>
+                ₦{Number(goalData?.target_amount || 0).toLocaleString()}
               </Typography>
-            </Box>
-          </Stack>
+            </Grid>
 
-          <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-            <Box>
-              <Typography variant="body2" color="text.secondary">Interest Rate:</Typography>
+            <Grid sx={{ xs: 6 }}>
+              <Typography variant="body2" color="text.secondary">
+                Current Amount
+              </Typography>
+              <Typography variant="subtitle1" color="success.main" fontWeight={500}>
+                ₦{Number(goalData?.amount || 0).toLocaleString()}
+              </Typography>
+            </Grid>
+
+            <Grid sx={{ xs: 6 }}>
+              <Typography variant="body2" color="text.secondary">
+                Interest Rate
+              </Typography>
               <Typography variant="subtitle1">
-                {goalData?.interest_rate || 0}% / annum
+                {goalData?.interest_rate || 0}% <Typography variant="caption" component="span">/ annum</Typography>
               </Typography>
-            </Box>
+            </Grid>
 
-            <Box>
-              <Typography variant="body2" color="text.secondary">Accrued Interest:</Typography>
+            <Grid sx={{ xs: 6 }}>
+              <Typography variant="body2" color="text.secondary">
+                Accrued Interest
+              </Typography>
               <Typography variant="subtitle1">
                 ₦{Number(goalData?.accrued_interest || 0).toLocaleString()}
               </Typography>
-            </Box>
-          </Stack>
+            </Grid>
+          </Grid>
 
-          {/* Optional: Progress Bar */}
-          <Box sx={{ mb: 2 }}>
+          <Divider sx={{ my: 2 }} />
+
+          {/* Progress Bar */}
+          <Box sx={{ mb: 3 }}>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
               Progress: {Math.floor((goalData?.amount / goalData?.target_amount) * 100) || 0}%
             </Typography>
-            <Box sx={{ height: 8, borderRadius: 1, bgcolor: 'grey.300' }}>
-              <Box sx={{
-                width: `${Math.min(100, Math.floor((goalData?.amount / goalData?.target_amount) * 100))}%`,
-                bgcolor: 'primary.main',
-                height: '100%',
-                borderRadius: 1
-              }} />
-            </Box>
+
+            <LinearProgress
+              variant="determinate"
+              value={Math.min(100, Math.floor((goalData?.amount / goalData?.target_amount) * 100))}
+              sx={{
+                height: 10,
+                borderRadius: 5,
+                backgroundColor: 'grey.300',
+                '& .MuiLinearProgress-bar': {
+                  backgroundColor: 'primary.main',
+                },
+              }}
+            />
           </Box>
 
-          {/* Add / Withdraw Actions */}
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Actions
+          <Divider sx={{ mb: 2 }} />
+
+          {/* Actions */}
+          <Box>
+            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+              Available Actions
             </Typography>
 
             <Stack direction="row" spacing={2}>
               <Button
                 variant="contained"
                 color="primary"
-                onClick={handleOpenAddFundsModal} // opens modal or triggers flow to add from Gidinest wallet
+                onClick={handleOpenAddFundsModal}
+                fullWidth
               >
                 Add Funds
               </Button>
               <Button
                 variant="outlined"
                 color="secondary"
-                onClick={handleWithdrawToWallet} // triggers withdraw to wallet
+                onClick={handleWithdrawToWallet}
+                fullWidth
               >
                 Withdraw
               </Button>
@@ -701,8 +759,8 @@ export function SavingsView() {
               }));
 
               if (result.success) {
-                alert(`Deposit of ${summary?.currency}${amount} to ${goalData.name} initiated.`);
-             
+                toast(`Deposit of ${summary?.currency}${amount} to ${goalData.name} initiated.`)
+ 
               } else {
                 alert(`Deposit failed: ${result.error || 'An unknown error occurred.'}`);
               }
@@ -716,7 +774,8 @@ export function SavingsView() {
               }));
 
               if (result.success) {
-                alert(`Withdrawal of ${summary?.currency}${amount} from ${goalData.name} initiated.`);
+                toast(`Withdrawal of ${summary?.currency}${amount} from ${goalData.name} initiated.`)
+   
 
               } else {
                 alert(`Withdrawal failed: ${result.error || 'An unknown error occurred.'}`);

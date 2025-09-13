@@ -1,3 +1,4 @@
+import { toast } from 'react-toastify';
 import { useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -42,7 +43,7 @@ export function SignUpView() {
   const [first_name, setFirstName] = useState('');
   const [last_name, setLastName] = useState('');
   const [otp, setOtp] = useState('');
-  const [country, setCountry] = useState('');
+  const [country, setCountry] = useState('Nigeria');
   const [state, setState] = useState('');
 
   const [dob, setDob] = useState('');
@@ -76,6 +77,12 @@ export function SignUpView() {
 
     if ((!email && !phone_number) || !first_name || !last_name) {
       console.error('Email or phone number, first name, and last name are required for registration.');
+      toast('All fields are required')
+      return;
+    }
+
+    if (phone_number.length !== 11 ){
+      toast('Phone number must be 11 digits')
       return;
     }
 
@@ -319,33 +326,6 @@ export function SignUpView() {
         required
       />
 
-      <TextField
-        fullWidth
-        name="address"
-        label="Home Address"
-        value={address}
-        onChange={(e) => setAddress(e.target.value)}
-        sx={{ mb: 3 }}
-        slotProps={{ inputLabel: { shrink: true } }}
-        required
-      />
-
-
-      <FormControl fullWidth sx={{ mb: 3 }} required>
-        <InputLabel>Country</InputLabel>
-        <Select
-          name="country"
-          value={country}
-          label="Country"
-          onChange={(e) => {
-            setCountry(e.target.value);
-            setState('');
-          }}
-        >
-        
-          <MenuItem value="Nigeria">Nigeria</MenuItem>
-        </Select>
-      </FormControl>
 
       <FormControl fullWidth sx={{ mb: 3 }} required disabled={!country}>
         <InputLabel>State / Province</InputLabel>
@@ -360,6 +340,35 @@ export function SignUpView() {
           ))}
         </Select>
       </FormControl>
+
+
+      <TextField
+        fullWidth
+        name="address"
+        label="Home Address"
+        value={address}
+        onChange={(e) => setAddress(e.target.value)}
+        sx={{ mb: 3 }}
+        slotProps={{ inputLabel: { shrink: true } }}
+        required
+      />
+
+{/* 
+      <FormControl fullWidth sx={{ mb: 3 }} required>
+        <InputLabel>Country</InputLabel>
+        <Select
+          name="country"
+          value={country}
+          label="Country"
+          onChange={(e) => {
+            setCountry(e.target.value);
+            setState('');
+          }}
+        >
+        
+          <MenuItem value="Nigeria">Nigeria</MenuItem>
+        </Select>
+      </FormControl> */}
 
       {error && (
         <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
@@ -507,7 +516,7 @@ export function SignUpView() {
               </Link>
             </>
           )}
-          {currentStep === 'otp' && 'Enter the code sent to your provided contact methods.'}
+          {currentStep === 'otp' && `Enter the OTP sent to your ${phone_number} number (SMS)`}
           {currentStep === 'profileDetails' && 'Just a few more details to get started.'}
           {currentStep === 'setPassword' && 'Please set a strong password for your account.'}
         </Typography>
