@@ -143,8 +143,6 @@ export function CommunityPostDetailView() {
     </Stack>
   );
 
-  console.log(post)
-
   // --- Main Content Render (only if post is successfully loaded) ---
   return (
     <DashboardContent>

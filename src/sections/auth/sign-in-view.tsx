@@ -54,7 +54,6 @@ export function SignInView() {
     const loginSuccessful = await dispatch(loginUser(credentials));
 
     if (loginSuccessful) {
-      console.log('User signed in successfully!');
       router.push('/dashboard');
     } else {
       console.error('Sign-in failed. Error handled by Redux state.');

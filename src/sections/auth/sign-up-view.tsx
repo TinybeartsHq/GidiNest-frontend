@@ -138,7 +138,7 @@ export function SignUpView() {
   // --- Step 3: Handle Profile Details Collection (New Step) ---
   const handleCollectProfileDetails = useCallback(() => {
     dispatch(clearAuthError());
-
+ 
     if (!address || !dob) {
       console.error('Address and Dob are required.');
       return;
@@ -151,7 +151,7 @@ export function SignUpView() {
 
 
     setCurrentStep('setPassword');
-  }, [country, state, dispatch]);
+  }, [address, dob, country, state, dispatch]);
 
 
   // --- Step 4: Handle Finalizing Signup (Setting Password) ---
@@ -189,7 +189,6 @@ export function SignUpView() {
     );
 
     if (result.success) {
-      console.log('User signed up and logged in successfully!');
       router.push('/dashboard');
     } else {
       console.error('Signup finalization failed:', result.error);
@@ -347,7 +346,11 @@ export function SignUpView() {
         name="address"
         label="Home Address"
         value={address}
-        onChange={(e) => setAddress(e.target.value)}
+        type="text"
+        onChange={(e) => {
+          setAddress(e.target.value)
+         }
+        }
         sx={{ mb: 3 }}
         slotProps={{ inputLabel: { shrink: true } }}
         required

@@ -119,7 +119,6 @@ export function OverviewAnalyticsView() {
 
 
   const formatCurrency = (amount: string | number | null | undefined, currency = '₦') => {
-    console.log(amount)
     if (currency == "NGN") currency = '₦'
     if (amount === null || amount === undefined) return `${currency}0`;
     const numericAmount = parseFloat(String(amount));

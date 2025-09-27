@@ -59,7 +59,6 @@ export function UserProfileView() {
 
   // Sync Redux profile with local editedProfile when Redux profile updates
   useEffect(() => {
-    console.log(userProfile)
     if (userProfile) {
       setEditedProfile(userProfile);
     }

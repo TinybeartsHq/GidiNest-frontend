@@ -46,7 +46,6 @@ export function CommunityView() { // Removed communityPosts prop
   // Select community feed data, loading, and error states from Redux store
   const { feed: communityPosts, loading, error } = useSelector((state:any) => state.community);
 
-  console.log(communityPosts)
   const [sortBy, setSortBy] = useState('latest');
 
   const handleSort = useCallback((newSort: string) => {

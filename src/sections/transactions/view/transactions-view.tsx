@@ -136,7 +136,6 @@ export function TransactionsView() {
 
   const notFound = !dataFiltered.length && !!filterName && !loading; // Adjust notFound logic
 
-  console.log(dataFiltered)
   return (
     <DashboardContent>
       <Box

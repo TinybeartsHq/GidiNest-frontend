@@ -27,11 +27,7 @@ export function SetPasswordView() {
       return;
     }
 
-    // In a real application, you would send an API request here
-    // to your backend to save the user's new password.
-    // You would typically send the email (from the previous step)
-    // and the new password.
-    console.log('Setting password:', password);
+ 
 
     // Simulate password set successfully
     // On successful password setup, navigate to the dashboard or a success page
