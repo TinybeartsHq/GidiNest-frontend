@@ -18,6 +18,7 @@ export const CommunityPostDetailPage = lazy(() => import('src/pages/communitydet
 export const UserPage = lazy(() => import('src/pages/user'));
 export const SignInPage = lazy(() => import('src/pages/auth/sign-in'));
 export const SignUpPage = lazy(() => import('src/pages/auth/sign-up'));
+export const EmailActivationPage = lazy(() => import('src/pages/auth/email-activation'));
 export const ProductsPage = lazy(() => import('src/pages/products'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 export const Logout = lazy(() => import('src/pages/auth/logout'));
@@ -96,6 +97,14 @@ export const routesSection: RouteObject[] = [
     element: (
       <AuthLayout>
         <SignUpPage />
+      </AuthLayout>
+    ),
+  },
+  {
+    path: 'email/activation/:id',
+    element: (
+      <AuthLayout>
+        <EmailActivationPage />
       </AuthLayout>
     ),
   },

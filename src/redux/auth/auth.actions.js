@@ -103,6 +103,29 @@ export const verifyOtp = (otpData) => async (dispatch) => {
     }
 };
 
+
+export const activateUserByEmail = (emailData) => async (dispatch) => {
+    dispatch({ type: VERIFY_OTP_REQUEST });
+    try {
+        const response = await apiClient.post('onboarding/register/email/activation', emailData);
+        // Assuming API returns a temporary token or confirms email activation success
+        dispatch({
+            type: VERIFY_OTP_SUCCESS,
+            payload: response.data.message || 'Email Activated successfully. Proceed to finalize login.',
+        });
+        return { success: true, data: response.data };
+    } catch (error) {
+        const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.message || 'Email Activation failed.';
+        dispatch({ type: VERIFY_OTP_FAILURE, payload: errorMessage });
+        return { success: false, error: errorMessage };
+    }
+};
+
+
+
+
+
+
 // Finalize Signup (Step 3: User provides remaining details if any, and potentially temporary token from OTP)
 export const finalizeSignup = (finalData) => async (dispatch) => {
     dispatch({ type: FINALIZE_SIGNUP_REQUEST });
