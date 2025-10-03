@@ -287,6 +287,42 @@ export const initiateWalletWithdrawal = (withdrawalData: any) => async (dispatch
 
 
 
+// Action to validate account
+export const validateAccountNumber = (accountData: any) => async (dispatch: (arg0: { type: string; payload?: any; }) => void) => {
+    dispatch({ type: INITIATE_WALLET_WITHDRAWAL_REQUEST });
+    try {
+        const response = await apiClient.post('wallet/resolve-bank-account', accountData); // Example endpoint
+
+        if (response.data.status) {
+            dispatch({
+                type: INITIATE_WALLET_WITHDRAWAL_SUCCESS,
+                payload: response.data.data,
+            });
+
+            return { success: true, data: response.data };
+
+        } else {
+
+            dispatch({
+                type: INITIATE_WALLET_WITHDRAWAL_FAILURE,
+                payload: response.data.detail || 'Failed to validating account.',
+            });
+
+            return { success: false, error: response.data.message };
+        }
+    } catch (error: any) {
+        console.error('Error validating account:', error.response ? error.response.data : error.message);
+        dispatch({
+            type: INITIATE_WALLET_WITHDRAWAL_FAILURE,
+            payload: error.response?.data?.detail || error.message || 'Network Error',
+        });
+        return { success: false, error: error.response?.data?.detail || error.message || 'Network Error' };
+    }
+};
+
+
+
+
 // Action to clear savings-related errors
 export const clearSavingsError = () => ({
     type: CLEAR_SAVINGS_ERROR,

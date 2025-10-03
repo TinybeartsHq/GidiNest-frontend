@@ -36,7 +36,9 @@ export function AnalyticsNews({ title, subheader, list, sx, ...other }: Props) {
       <Scrollbar sx={{ minHeight: 405 }}>
         <Box sx={{ minWidth: 640 }}>
           {list.map((item) => (
-            <Item key={item.id} item={item} />
+            
+              <Item key={item.id} item={item} />
+ 
           ))}
         </Box>
       </Scrollbar>
@@ -84,7 +86,7 @@ function Item({ item, sx, ...other }: ItemProps) {
       />
 
       <ListItemText
-        primary={<Link color="inherit">{item.title}</Link>}
+        primary={<Link href="https://gidinest.com" target="_blank" color="inherit">{item.title}</Link>}
         secondary={item.description}
         slotProps={{
           primary: { noWrap: true },

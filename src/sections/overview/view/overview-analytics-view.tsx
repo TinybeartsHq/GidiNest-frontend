@@ -12,17 +12,12 @@ import { Box, Alert, Stack, Button, TextField, CircularProgress } from '@mui/mat
 
 import { useRouter } from 'src/routes/hooks';
 
-// Sticking to ONLY these existing mock data imports
-import { _posts, _tasks, _traffic } from 'src/_mock';
+import { _posts } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { AnalyticsNews } from '../analytics-news';
-import { AnalyticsTasks } from '../analytics-tasks';
-import { AnalyticsCurrentVisits } from '../analytics-current-visits';
 import { AnalyticsWebsiteVisits } from '../analytics-website-visits';
 import { AnalyticsWidgetSummary } from '../analytics-widget-summary';
-import { AnalyticsTrafficBySite } from '../analytics-traffic-by-site';
-import { AnalyticsCurrentSubject } from '../analytics-current-subject';
 import { AnalyticsConversionRates } from '../analytics-conversion-rates';
 import { updateBVN ,
   fetchUserProfile
@@ -300,7 +295,7 @@ export function OverviewAnalyticsView() {
       {/* BVN Verification Modal */}
       <Dialog
         open={openBvnModal && !isAccountVerified}
-        onClose={handleCloseBvnModal}
+        // onClose={handleCloseBvnModal}
         aria-labelledby="bvn-verification-title"
         disableEscapeKeyDown={verificationStatus === 'loading'}
         PaperProps={{
@@ -355,13 +350,13 @@ export function OverviewAnalyticsView() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button
+          {/* <Button
             onClick={handleCloseBvnModal}
             color="inherit"
             disabled={verificationStatus === 'loading'}
           >
             Later
-          </Button>
+          </Button> */}
           <Button
             onClick={handleVerifyBvn}
             variant="contained"

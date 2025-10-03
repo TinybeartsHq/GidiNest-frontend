@@ -35,6 +35,7 @@ import {Chip, Tooltip, Divider, IconButton, LinearProgress} from '@mui/material'
 
 import { useRouter } from 'src/routes/hooks';
 
+import { _nigerianBanks } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { FundsActionModal } from './fundmodal';
@@ -47,26 +48,12 @@ import {
   clearSavingsError,
   initiateWithdrawal,
   getRecentTransactions,
+  validateAccountNumber,
   initiateWalletWithdrawal
 } from '../../../redux/savings/savings.actions';
 
 // Import your AppDispatch type
 import type { AppDispatch } from '../../../redux/types'; // Make sure you have this type defined for dispatch
-
-// --- Mock Data (for banks, will likely come from an API in a real app or a static config) ---
-const _nigerianBanks = [
-  { value: 'access', label: 'Access Bank', code: '044' },
-  { value: 'zenith', label: 'Zenith Bank', code: '057' },
-  { value: 'gtb', label: 'Guaranty Trust Bank (GTBank)', code: '058' },
-  { value: 'uba', label: 'United Bank for Africa (UBA)', code: '033' },
-  { value: 'firstbank', label: 'First Bank of Nigeria', code: '011' },
-  { value: 'fcmb', label: 'FCMB', code: '214' },
-  { value: 'stanbic', label: 'Stanbic IBTC Bank', code: '221' },
-  { value: 'union', label: 'Union Bank', code: '032' },
-  { value: 'kuda', label: 'Kuda Bank', code: '000027' },
-  { value: 'palmpay', label: 'PalmPay (Microfinance Bank)', code: '120001' },
-  // Add more banks as needed
-];
 
 
 export function SavingsView() {
@@ -98,9 +85,12 @@ export function SavingsView() {
   // --- State for Withdrawal Form ---
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
   const [withdrawalAccountNum, setWithdrawalAccountNum] = useState('');
+  const [withdrawalAccountName, setWithdrawalAccountName] = useState('');
   const [withdrawalBank, setWithdrawalBank] = useState(''); // Stores the 'value' (e.g., 'zenith')
   const [withdrawalBankCode, setWithdrawalBankCode] = useState(''); // Stores the 'code' (e.g., '057')
+  const [withdrawalBankMainName, setWithdrawalBankMainName] = useState(''); 
 
+  
   // --- State for Create Goal Form ---
   const [goalName, setGoalName] = useState('');
   const [goalTargetAmount, setGoalTargetAmount] = useState('');
@@ -176,21 +166,39 @@ export function SavingsView() {
       return;
     }
 
-    // Call the Redux action for withdrawal
-    const result = await dispatch(initiateWalletWithdrawal({
-      amount: parseFloat(withdrawalAmount),
-      account_number: withdrawalAccountNum,
-      bank_name: withdrawalBankCode,
-    }));
- 
-    if (result.success) {
-      alert(`Withdrawal of ${summary?.currency}${withdrawalAmount} to ${withdrawalAccountNum} initiated. Please note, this transaction is linked to your BVN for security.`);
-      dispatch(getRecentTransactions()); // Refresh transactions
-      handleCloseWithdrawModal();
-    } else {
-      alert(`Withdrawal failed: ${result.error || 'An unknown error occurred.'}`);
+    if (!withdrawalAccountName){
+      // Call the Redux action for withdrawal
+      const result = await dispatch(validateAccountNumber({
+        account_number: withdrawalAccountNum,
+        bank_code: withdrawalBankCode,
+      }));
+      console.log(result)
+      if (result.success) {
+        setWithdrawalAccountName(result?.data?.account_details?.data?.account_name)
+      } else {
+        alert(`Account validation failed: ${result.error || 'An unknown error occurred.'}`);
+      }
+
+    }else{
+      // Call the Redux action for withdrawal
+      const result = await dispatch(initiateWalletWithdrawal({
+        amount: parseFloat(withdrawalAmount),
+        account_number: withdrawalAccountNum,
+        bank_name: withdrawalBankMainName,
+      }));
+
+      if (result.success) {
+        alert(`Withdrawal of ${summary?.currency}${withdrawalAmount} to ${withdrawalAccountNum} initiated. Please note, this transaction is linked to your BVN for security.`);
+        dispatch(getRecentTransactions()); // Refresh transactions
+        handleCloseWithdrawModal();
+      } else {
+        alert(`Withdrawal failed: ${result.error || 'An unknown error occurred.'}`);
+      }
     }
-  }, [withdrawalAmount, withdrawalAccountNum, withdrawalBankCode, handleCloseWithdrawModal, dispatch, summary?.currency]);
+    
+    
+
+  }, [withdrawalAmount, withdrawalAccountNum, withdrawalBankCode, withdrawalAccountName, handleCloseWithdrawModal, dispatch, summary?.currency]);
 
   const handleSubmitCreateGoal = useCallback(async () => {
     if (!goalName.trim() || parseFloat(goalTargetAmount) <= 0 || isNaN(parseFloat(goalTargetAmount))) {
@@ -229,9 +237,10 @@ export function SavingsView() {
   const handleWithdrawalBankChange = useCallback((event: { target: { value: string; }; }) => {
     const selectedBankValue = event.target.value;
     setWithdrawalBank(selectedBankValue);
-    const bank = _nigerianBanks.find(b => b.label === selectedBankValue);
+    const bank = _nigerianBanks.find(b => b.code === selectedBankValue);
     if (bank) {
-      setWithdrawalBankCode(bank.label);
+      setWithdrawalBankCode(bank.code);
+      setWithdrawalBankMainName(bank.label);
     } else {
       setWithdrawalBankCode('');
     }
@@ -481,6 +490,8 @@ export function SavingsView() {
                 <Typography variant="h6" fontWeight="bold">{wallet?.wallet?.account_name || '—'}</Typography>
               </Box>
 
+
+              
               <Box>
                 <Typography variant="body2" color="text.secondary">Account Number</Typography>
                 <Stack direction="row" alignItems="center" spacing={1}>
@@ -554,12 +565,27 @@ export function SavingsView() {
               onChange={handleWithdrawalBankChange}
             >
               {_nigerianBanks.map((bank) => (
-                <MenuItem key={bank.value} value={bank.label}>
+                <MenuItem key={bank.value} value={bank.code}>
                   {bank.label}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
+
+          {withdrawalAccountName && <TextField
+            margin="dense"
+            label="Account Name"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={withdrawalAccountName}
+            disabled
+            sx={{ mb: 2 }}
+          />
+          }
+
+
+          
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseWithdrawModal} color="inherit">
@@ -571,7 +597,7 @@ export function SavingsView() {
             color="primary"
             disabled={!withdrawalAmount || parseFloat(withdrawalAmount) <= 0 || !withdrawalAccountNum || !withdrawalBank || loading}
           >
-            {loading ? <CircularProgress size={24} /> : 'Submit Withdrawal'}
+            {loading ? <CircularProgress size={24} /> : (withdrawalAccountName ?'Submit Withdrawal':'Validate Account')}
           </Button>
         </DialogActions>
       </Dialog>

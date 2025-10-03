@@ -260,3 +260,47 @@ export const _notifications = [
     isUnRead: false,
   },
 ];
+
+
+
+
+
+
+
+// --- Mock Data (for banks, will likely come from an API in a real app or a static config) ---
+export const _nigerianBanks = [
+  { value: 'access', label: 'Access Bank', code: '044' },
+  { value: 'zenith', label: 'Zenith Bank', code: '057' },
+  { value: 'gtb', label: 'Guaranty Trust Bank (GTBank)', code: '058' },
+  { value: 'uba', label: 'United Bank for Africa (UBA)', code: '033' },
+  { value: 'firstbank', label: 'First Bank of Nigeria', code: '011' },
+  { value: 'fcmb', label: 'FCMB', code: '214' },
+  { value: 'stanbic', label: 'Stanbic IBTC Bank', code: '221' },
+  { value: 'union', label: 'Union Bank', code: '032' },
+  { value: 'kuda', label: 'Kuda Bank', code: '000027' },
+  { value: 'palmpay', label: 'PalmPay (Microfinance Bank)', code: '120001' },
+  { value: 'citibank', label: 'Citibank Nigeria', code: '023' },
+  { value: 'diamond', label: 'Diamond Bank', code: '063' },
+  { value: 'ecobank', label: 'Ecobank Nigeria', code: '050' },
+  { value: 'fidelity', label: 'Fidelity Bank', code: '070' },
+  { value: 'globus', label: 'Globus Bank', code: '076' },
+  { value: 'heritage', label: 'Heritage Bank', code: '030' },
+  { value: 'keystone', label: 'Keystone Bank', code: '082' },
+  { value: 'mutual', label: 'Mutual Trust Bank', code: '123' },
+  { value: 'providus', label: 'Providus Bank', code: '101' },
+  { value: 'wema', label: 'Wema Bank', code: '035' },
+  { value: 'polaris', label: 'Polaris Bank', code: '076' },
+  { value: 'jaiz', label: 'Jaiz Bank', code: '301' },
+  { value: 'unity', label: 'Unity Bank', code: '215' },
+  { value: 'accessmobile', label: 'Access Bank (Mobile)', code: '000001' },
+  { value: 'paycom', label: 'PayCom', code: '50111' },
+  { value: 'jaizbank', label: 'Jaiz Bank', code: '301' },
+  { value: 'diamondbank', label: 'Diamond Bank', code: '063' },
+  { value: 'silver', label: 'Silver Bank', code: '072' },
+  { value: 'agriculture', label: 'Agricultural Bank', code: '101' },
+  { value: 'suntrust', label: 'SunTrust Bank', code: '100' },
+  { value: 'standardchartered', label: 'Standard Chartered Bank', code: '068' },
+  { value: 'value', label: 'Value Bank', code: '502' },
+  { value: 'global', label: 'Global Bank', code: '506' },
+  { value: 'citadel', label: 'Citadel Bank', code: '112' },
+];
