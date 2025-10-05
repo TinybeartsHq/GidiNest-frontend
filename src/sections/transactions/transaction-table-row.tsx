@@ -20,10 +20,10 @@ import { Iconify } from 'src/components/iconify';
 // DEFINE AND EXPORT TransactionProps HERE
 export type TransactionProps = {
   id: string; // Unique ID for the row (original user ID, or a true unique transaction ID)
-  goal_name: string; // Repurposed for Transaction Description/Title
-  transaction_type: 'contribution' | 'withdrawal'; // Actual transaction status
-  timestamp: string; // Repurposed for Transaction Date/Time
-  goal_current_amount: number; // Repurposed for Transaction Amount
+  description: string; // Repurposed for Transaction Description/Title
+  transaction_type: 'credit' | 'debit'; // Actual transaction status
+  created_at: string; // Repurposed for Transaction Date/Time
+  wallet_account_number: number; // Repurposed for Transaction Amount
   amount: number; // Transaction Amount
 }
 
@@ -41,11 +41,10 @@ export function TransactionTableRow({
   const theme = useTheme(); // Access the theme for consistent colors
 
   const {
-    id,
-    goal_name,
+    description,
     transaction_type, // Transaction Description
-    timestamp, // Transaction Category
-    goal_current_amount, // Transaction Type (Debit/Credit)
+    created_at, // Transaction Category
+    wallet_account_number, // Transaction Type (Debit/Credit)
     amount
   } = row;
 
@@ -60,7 +59,7 @@ export function TransactionTableRow({
   }, []);
 
   // Determine color for transaction type
-  const transactionTypeColor = transaction_type === 'contribution' ? theme.palette.success.main : theme.palette.error.main;
+  const transactionTypeColor = transaction_type === 'credit' ? theme.palette.success.main : theme.palette.error.main;
   // Determine color for transaction status
   const transactionStatusColor =
     status === 'Completed'
@@ -99,10 +98,23 @@ export function TransactionTableRow({
 
       {/* Description & Category */}
       <TableCell sx={{ minWidth: 220 }}>
-        <Link color="inherit" underline="hover" noWrap variant="body2" sx={{ fontWeight: 'fontWeightMedium' }}>
-          {goal_name} {/* Main description, bolder for prominence */}
+        <Link
+          color="inherit"
+          underline="hover"
+          noWrap
+          variant="body2"
+          sx={{
+            fontWeight: 'fontWeightMedium',
+            display: 'block', // Ensure the Link takes up the entire width
+            whiteSpace: 'nowrap', // Prevent text from wrapping
+            overflow: 'hidden', // Hide overflow
+            textOverflow: 'ellipsis', // Add ellipsis when text overflows
+            maxWidth: 'calc(40ch)', // Limit the width to 20 characters (~240px)
+          }}
+          title={description} // Display the full text as a tooltip on hover
+        >
+          {description}
         </Link>
-   
       </TableCell>
 
       {/* Transaction ID & Avatar/Icon */}
@@ -118,10 +130,10 @@ export function TransactionTableRow({
       {/* Date & Time */}
       <TableCell sx={{ minWidth: 120 }}>
         <Typography variant="body2" noWrap>
-          {new Date(timestamp).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+          {new Date(created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
         </Typography>
         <Typography variant="caption" color="text.secondary" noWrap>
-          {new Date(timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+          {new Date(created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
         </Typography>
       </TableCell>
 

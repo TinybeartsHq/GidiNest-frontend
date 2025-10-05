@@ -293,7 +293,9 @@ export const _nigerianBanks = [
   { value: 'jaiz', label: 'Jaiz Bank', code: '301' },
   { value: 'unity', label: 'Unity Bank', code: '215' },
   { value: 'accessmobile', label: 'Access Bank (Mobile)', code: '000001' },
-  { value: 'paycom', label: 'PayCom', code: '50111' },
+  { value: 'moniepoint', label: 'Moniepoint MFB', code: '50515' },
+  { value: 'opay', label: 'OPay', code: '999992' },
+  { value: 'palmpay', label: 'PalmPay', code: '999991' },
   { value: 'jaizbank', label: 'Jaiz Bank', code: '301' },
   { value: 'diamondbank', label: 'Diamond Bank', code: '063' },
   { value: 'silver', label: 'Silver Bank', code: '072' },
@@ -303,4 +305,5 @@ export const _nigerianBanks = [
   { value: 'value', label: 'Value Bank', code: '502' },
   { value: 'global', label: 'Global Bank', code: '506' },
   { value: 'citadel', label: 'Citadel Bank', code: '112' },
-];
+  
+]; 

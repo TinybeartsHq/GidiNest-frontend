@@ -31,6 +31,15 @@ import {
     INITIATE_WALLET_WITHDRAWAL_REQUEST,
     INITIATE_WALLET_WITHDRAWAL_SUCCESS,
     INITIATE_WALLET_WITHDRAWAL_FAILURE,
+    DELETE_SAVINGS_GOAL_REQUEST,
+    DELETE_SAVINGS_GOAL_SUCCESS,
+    DELETE_SAVINGS_GOAL_FAILURE,
+
+    GET_SAVINGS_RECENT_TRANSACTIONS_REQUEST,
+    GET_SAVINGS_RECENT_TRANSACTIONS_SUCCESS,
+    GET_SAVINGS_RECENT_TRANSACTIONS_FAILURE,   
+
+
 } from './savings.types';
 
 // Action to get dashboard analytics
@@ -84,6 +93,34 @@ export const getSavingsGoals = () => async (dispatch: (arg0: { type: string; pay
 };
 
 
+export const deleteSavingsGoals = (goal_id: any) => async (dispatch: (arg0: { type: string; payload?: any; }) => void) => {
+    dispatch({ type: DELETE_SAVINGS_GOAL_REQUEST });
+    try {
+        const response = await apiClient.delete(`savings/goals/${goal_id}`); // Use apiClient
+        console.log(response)
+        if (response.data.status) {
+            dispatch({
+                type: DELETE_SAVINGS_GOAL_SUCCESS,
+                payload: goal_id,
+            });
+            return { success: true };
+        } else {
+            dispatch({
+                type: DELETE_SAVINGS_GOAL_FAILURE,
+                payload: response.data.message || 'Failed to delete savings goals.',
+            });
+            return { success: false, error: response.data.message };
+        }
+    } catch (error: any) {
+        dispatch({
+            type: DELETE_SAVINGS_GOAL_FAILURE,
+            payload: error.response?.data?.detail || error.message || 'Network Error',
+        });
+        return { success: false, error: error.response?.data?.detail || error.message || 'Network Error', };
+    }
+};
+
+
 // Action to get all wallet info
 export const getWallet = () => async (dispatch: (arg0: { type: string; payload?: any; }) => void) => {
     dispatch({ type: GET_WALLET_REQUEST });
@@ -108,8 +145,6 @@ export const getWallet = () => async (dispatch: (arg0: { type: string; payload?:
         });
     }
 };
-
-// --- New Actions for SavingsView ---
 
 // Action to get savings summary
 export const getSavingsSummary = () => async (dispatch: (arg0: { type: string; payload?: any; }) => void) => {
@@ -140,11 +175,11 @@ export const getSavingsSummary = () => async (dispatch: (arg0: { type: string; p
 export const getRecentTransactions = (page?: any, rowsPerPage?: any, orderBy?: string, order?: string, filterName?: string) => async (dispatch: (arg0: { type: string; payload?: any; }) => void) => {
     dispatch({ type: GET_RECENT_TRANSACTIONS_REQUEST });
     try {
-        const response = await apiClient.get('savings/history/all'); // Example endpoint
+        const response = await apiClient.get('wallet/history'); // Example endpoint
         if (response.data.status) {
             dispatch({
                 type: GET_RECENT_TRANSACTIONS_SUCCESS,
-                payload: response.data.data,
+                payload: response.data.data.transactions,
             });
         } else {
             dispatch({
@@ -160,6 +195,32 @@ export const getRecentTransactions = (page?: any, rowsPerPage?: any, orderBy?: s
         });
     }
 };
+
+
+export const getRecentSavingTransactions = (page?: any, rowsPerPage?: any, orderBy?: string, order?: string, filterName?: string) => async (dispatch: (arg0: { type: string; payload?: any; }) => void) => {
+    dispatch({ type: GET_SAVINGS_RECENT_TRANSACTIONS_REQUEST });
+    try {
+        const response = await apiClient.get('savings/history/all'); // Example endpoint
+        if (response.data.status) {
+            dispatch({
+                type: GET_SAVINGS_RECENT_TRANSACTIONS_SUCCESS,
+                payload: response.data.data,
+            });
+        } else {
+            dispatch({
+                type: GET_SAVINGS_RECENT_TRANSACTIONS_FAILURE,
+                payload: response.data.message || 'Failed to fetch recent transactions.',
+            });
+        }
+    } catch (error: any) {
+        console.error('Error fetching recent transactions:', error.response ? error.response.data : error.message);
+        dispatch({
+            type: GET_SAVINGS_RECENT_TRANSACTIONS_FAILURE,
+            payload: error.response?.data?.detail || error.message || 'Network Error',
+        });
+    }
+};
+
 
 // Action to create a savings goal
 export const createSavingsGoal = (goalData: any) => async (dispatch: (arg0: { type: string; payload?: any; }) => void) => {

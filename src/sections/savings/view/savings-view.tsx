@@ -47,14 +47,14 @@ import {
   createSavingsGoal,
   clearSavingsError,
   initiateWithdrawal,
-  getRecentTransactions,
+  getRecentSavingTransactions,
   validateAccountNumber,
-  initiateWalletWithdrawal
+  initiateWalletWithdrawal,
+  deleteSavingsGoals
 } from '../../../redux/savings/savings.actions';
 
 // Import your AppDispatch type
 import type { AppDispatch } from '../../../redux/types'; // Make sure you have this type defined for dispatch
-
 
 export function SavingsView() {
   const dispatch: AppDispatch = useDispatch();
@@ -64,7 +64,7 @@ export function SavingsView() {
   const {
     summary,
     goals, // This should be populated by getSavingsGoals action
-    transactions,
+    savings_transactions,
     wallet,
     loading,
     error,
@@ -102,7 +102,7 @@ export function SavingsView() {
     if (isAuthenticated) {
       dispatch(getWallet());
       dispatch(getSavingsGoals());
-      dispatch(getRecentTransactions());
+      dispatch(getRecentSavingTransactions());
     } else if (isAuthenticated === false) {
       router.push('/');
     }
@@ -151,6 +151,35 @@ export function SavingsView() {
   };
 
 
+  const handleSavingPlanDelete = async () => {
+    // First, check if the goal has a positive balance
+    if (goalData?.amount > 0) {
+      alert('You cannot delete a savings plan with a positive balance. Please withdraw the funds first.');
+      return;
+    }
+
+    // Show a confirmation dialog to the user
+    const isConfirmed = window.confirm(`Are you sure you want to delete the savings plan "${goalData?.name}"? This action cannot be undone.`);
+
+    if (!isConfirmed) {
+      return; // If the user clicks "Cancel", stop the function
+    }
+
+    // Proceed with deletion if confirmed
+    const result = await dispatch(deleteSavingsGoals(goalData.id));
+    console.log(result);
+
+    if (result.success) {
+      toast(`Savings goal "${goalData.name}" deleted successfully.`);
+      dispatch(getSavingsGoals()); // Refresh goals list to reflect deletion
+      handleCloseGoalInfoModal();
+    } else {
+      alert(`Account validation failed: ${result.error || 'An unknown error occurred.'}`);
+    }
+  };
+
+
+
   
 
   const handleOpenCreateGoalModal = useCallback(() => setOpenCreateGoalModal(true), []);
@@ -174,7 +203,7 @@ export function SavingsView() {
       }));
       console.log(result)
       if (result.success) {
-        setWithdrawalAccountName(result?.data?.account_details?.data?.account_name)
+        setWithdrawalAccountName(result?.data?.data?.data?.account_name)
       } else {
         alert(`Account validation failed: ${result.error || 'An unknown error occurred.'}`);
       }
@@ -189,7 +218,7 @@ export function SavingsView() {
 
       if (result.success) {
         alert(`Withdrawal of ${summary?.currency}${withdrawalAmount} to ${withdrawalAccountNum} initiated. Please note, this transaction is linked to your BVN for security.`);
-        dispatch(getRecentTransactions()); // Refresh transactions
+        dispatch(getRecentSavingTransactions()); // Refresh transactions
         handleCloseWithdrawModal();
       } else {
         alert(`Withdrawal failed: ${result.error || 'An unknown error occurred.'}`);
@@ -292,13 +321,28 @@ export function SavingsView() {
         <Grid size={{ xs: 12, sm: 6, md: 8 }}>
           <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', p: 3 }}>
             <Typography variant="h6" sx={{ mb: 2, ml: 3 }}>Quick Actions</Typography>
-            <Stack direction="row" spacing={3} justifyContent="center" flexWrap="wrap">
+            <Stack
+              direction={{ xs: "column", sm: "row" }} // Column for mobile, row for larger screens
+              spacing={3}
+              justifyContent="center"
+              flexWrap="wrap"
+              sx={{
+                '@media (max-width: 600px)': {
+                  // Optional: Additional styling for mobile if necessary
+                  justifyContent: 'center', // Center the buttons on mobile
+                },
+              }}
+            >
               <Button
                 variant="outlined"
                 color="primary"
                 size="large"
                 onClick={handleOpenDepositModal}
                 startIcon={<img alt="Deposit" src="/assets/icons/glass/ic-glass-buy.svg" style={{ width: 24, height: 24 }} />}
+                sx={{
+                  mb: { xs: 2, sm: 0 }, // Margin bottom for mobile
+                  width: { xs: "100%", sm: "auto" }, // Full width on mobile
+                }}
               >
                 Deposit Funds
               </Button>
@@ -308,6 +352,10 @@ export function SavingsView() {
                 size="large"
                 onClick={handleOpenWithdrawModal}
                 startIcon={<img alt="Withdrawal" src="/assets/icons/glass/ic-glass-message.svg" style={{ width: 24, height: 24 }} />}
+                sx={{
+                  mb: { xs: 2, sm: 0 }, // Margin bottom for mobile
+                  width: { xs: "100%", sm: "auto" }, // Full width on mobile
+                }}
               >
                 Withdraw Funds
               </Button>
@@ -317,6 +365,10 @@ export function SavingsView() {
                 size="large"
                 onClick={handleOpenCreateGoalModal}
                 startIcon={<img alt="New Goal" src="/assets/icons/glass/ic-glass-bag.svg" style={{ width: 24, height: 24 }} />}
+                sx={{
+                  mb: { xs: 2, sm: 0 }, // Margin bottom for mobile
+                  width: { xs: "100%", sm: "auto" }, // Full width on mobile
+                }}
               >
                 Create New Goal
               </Button>
@@ -371,7 +423,7 @@ export function SavingsView() {
                         Current Balance
                       </Typography>
                       <Typography variant="h6" color="primary">
-                        {formatCurrency(goal.currentAmount, currentSummary.currency)}
+                        {formatCurrency(goal.amount, currentSummary.currency)}
                       </Typography>
 
                       <Typography variant="body2" color="text.secondary">
@@ -385,7 +437,7 @@ export function SavingsView() {
                         <Box
                           sx={{
                             height: '100%',
-                            width: `${Math.min(100, Math.floor((goal.currentAmount / goal.targetAmount) * 100)) || 0}%`,
+                            width: `${Math.min(100, Math.floor((goal.amount / goal.target_amount) * 100)) || 0}%`,
                             borderRadius: 1,
                             bgcolor: 'primary.main',
                             transition: 'width 0.3s ease-in-out',
@@ -393,7 +445,7 @@ export function SavingsView() {
                         />
                       </Box>
                       <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                        {Math.min(100, Math.floor((goal.currentAmount / goal.targetAmount) * 100)) || 0}% progress
+                        {Math.min(100, Math.floor((goal.amount / goal.target_amount) * 100)) || 0}% progress
                       </Typography>
                     </Box>
                   </CardContent>
@@ -418,7 +470,7 @@ export function SavingsView() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {transactions.length === 0 && !loading ? (
+                  {savings_transactions.length === 0 && !loading ? (
                     <TableRow>
                       <TableCell colSpan={4} align="center">
                         <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>
@@ -427,7 +479,7 @@ export function SavingsView() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    transactions.map((row: any) => ( // Ensure your API returns transactions in this structure
+                      savings_transactions.map((row: any) => ( // Ensure your API returns transactions in this structure
                       <TableRow
                         key={row.id}
                         sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -438,7 +490,7 @@ export function SavingsView() {
                         <TableCell>
                           <Typography
                             variant="subtitle2"
-                            color={row.type === 'contribution' ? 'success.main' : 'error.main'}
+                            color={row.transaction_type === 'contribution' ? 'success.main' : 'error.main'}
                             sx={{ textTransform: 'capitalize' }}  
                           >
                             {row.transaction_type}
@@ -733,22 +785,53 @@ export function SavingsView() {
               Available Actions
             </Typography>
 
-            <Stack direction="row" spacing={2}>
+            <Stack
+              direction={{ xs: "column", sm: "row" }} // Column for mobile, row for larger screens
+              spacing={3}
+       
+              flexWrap="wrap"
+              sx={{
+                '@media (max-width: 600px)': {
+                  // Optional: Additional styling for mobile if necessary
+                  justifyContent: 'center', // Center the buttons on mobile
+                },
+              }}
+            >
               <Button
                 variant="contained"
                 color="primary"
                 onClick={handleOpenAddFundsModal}
                 fullWidth
+                sx={{
+                  mb: { xs: 2, sm: 0 }, // Margin bottom for mobile
+                  width: { xs: "100%", sm: "auto" }, // Full width on mobile
+                }}
               >
                 Add Funds
               </Button>
               <Button
                 variant="outlined"
-                color="secondary"
+                color="info"
                 onClick={handleWithdrawToWallet}
                 fullWidth
+                sx={{
+                  mb: { xs: 2, sm: 0 }, // Margin bottom for mobile
+                  width: { xs: "100%", sm: "auto" }, // Full width on mobile
+                }}
               >
                 Withdraw
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={handleSavingPlanDelete}
+                fullWidth
+                sx={{
+                  mb: { xs: 2, sm: 0 }, // Margin bottom for mobile
+                  width: { xs: "100%", sm: "auto" }, // Full width on mobile
+                }}
+              >
+                Delete Plan
               </Button>
             </Stack>
           </Box>
@@ -785,7 +868,11 @@ export function SavingsView() {
               }));
 
               if (result.success) {
-                toast(`Deposit of ${summary?.currency}${amount} to ${goalData.name} initiated.`)
+                
+                toast(`Deposit of ${amount} to ${goalData.name} initiated.`)
+                dispatch(getWallet());
+                dispatch(getSavingsGoals());
+                dispatch(getRecentSavingTransactions());
  
               } else {
                 alert(`Deposit failed: ${result.error || 'An unknown error occurred.'}`);
@@ -796,11 +883,15 @@ export function SavingsView() {
                 goal_id: goalData?.id,
                 amount: parseFloat(amount),
                 transaction_type: "withdrawal",
-                description: `Contribution to ${goalData.name} savings goal`,
+                description: `Withdrawal from ${goalData.name} savings goal`,
               }));
 
               if (result.success) {
-                toast(`Withdrawal of ${summary?.currency}${amount} from ${goalData.name} initiated.`)
+                toast(`Withdrawal of ${amount} from ${goalData.name} initiated.`)
+
+                dispatch(getWallet());
+                dispatch(getSavingsGoals());
+                dispatch(getRecentSavingTransactions());
    
 
               } else {
@@ -811,7 +902,7 @@ export function SavingsView() {
             alert('An error occurred. Please try again.');
             console.error('Funds action error:', err);
           } finally {
-            dispatch(getRecentTransactions()); // Refresh transactions
+            dispatch(getRecentSavingTransactions()); // Refresh transactions
             setOpenFundsModal(false)
           }
         }}

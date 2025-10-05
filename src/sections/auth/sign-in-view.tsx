@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -8,10 +8,8 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import ToggleButton from '@mui/material/ToggleButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 import { useRouter } from 'src/routes/hooks';
 
@@ -21,9 +19,9 @@ import { loginUser } from '../../redux/auth/auth.actions';
 
 import type { RootState, AppDispatch } from '../../redux/types';
 
-
 export function SignInView() {
   const router = useRouter();
+
   const dispatch: AppDispatch = useDispatch();
 
   const { loading, error } = useSelector((state: RootState) => state.auth);
@@ -33,6 +31,14 @@ export function SignInView() {
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    // Redirect to dashboard if already authenticated
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      window.location.href = '/dashboard';
+    }
+  }, []);
 
   const handleSignIn = useCallback(async () => {
     // Basic validation
@@ -45,16 +51,16 @@ export function SignInView() {
       login_type: 'password',
       password,
       login_with: loginType,
-      email: loginType === 'email' ? loginIdentifier: "",
+      email: loginType === 'email' ? loginIdentifier : "",
       phone: loginType === 'phone' ? loginIdentifier : "",
-      
-    
+
+
     };
 
     const loginSuccessful = await dispatch(loginUser(credentials));
 
     if (loginSuccessful) {
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
     } else {
       console.error('Sign-in failed. Error handled by Redux state.');
     }

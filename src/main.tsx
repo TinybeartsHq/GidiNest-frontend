@@ -7,7 +7,10 @@ import App from './app';
 import store from './redux/store'; // Adjust path if different
 import { routesSection } from './routes/sections';
 import { ErrorBoundary } from './routes/components';
+import { setupResponseInterceptor } from './utils/apiClient';
 
+
+setupResponseInterceptor(store);
 
 const router = createBrowserRouter([
   {

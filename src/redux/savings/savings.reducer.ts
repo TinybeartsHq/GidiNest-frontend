@@ -33,6 +33,18 @@ import {
     INITIATE_WALLET_WITHDRAWAL_REQUEST,
     INITIATE_WALLET_WITHDRAWAL_FAILURE,
 
+    DELETE_SAVINGS_GOAL_REQUEST,
+    DELETE_SAVINGS_GOAL_SUCCESS,
+    DELETE_SAVINGS_GOAL_FAILURE,
+ 
+
+
+    GET_SAVINGS_RECENT_TRANSACTIONS_REQUEST,
+    GET_SAVINGS_RECENT_TRANSACTIONS_SUCCESS,
+    GET_SAVINGS_RECENT_TRANSACTIONS_FAILURE,
+
+    
+
 
 } from './savings.types';
 
@@ -41,7 +53,8 @@ const initialState = {
     savingsGoals: [], // Renamed for clarity to avoid conflict with `goals` in SavingsView
     summary: null, // New: For total balance, etc.
     goals: [],     // New: For individual savings goals in SavingsView
-    transactions: [], // New: For recent transactions
+    transactions: [],  
+    savings_transactions: [], 
     loading: false,
     error: null,
 };
@@ -67,6 +80,7 @@ const savingsReducer = (state = initialState, action: { type: any; payload: any;
         // --- New Reducer Cases for SavingsView ---
         case GET_SAVINGS_SUMMARY_REQUEST:
         case GET_RECENT_TRANSACTIONS_REQUEST:
+        case GET_SAVINGS_RECENT_TRANSACTIONS_REQUEST:
         case CREATE_SAVINGS_GOAL_REQUEST:
         case INITIATE_DEPOSIT_REQUEST:
         case INITIATE_WITHDRAWAL_REQUEST:
@@ -77,6 +91,8 @@ const savingsReducer = (state = initialState, action: { type: any; payload: any;
             return { ...state, loading: false, summary: action.payload };
         case GET_RECENT_TRANSACTIONS_SUCCESS:
             return { ...state, loading: false, transactions: action.payload };
+        case GET_SAVINGS_RECENT_TRANSACTIONS_SUCCESS:
+            return { ...state, loading: false, savings_transactions: action.payload };
         case CREATE_SAVINGS_GOAL_SUCCESS:
             return { ...state, loading: false, goals: [...state.goals, action.payload] }; // Add new goal to array
         case GET_WALLET_SUCCESS:
@@ -87,11 +103,23 @@ const savingsReducer = (state = initialState, action: { type: any; payload: any;
             return { ...state, loading: false };
         case GET_SAVINGS_SUMMARY_FAILURE:
         case GET_RECENT_TRANSACTIONS_FAILURE:
+        case GET_SAVINGS_RECENT_TRANSACTIONS_FAILURE:
         case CREATE_SAVINGS_GOAL_FAILURE:
         case INITIATE_DEPOSIT_FAILURE:
         case INITIATE_WITHDRAWAL_FAILURE:
         case INITIATE_WALLET_WITHDRAWAL_FAILURE:
         case GET_WALLET_FAILURE:
+            return { ...state, loading: false, error: action.payload };
+        
+        case DELETE_SAVINGS_GOAL_REQUEST:
+            return { ...state, loading: true, error: null };
+        case DELETE_SAVINGS_GOAL_SUCCESS:
+            return {
+                ...state,
+                loading: false,
+                goals: state.goals.filter((goal: { id: any; }) => goal.id !== action.payload), // Remove deleted goal
+            };
+        case DELETE_SAVINGS_GOAL_FAILURE:
             return { ...state, loading: false, error: action.payload };
    
         case CLEAR_SAVINGS_ERROR:

@@ -36,7 +36,6 @@ export const setupResponseInterceptor = (store) => {
         (error) => {
             // If 401 Unauthorized, dispatch the logout action
             if (error.response && error.response.status === 401) {
-                console.warn('Unauthorized request. Token might be invalid or expired.');
                 store.dispatch(logout());
                 // Redirect to sign-in page after logout
                 window.location.href = '/';
