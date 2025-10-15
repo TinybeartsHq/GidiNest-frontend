@@ -191,7 +191,7 @@ export function SignInView() {
             sx={{ ml: 0.5, cursor: 'pointer' }}
             onClick={() => router.push('/register')}
           >
-            Get started
+            Register here
           </Link>
         </Typography>
       </Box>

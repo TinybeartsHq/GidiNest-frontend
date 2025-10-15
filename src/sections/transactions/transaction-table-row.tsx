@@ -29,14 +29,10 @@ export type TransactionProps = {
 
 type TransactionTableRowProps = {
   row: TransactionProps;
-  selected: boolean;
-  onSelectRow: () => void;
 };
 
 export function TransactionTableRow({
   row,
-  selected,
-  onSelectRow,
 }: TransactionTableRowProps) {
   const theme = useTheme(); // Access the theme for consistent colors
 
@@ -89,12 +85,8 @@ export function TransactionTableRow({
   };
 
   return (
-    <TableRow hover selected={selected}>
-      <TableCell padding="checkbox">
-        <Checkbox checked={selected} onChange={onSelectRow} />
-      </TableCell>
+    <TableRow hover>
 
-    
 
       {/* Description & Category */}
       <TableCell sx={{ minWidth: 220 }}>

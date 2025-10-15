@@ -17,7 +17,6 @@ type TransactionTableHeadProps = {
   order: 'asc' | 'desc';
   onSort: (id: string) => void;
   headLabel: Record<string, any>[]; // This still expects the structure from TransactionsView
-  onSelectAllRows: (checked: boolean) => void;
 };
 
 // Renamed component from UserTableHead to TransactionTableHead
@@ -28,21 +27,11 @@ export function TransactionTableHead({
   rowCount,
   headLabel,
   numSelected,
-  onSelectAllRows,
 }: TransactionTableHeadProps) { // Using the new type
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox">
-          <Checkbox
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-              onSelectAllRows(event.target.checked)
-            }
-          />
-        </TableCell>
-
+      
         {headLabel.map((headCell) => (
           <TableCell
             key={headCell.id}

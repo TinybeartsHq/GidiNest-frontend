@@ -42,7 +42,6 @@ export function TransactionsView() {
   // Get data from Redux store
   const {
     transactions,
-    totalTransactions,
     loading,
     error,
     currentPage,
@@ -159,12 +158,6 @@ export function TransactionsView() {
       </Box>
 
       <Card>
-        <TransactionTableToolbar
-          numSelected={selected.length}
-          filterName={filterName}
-          onFilterName={handleFilterName}
-        />
-
         {loading && transactions.length === 0 && ( // Show main loader if initial data is loading
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 3 }}>
             <CircularProgress />
@@ -195,7 +188,6 @@ export function TransactionsView() {
                 rowCount={transactions.length} // Pass current page row count for checkbox
                 numSelected={selected.length}
                 onSort={handleSort}
-                onSelectAllRows={(checked) => handleSelectAllRows(checked)}
                 headLabel={[
                   // { id: 'id', label: 'Transaction ID' },
                 
@@ -216,18 +208,15 @@ export function TransactionsView() {
                     <TransactionTableRow
                       key={row.id}
                       row={row}
-                      selected={selected.includes(row.id)}
-                      onSelectRow={() => handleSelectRow(row.id)}
                     />
                   ))}
-
-                {/* TableEmptyRows and TableNoData should ideally be shown based on `dataFiltered` and `loading` */}
+ 
                 {
                   // Show empty rows if there's no data AND no filter applied AND not loading
                   !loading && !filterName && transactions.length === 0 && (
                     <TableEmptyRows
                       height={68}
-                      emptyRows={emptyRows(page, rowsPerPage, totalTransactions)}
+                      emptyRows={emptyRows(page, rowsPerPage, transactions.length)}
                     />
                   )
                 }
@@ -240,9 +229,9 @@ export function TransactionsView() {
 
         <TablePagination
           component="div"
-          page={page}
-          count={totalTransactions} // Use totalTransactions from Redux for actual count
-          rowsPerPage={rowsPerPage}
+          page={1}
+          count={transactions.length} // Use totalTransactions from Redux for actual count
+          rowsPerPage={transactions.length-1}
           onPageChange={handleChangePage}
           rowsPerPageOptions={[5, 10, 25]}
           onRowsPerPageChange={handleChangeRowsPerPage}

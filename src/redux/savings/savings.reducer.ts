@@ -85,8 +85,9 @@ const savingsReducer = (state = initialState, action: { type: any; payload: any;
         case INITIATE_DEPOSIT_REQUEST:
         case INITIATE_WITHDRAWAL_REQUEST:
         case INITIATE_WALLET_WITHDRAWAL_REQUEST:
-        case GET_WALLET_REQUEST:
             return { ...state, loading: true, error: null };
+        case GET_WALLET_REQUEST:
+            return { ...state, error: null };
         case GET_SAVINGS_SUMMARY_SUCCESS:
             return { ...state, loading: false, summary: action.payload };
         case GET_RECENT_TRANSACTIONS_SUCCESS:
@@ -108,8 +109,9 @@ const savingsReducer = (state = initialState, action: { type: any; payload: any;
         case INITIATE_DEPOSIT_FAILURE:
         case INITIATE_WITHDRAWAL_FAILURE:
         case INITIATE_WALLET_WITHDRAWAL_FAILURE:
-        case GET_WALLET_FAILURE:
             return { ...state, loading: false, error: action.payload };
+        case GET_WALLET_FAILURE:
+            return { ...state, error: action.payload };
         
         case DELETE_SAVINGS_GOAL_REQUEST:
             return { ...state, loading: true, error: null };

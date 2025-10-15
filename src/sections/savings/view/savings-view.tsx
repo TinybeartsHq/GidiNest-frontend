@@ -98,15 +98,42 @@ export function SavingsView() {
   const [goalData, setGoalData] = useState<any>(null);
 
   
-  useEffect(() => {
-    if (isAuthenticated) {
-      dispatch(getWallet());
-      dispatch(getSavingsGoals());
-      dispatch(getRecentSavingTransactions());
-    } else if (isAuthenticated === false) {
-      router.push('/');
+ useEffect(() => {
+  let intervalId: NodeJS.Timeout;
+
+  function startPolling() {
+    if (document.visibilityState === 'visible') {
+      intervalId = setInterval(() => {
+        dispatch(getWallet());
+      }, 10000);
     }
-  }, [dispatch, isAuthenticated, router]);
+  }
+
+  function handleVisibilityChange() {
+    if (document.visibilityState === 'visible') {
+      dispatch(getWallet());
+      startPolling();
+    } else {
+      clearInterval(intervalId);
+    }
+  }
+
+  if (isAuthenticated) {
+    dispatch(getWallet());
+    dispatch(getSavingsGoals());
+    dispatch(getRecentSavingTransactions());
+    startPolling();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+  } else if (isAuthenticated === false) {
+    router.push('/');
+  }
+
+  return () => {
+    clearInterval(intervalId);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+  };
+}, [isAuthenticated, dispatch, router]);
+
 
   // eslint-disable-next-line consistent-return
   useEffect(() => {
@@ -214,10 +241,14 @@ export function SavingsView() {
         amount: parseFloat(withdrawalAmount),
         account_number: withdrawalAccountNum,
         bank_name: withdrawalBankMainName,
+        bank_account_name:withdrawalAccountName,
+        bank_code:withdrawalBankCode
       }));
 
+      console.log(result)
+
       if (result.success) {
-        alert(`Withdrawal of ${summary?.currency}${withdrawalAmount} to ${withdrawalAccountNum} initiated. Please note, this transaction is linked to your BVN for security.`);
+        alert(`Withdrawal of ${withdrawalAmount} to ${withdrawalAccountNum} initiated. Please note, this transaction is linked to your BVN for security.`);
         dispatch(getRecentSavingTransactions()); // Refresh transactions
         handleCloseWithdrawModal();
       } else {
@@ -470,15 +501,21 @@ export function SavingsView() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {savings_transactions.length === 0 && !loading ? (
+                  {loading ? (
                     <TableRow>
+                      <TableCell colSpan={4} align="center">
+                        <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>
+                         Loading your savings transactions....
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ):savings_transactions.length === 0?(<TableRow>
                       <TableCell colSpan={4} align="center">
                         <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>
                           No recent transactions found.
                         </Typography>
                       </TableCell>
-                    </TableRow>
-                  ) : (
+                    </TableRow>) : (
                       savings_transactions.map((row: any) => ( // Ensure your API returns transactions in this structure
                       <TableRow
                         key={row.id}
