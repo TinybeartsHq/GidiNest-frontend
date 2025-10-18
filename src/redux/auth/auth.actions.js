@@ -79,7 +79,10 @@ export const registerUser = (userData) => async (dispatch) => {
         });
         return { success: true, data: response.data };
     } catch (error) {
-        const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.message || 'Registration failed.';
+        console.log(error)
+        const errorMessage = 
+        error.response?.data?.detail || error.response?.data?.message 
+         || error.response?.data?.error || error.message || 'Registration failed.';
         dispatch({ type: REGISTER_FAILURE, payload: errorMessage });
         return { success: false, error: errorMessage };
     }
@@ -97,7 +100,7 @@ export const verifyOtp = (otpData) => async (dispatch) => {
         });
         return { success: true, data: response.data };
     } catch (error) {
-        const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.message || 'OTP verification failed.';
+        const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.response?.data?.error || error.message || 'OTP verification failed.';
         dispatch({ type: VERIFY_OTP_FAILURE, payload: errorMessage });
         return { success: false, error: errorMessage };
     }
@@ -115,7 +118,7 @@ export const activateUserByEmail = (emailData) => async (dispatch) => {
         });
         return { success: true, data: response.data };
     } catch (error) {
-        const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.message || 'Email Activation failed.';
+        const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.response?.data?.error || error.message || 'Email Activation failed.';
         dispatch({ type: VERIFY_OTP_FAILURE, payload: errorMessage });
         return { success: false, error: errorMessage };
     }
@@ -130,10 +133,7 @@ export const activateUserByEmail = (emailData) => async (dispatch) => {
 export const finalizeSignup = (finalData) => async (dispatch) => {
     dispatch({ type: FINALIZE_SIGNUP_REQUEST });
     try {
-        // This endpoint might take the temporary token from OTP verification
-        // and/or final user details like phone, address etc.
         const response = await apiClient.post('onboarding/register/complete', finalData); // Your finalize signup endpoint
-
   
         const user = response.data.data.user
         const refresh = response.data.data.token.refresh
@@ -146,11 +146,10 @@ export const finalizeSignup = (finalData) => async (dispatch) => {
             type: FINALIZE_SIGNUP_SUCCESS,
             payload: { user, message: response.data.message || 'Signup completed successfully.' },
         });
-        // After finalizing signup, the user is typically logged in
         dispatch({ type: SET_AUTHENTICATED, payload: true });
         return { success: true, data: response.data };
     } catch (error) {
-        const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.message || 'Signup finalization failed.';
+        const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.response?.data?.error || error.message || 'Signup finalization failed.';
         dispatch({ type: FINALIZE_SIGNUP_FAILURE, payload: errorMessage });
         return { success: false, error: errorMessage };
     }

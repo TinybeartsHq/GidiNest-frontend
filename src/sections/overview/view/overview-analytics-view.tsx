@@ -33,6 +33,8 @@ export function OverviewAnalyticsView() {
   const [bvn, setBvn] = useState('');
   // State for verification status (e.g., 'idle', 'loading', 'success', 'error')
   const [verificationStatus, setVerificationStatus] = useState('idle');
+  const [verificationError, setVerificationError] = useState(null);
+
   // State to simulate user verification status (this would come from auth context/backend)
   const [isAccountVerified, setIsAccountVerified] = useState(false); // Assume unverified initially for demo
 
@@ -77,6 +79,7 @@ export function OverviewAnalyticsView() {
     setVerificationStatus('loading');
 
     const result = await dispatch(updateBVN(bvn));
+    
     if (result.success) {
       setVerificationStatus('success');// Exit editing mode on successful save
       setIsAccountVerified(true);
@@ -89,6 +92,7 @@ export function OverviewAnalyticsView() {
     }
     else{
       setVerificationStatus('error');
+      setVerificationError(result.error)
       setIsAccountVerified(false);
     }
 
@@ -345,7 +349,7 @@ export function OverviewAnalyticsView() {
 
           {verificationStatus === 'error' && bvn.length === 11 && (
             <Alert severity="error" sx={{ mb: 2 }}>
-              Verification failed. Please check your BVN and try again.
+              {verificationError || "Verification failed. Please check your BVN and try again."}
             </Alert>
           )}
         </DialogContent>
