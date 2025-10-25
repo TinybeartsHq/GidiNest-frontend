@@ -1,25 +1,22 @@
 import Box from '@mui/material/Box';
 import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
 import TableHead from '@mui/material/TableHead';
 import TableCell from '@mui/material/TableCell';
 import TableSortLabel from '@mui/material/TableSortLabel';
 
 import { visuallyHidden } from './utils';
 
-// ----------------------------------------------------------------------
-
-// Renamed type to TransactionTableHeadProps for clarity
+ 
 type TransactionTableHeadProps = {
   orderBy: string;
   rowCount: number;
   numSelected: number;
   order: 'asc' | 'desc';
   onSort: (id: string) => void;
-  headLabel: Record<string, any>[]; // This still expects the structure from TransactionsView
+  headLabel: Record<string, any>[]; 
 };
 
-// Renamed component from UserTableHead to TransactionTableHead
+ 
 export function TransactionTableHead({
   order,
   onSort,
@@ -27,7 +24,7 @@ export function TransactionTableHead({
   rowCount,
   headLabel,
   numSelected,
-}: TransactionTableHeadProps) { // Using the new type
+}: TransactionTableHeadProps) {  
   return (
     <TableHead>
       <TableRow>

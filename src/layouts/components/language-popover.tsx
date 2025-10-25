@@ -9,7 +9,7 @@ import MenuList from '@mui/material/MenuList';
 import IconButton from '@mui/material/IconButton';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
-// ----------------------------------------------------------------------
+
 
 export type LanguagePopoverProps = IconButtonProps & {
   data?: {

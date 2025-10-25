@@ -10,9 +10,7 @@ import type {
   PaletteColorExtend,
   TypeBackgroundExtend,
 } from './core/palette';
-
-// ----------------------------------------------------------------------
-
+ 
 /** **************************************
  * EXTEND CORE
  * Palette, typography, shadows...

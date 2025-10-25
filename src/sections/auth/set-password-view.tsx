@@ -11,7 +11,7 @@ import { useRouter } from 'src/routes/hooks';
 
 import { Iconify } from 'src/components/iconify';
 
-// ----------------------------------------------------------------------
+
 
 export function SetPasswordView() {
   const router = useRouter();

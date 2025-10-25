@@ -7,7 +7,7 @@ import { useTheme } from '@mui/material/styles';
 
 import type { ChartOptions } from './types';
 
-// ----------------------------------------------------------------------
+
 
 export function useChart(updatedOptions?: ChartOptions): ChartOptions {
   const theme = useTheme();
@@ -17,7 +17,7 @@ export function useChart(updatedOptions?: ChartOptions): ChartOptions {
   return merge(baseOptions, updatedOptions ?? {});
 }
 
-// ----------------------------------------------------------------------
+
 
 const baseChartOptions = (theme: Theme): ChartOptions => {
   const LABEL_TOTAL = {

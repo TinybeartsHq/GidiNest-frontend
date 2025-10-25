@@ -4,7 +4,7 @@ import { styled } from '@mui/material/styles';
 
 import { colorPreviewClasses } from './classes';
 
-// ----------------------------------------------------------------------
+
 
 export type ColorPreviewSlotProps = {
   item?: React.ComponentProps<typeof ItemRoot>;
@@ -66,7 +66,7 @@ export function ColorPreview({
   );
 }
 
-// ----------------------------------------------------------------------
+
 
 const ColorPreviewRoot = styled('ul')(() => ({
   display: 'flex',

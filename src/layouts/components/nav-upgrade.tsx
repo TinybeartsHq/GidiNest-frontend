@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
-// ----------------------------------------------------------------------
+
 
 export function NavUpgrade({ sx, ...other }: StackProps) {
   return (

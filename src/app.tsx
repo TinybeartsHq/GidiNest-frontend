@@ -6,8 +6,7 @@ import { ToastContainer } from 'react-toastify';
 import { usePathname } from 'src/routes/hooks';
 
 import { ThemeProvider } from 'src/theme/theme-provider';
-// ----------------------------------------------------------------------
-
+ 
 type AppProps = {
   children: React.ReactNode;
 };
@@ -30,7 +29,7 @@ export default function App({ children }: AppProps) {
         draggable
         pauseOnHover
         toastStyle={{
-          backgroundColor: '#6b146d', // or any neutral color
+          backgroundColor: '#6b146d',
           color: '#ffffff',
         }}
       />
@@ -38,9 +37,7 @@ export default function App({ children }: AppProps) {
     </ThemeProvider>
   );
 }
-
-// ----------------------------------------------------------------------
-
+ 
 function useScrollToTop() {
   const pathname = usePathname();
 

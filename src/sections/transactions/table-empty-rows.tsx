@@ -3,7 +3,7 @@ import type { TableRowProps } from '@mui/material/TableRow';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 
-// ----------------------------------------------------------------------
+
 
 type TableEmptyRowsProps = TableRowProps & {
   emptyRows: number;

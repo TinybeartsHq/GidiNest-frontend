@@ -8,7 +8,7 @@ import type {
 
 import type { CustomShadows } from './core/custom-shadows';
 
-// ----------------------------------------------------------------------
+
 
 /**
  * Theme options

@@ -7,7 +7,7 @@ import { CONFIG } from 'src/config-global';
 import { logout } from 'src/redux/auth/auth.actions';
 
 
-// ----------------------------------------------------------------------
+
 
 export default function Page() {
 

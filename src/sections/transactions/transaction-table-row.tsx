@@ -1,30 +1,19 @@
 import { useState, useCallback } from 'react';
 
 import Link from '@mui/material/Link';
-import Chip from '@mui/material/Chip';
-import Stack from '@mui/material/Stack';
-import Avatar from '@mui/material/Avatar';
-import Popover from '@mui/material/Popover';
 import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
-import MenuItem from '@mui/material/MenuItem';
 import TableCell from '@mui/material/TableCell';
-import { useTheme } from '@mui/material/styles'; // Import useTheme for theme access
+import { useTheme } from '@mui/material/styles'; 
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+ 
 
-import { Iconify } from 'src/components/iconify';
-
-// ----------------------------------------------------------------------
-
-// DEFINE AND EXPORT TransactionProps HERE
 export type TransactionProps = {
-  id: string; // Unique ID for the row (original user ID, or a true unique transaction ID)
-  description: string; // Repurposed for Transaction Description/Title
-  transaction_type: 'credit' | 'debit'; // Actual transaction status
-  created_at: string; // Repurposed for Transaction Date/Time
-  wallet_account_number: number; // Repurposed for Transaction Amount
-  amount: number; // Transaction Amount
+  id: string;  
+  description: string;  
+  transaction_type: 'credit' | 'debit'; 
+  created_at: string; 
+  wallet_account_number: number;  
+  amount: number;
 }
 
 type TransactionTableRowProps = {
@@ -34,13 +23,13 @@ type TransactionTableRowProps = {
 export function TransactionTableRow({
   row,
 }: TransactionTableRowProps) {
-  const theme = useTheme(); // Access the theme for consistent colors
+  const theme = useTheme();  
 
   const {
     description,
-    transaction_type, // Transaction Description
-    created_at, // Transaction Category
-    wallet_account_number, // Transaction Type (Debit/Credit)
+    transaction_type, 
+    created_at,  
+    wallet_account_number,
     amount
   } = row;
 
@@ -54,9 +43,9 @@ export function TransactionTableRow({
     setOpen(null);
   }, []);
 
-  // Determine color for transaction type
+
   const transactionTypeColor = transaction_type === 'credit' ? theme.palette.success.main : theme.palette.error.main;
-  // Determine color for transaction status
+
   const transactionStatusColor =
     status === 'Completed'
       ? theme.palette.success.main
@@ -79,9 +68,9 @@ export function TransactionTableRow({
 
   const getTransactionTypeIcon = (type: string) => {
     if (type === 'Credit') {
-      return 'solar:eye-bold'; // Icon for money coming in
+      return 'solar:eye-bold'; 
     }
-    return 'solar:eye-bold'; // Icon for money going out
+    return 'solar:eye-bold';  
   };
 
   return (
@@ -97,13 +86,13 @@ export function TransactionTableRow({
           variant="body2"
           sx={{
             fontWeight: 'fontWeightMedium',
-            display: 'block', // Ensure the Link takes up the entire width
-            whiteSpace: 'nowrap', // Prevent text from wrapping
-            overflow: 'hidden', // Hide overflow
-            textOverflow: 'ellipsis', // Add ellipsis when text overflows
-            maxWidth: 'calc(40ch)', // Limit the width to 20 characters (~240px)
+            display: 'block',  
+            whiteSpace: 'nowrap', 
+            overflow: 'hidden', 
+            textOverflow: 'ellipsis', 
+            maxWidth: 'calc(40ch)', 
           }}
-          title={description} // Display the full text as a tooltip on hover
+          title={description}  
         >
           {description}
         </Link>

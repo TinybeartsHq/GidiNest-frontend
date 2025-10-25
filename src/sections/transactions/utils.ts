@@ -1,6 +1,6 @@
 import type { TransactionProps } from './transaction-table-row';
 
-// ----------------------------------------------------------------------
+
 
 export const visuallyHidden = {
   border: 0,
@@ -14,13 +14,13 @@ export const visuallyHidden = {
   clip: 'rect(0 0 0 0)',
 } as const;
 
-// ----------------------------------------------------------------------
+
 
 export function emptyRows(page: number, rowsPerPage: number, arrayLength: number) {
   return page ? Math.max(0, (1 + page) * rowsPerPage - arrayLength) : 0;
 }
 
-// ----------------------------------------------------------------------
+
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -32,7 +32,7 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   return 0;
 }
 
-// ----------------------------------------------------------------------
+
 
 export function getComparator<Key extends keyof any>(
   order: 'asc' | 'desc',
@@ -50,7 +50,7 @@ export function getComparator<Key extends keyof any>(
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-// ----------------------------------------------------------------------
+
 
 type ApplyFilterProps = {
   inputData: TransactionProps[];

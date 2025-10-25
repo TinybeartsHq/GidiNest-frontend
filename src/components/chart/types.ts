@@ -1,7 +1,7 @@
 import type { Theme, SxProps } from '@mui/material/styles';
 import type { Props as ApexProps } from 'react-apexcharts';
 
-// ----------------------------------------------------------------------
+
 
 export type ChartOptions = ApexProps['options'];
 

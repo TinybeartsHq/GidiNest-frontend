@@ -1,7 +1,7 @@
-import {  toast } from 'react-toastify';
-import { useSelector, useDispatch } from 'react-redux'; // Import Redux hooks
+/* eslint-disable consistent-return */
+import { toast } from 'react-toastify';
+import { useSelector, useDispatch } from 'react-redux';
 import React, { useState, useEffect, useCallback } from 'react';
-// Import specific Lucide icons
 import { Save, PenTool, XCircle, ShieldCheck, AlertCircle } from 'lucide-react';
 
 import Box from '@mui/material/Box';
@@ -15,71 +15,57 @@ import Avatar from '@mui/material/Avatar';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import AlertTitle from '@mui/material/AlertTitle'; // For errors
-import CircularProgress from '@mui/material/CircularProgress'; // For loading
+import AlertTitle from '@mui/material/AlertTitle';
+import CircularProgress from '@mui/material/CircularProgress';
 
-// Removed _users mock as data comes from Redux/API
 import { DashboardContent } from 'src/layouts/dashboard';
 
-// Import Redux actions and types
 import {
   fetchUserProfile,
   updateUserProfile,
-  type UserProfileData, // Import the UserProfileData type from your actions
+  type UserProfileData,
   clearUserProfileError,
-} from '../../../redux/userProfile/userProfile.actions';
+} from '../../redux/userProfile/userProfile.actions';
 
-import type { AppDispatch } from '../../../redux/types'; // Assuming AppDispatch and AppState are here
-
-// ----------------------------------------------------------------------
-
-// UserProfileProps is now UserProfileData from Redux actions
-// type UserProfileProps = { /* ... */ }; // Remove this if it's identical to UserProfileData
-
-// Remove mock data fetching function
-// const fetchCurrentUserProfile = (): UserProfileProps => { /* ... */ };
+import type { AppDispatch } from '../../redux/types';
 
 export function UserProfileView() {
   const theme = useTheme();
   const dispatch: AppDispatch = useDispatch();
 
-  // Get user profile data and state from Redux store
-  const { profile: userProfile, loading, error, updating } = useSelector((state: any) => state.profile);
-
+  const {
+    profile: userProfile,
+    loading,
+    error,
+    updating,
+  } = useSelector((state: any) => state.profile);
 
   const [isEditing, setIsEditing] = useState(false);
-  // Edited profile state, initialized from userProfile when available
+
   const [editedProfile, setEditedProfile] = useState<UserProfileData | null>(null);
 
-  // Effect to fetch user profile when component mounts or loggedInUser changes
   useEffect(() => {
     dispatch(fetchUserProfile());
+  }, [dispatch]);
 
-  }, [dispatch]); // Re-fetch if loggedInUser ID changes
-
-  // Sync Redux profile with local editedProfile when Redux profile updates
   useEffect(() => {
     if (userProfile) {
       setEditedProfile(userProfile);
     }
   }, [userProfile]);
 
-  // Effect to clear errors after a delay
-  // eslint-disable-next-line consistent-return
   useEffect(() => {
     if (error) {
       const timer = setTimeout(() => {
         dispatch(clearUserProfileError());
-      }, 5000); // Clear error message after 5 seconds
+      }, 5000);
       return () => clearTimeout(timer);
     }
   }, [error, dispatch]);
 
-
   const handleEditToggle = useCallback(() => {
     setIsEditing((prev) => !prev);
     if (isEditing && userProfile) {
-      // If was editing and cancelled, revert editedProfile to original userProfile
       setEditedProfile(userProfile);
     }
   }, [isEditing, userProfile]);
@@ -91,24 +77,27 @@ export function UserProfileView() {
 
   const handleSaveProfile = useCallback(async () => {
     if (editedProfile) {
-      // Dispatch the update action
       const result = await dispatch(updateUserProfile(editedProfile));
       if (result.success) {
-        setIsEditing(false); // Exit editing mode on successful save
-        toast("Profile Updated successfull")
+        setIsEditing(false);
+        toast('Profile Updated successfull');
       }
-      // Error handling is managed by Redux state, which will display the Alert
     }
   }, [editedProfile, dispatch]);
 
-
-  // --- Render Loading, Error, Not Found States ---
   if (loading && !userProfile) {
     return (
       <DashboardContent>
-        <Box display="flex" justifyContent="center" alignItems="center" height="calc(100vh - 200px)">
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height="calc(100vh - 200px)"
+        >
           <CircularProgress />
-          <Typography variant="h6" sx={{ ml: 2 }}>Loading profile...</Typography>
+          <Typography variant="h6" sx={{ ml: 2 }}>
+            Loading profile...
+          </Typography>
         </Box>
       </DashboardContent>
     );
@@ -119,26 +108,30 @@ export function UserProfileView() {
       <DashboardContent>
         <Alert severity="error">
           <AlertTitle>Error Loading Profile</AlertTitle>
-          <Typography>{error}</Typography> {/* error from redux is string */}
+          <Typography>{error}</Typography>
         </Alert>
-        <Button onClick={() => dispatch(fetchUserProfile())} sx={{ mt: 2 }}>Try Again</Button>
+        <Button onClick={() => dispatch(fetchUserProfile())} sx={{ mt: 2 }}>
+          Try Again
+        </Button>
       </DashboardContent>
     );
   }
 
-  if (!userProfile && !loading && !error) { // No profile data after loading
+  if (!userProfile && !loading && !error) {
+    // No profile data after loading
     return (
       <DashboardContent>
         <Alert severity="warning">
           <AlertTitle>Profile Not Found</AlertTitle>
-          <Typography>Your user profile could not be loaded. Please ensure you are logged in correctly.</Typography>
+          <Typography>
+            Your user profile could not be loaded. Please ensure you are logged in correctly.
+          </Typography>
         </Alert>
       </DashboardContent>
     );
   }
 
-  // If userProfile exists, render the form
-  if (!userProfile) { // This case should theoretically be covered by the above, but as a fallback
+  if (!userProfile) {
     return null;
   }
 
@@ -147,9 +140,9 @@ export function UserProfileView() {
       case 'Basic':
         return 'default';
       case 'Standard':
-        return 'info'; // Changed from primary for more distinction
+        return 'info';
       case 'Premium':
-        return 'success'; // Changed from primary for more distinction
+        return 'success';
       default:
         return 'default';
     }
@@ -173,20 +166,19 @@ export function UserProfileView() {
           color={isEditing ? 'error' : 'primary'}
           startIcon={isEditing ? <XCircle size={18} /> : <PenTool size={18} />}
           onClick={handleEditToggle}
-          disabled={loading || updating} // Disable during loading/updating
+          disabled={loading || updating}
         >
           {isEditing ? 'Cancel Edit' : 'Edit Profile'}
         </Button>
       </Box>
 
-      {/* Update Alert */}
       {updating && (
         <Alert severity="info" sx={{ mb: 3 }}>
           <AlertTitle>Updating Profile</AlertTitle>
           Your profile is being updated...
         </Alert>
       )}
-      {error && ( // Display error during update or initial fetch
+      {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
           <AlertTitle>Error</AlertTitle>
           {error}
@@ -196,14 +188,27 @@ export function UserProfileView() {
       <Card component={Paper} elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 2 }}>
         <Grid container spacing={4}>
           <Grid
- 
             size={{ xs: 12, md: 4 }}
-            sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
             <Avatar
               alt={`${userProfile.first_name} ${userProfile.last_name}`}
-              src={"data:image/png;base64," + userProfile?.image || '/assets/images/avatars/avatar_default.jpg'} // Fallback avatar
-              sx={{ width: 120, height: 120, mb: 2, border: `4px solid ${theme.palette.background.paper}`, boxShadow: theme.shadows[3] }}
+              src={
+                'data:image/png;base64,' + userProfile?.image ||
+                '/assets/images/avatars/avatar_default.jpg'
+              } // Fallback avatar
+              sx={{
+                width: 120,
+                height: 120,
+                mb: 2,
+                border: `4px solid ${theme.palette.background.paper}`,
+                boxShadow: theme.shadows[3],
+              }}
             />
             <Typography variant="h6" gutterBottom>
               {userProfile.first_name} {userProfile.last_name}
@@ -222,7 +227,9 @@ export function UserProfileView() {
             <Chip
               label={userProfile.email_verified ? 'Email Activated' : 'Email Not Activated'}
               color={userProfile.email_verified ? 'success' : 'warning'}
-              icon={userProfile.email_verified ? <ShieldCheck size={18} /> : <AlertCircle size={18} />}
+              icon={
+                userProfile.email_verified ? <ShieldCheck size={18} /> : <AlertCircle size={18} />
+              }
             />
           </Grid>
 
@@ -233,7 +240,8 @@ export function UserProfileView() {
 
             {/* Added Note */}
             <Alert severity="info" sx={{ mb: 3 }}>
-              Important: Please ensure these details match the information on your BVN to avoid verification issues.
+              Important: Please ensure these details match the information on your BVN to avoid
+              verification issues.
             </Alert>
 
             <Grid container spacing={3}>
@@ -257,7 +265,7 @@ export function UserProfileView() {
                   disabled={!isEditing || updating}
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }} >
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Email Address"
@@ -268,7 +276,7 @@ export function UserProfileView() {
                   disabled
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }} >
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Phone Number"
@@ -276,10 +284,9 @@ export function UserProfileView() {
                   value={editedProfile?.phone || ''}
                   onChange={handleFieldChange}
                   disabled
-                  // disabled={!isEditing || updating}
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }} >
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Date of Birth"
@@ -293,7 +300,7 @@ export function UserProfileView() {
                   }}
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }} >
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="BVN"
@@ -305,24 +312,22 @@ export function UserProfileView() {
                 />
               </Grid>
             </Grid>
-            {
-              isEditing && (
-                <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleSaveProfile}
-                    startIcon={<Save size={18} />}
-                    disabled={updating} // Disable save button during update
-                  >
-                    {updating ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                </Box>
-              )
-            }
-          </Grid >
-        </Grid >
-      </Card >
-    </DashboardContent >
+            {isEditing && (
+              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSaveProfile}
+                  startIcon={<Save size={18} />}
+                  disabled={updating}
+                >
+                  {updating ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </Box>
+            )}
+          </Grid>
+        </Grid>
+      </Card>
+    </DashboardContent>
   );
 }

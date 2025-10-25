@@ -2,8 +2,8 @@ export const _id = (index: number) => `gdn-id-7a-cc88-49d5-b1c8-1d-a80c2d7b${ind
 
 export const _times = (index: number) => {
   const dates = [
-    '07/15/2025', // Yesterday
-    '07/14/2025', // Day before yesterday
+    '07/15/2025', 
+    '07/14/2025', 
     '07/12/2025',
     '07/10/2025',
     '07/08/2025',

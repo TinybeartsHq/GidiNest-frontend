@@ -15,7 +15,7 @@ import { fShortenNumber } from 'src/utils/format-number';
 import { Iconify } from 'src/components/iconify';
 import { SvgColor } from 'src/components/svg-color';
 
-// ----------------------------------------------------------------------
+
 
 export type IPostItem = {
   id: string;

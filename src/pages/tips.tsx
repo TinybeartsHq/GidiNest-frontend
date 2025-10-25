@@ -1,6 +1,6 @@
 import { CONFIG } from 'src/config-global';
 
-import { TipsView } from 'src/sections/tips/view';
+import { TipsView } from 'src/sections/tips';
 
 
 export default function Page() {

@@ -4,11 +4,10 @@ import { createRoot } from 'react-dom/client';
 import { Outlet, RouterProvider, createBrowserRouter } from 'react-router';
 
 import App from './app';
-import store from './redux/store'; // Adjust path if different
-import { routesSection } from './routes/sections';
+import store from './redux/store';
+import { routesSection } from './routes/pages';
 import { ErrorBoundary } from './routes/components';
 import { setupResponseInterceptor } from './utils/apiClient';
-
 
 setupResponseInterceptor(store);
 
@@ -16,9 +15,9 @@ const router = createBrowserRouter([
   {
     Component: () => (
       <Provider store={store}>
-      <App>
-        <Outlet />
-      </App>
+        <App>
+          <Outlet />
+        </App>
       </Provider>
     ),
     errorElement: <ErrorBoundary />,

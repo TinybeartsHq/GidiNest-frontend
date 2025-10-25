@@ -5,7 +5,7 @@ import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 
-// ----------------------------------------------------------------------
+
 
 type TableNoDataProps = TableRowProps & {
   searchQuery: string;

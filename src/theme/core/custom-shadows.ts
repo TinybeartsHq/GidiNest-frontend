@@ -4,8 +4,7 @@ import { grey, info, error, common, primary, success, warning, secondary } from 
 
 import type { ThemeColorScheme } from '../types';
 
-// ----------------------------------------------------------------------
-
+ 
 /**
  * TypeScript (type definition and extension)
  * @to {@link file://./../extend-theme-types.d.ts}
@@ -29,9 +28,7 @@ export interface CustomShadows {
   dialog?: string;
   dropdown?: string;
 }
-
-// ----------------------------------------------------------------------
-
+ 
 export function createShadowColor(colorChannel: string): string {
   return `0 8px 16px 0 ${varAlpha(colorChannel, 0.24)}`;
 }

@@ -9,7 +9,7 @@ import { styled, alpha as hexAlpha } from '@mui/material/styles';
 import { Iconify } from '../iconify';
 import { colorPickerClasses } from './classes';
 
-// ----------------------------------------------------------------------
+
 
 export type ColorPickerSlotProps = {
   item?: React.ComponentProps<typeof ItemRoot>;
@@ -110,7 +110,7 @@ export function ColorPicker({
   );
 }
 
-// ----------------------------------------------------------------------
+
 
 const ColorPickerRoot = styled('ul', {
   shouldForwardProp: (prop: string) => !['limit', 'sx'].includes(prop),

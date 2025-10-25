@@ -1,21 +1,20 @@
-import { useSelector, useDispatch } from 'react-redux'; // Import Redux hooks
-import { useState, useEffect, useCallback } from 'react'; // Import useEffect
+/* eslint-disable consistent-return */
+import { useSelector, useDispatch } from 'react-redux'; 
+import { useState, useEffect, useCallback } from 'react'; 
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
-import Alert from '@mui/material/Alert'; // For error display
-import Button from '@mui/material/Button';
+import Alert from '@mui/material/Alert';  
 import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
-import AlertTitle from '@mui/material/AlertTitle'; // For error display
+import AlertTitle from '@mui/material/AlertTitle';  
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
-import CircularProgress from '@mui/material/CircularProgress'; // For loading indicator
+import CircularProgress from '@mui/material/CircularProgress'; 
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
-import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 
 import { TableNoData } from '../table-no-data';
@@ -23,92 +22,50 @@ import { TableEmptyRows } from '../table-empty-rows';
 import { TransactionTableRow } from '../transaction-table-row';
 import { TransactionTableHead } from '../transaction-table-head';
 import { emptyRows, applyFilter, getComparator } from '../utils';
-import { TransactionTableToolbar } from '../transaction-table-toolbar';
 import {
-  clearSavingsError,
-  getRecentTransactions // Import the transaction type from savings actions
+  getRecentTransactions 
 } from '../../../redux/savings/savings.actions';
 
-import type { AppDispatch } from '../../../redux/types'; // Import AppDispatch and AppState
-import type { TransactionProps } from '../transaction-table-row'; // Reuse this type for display
+import type { AppDispatch } from '../../../redux/types'; 
+import type { TransactionProps } from '../transaction-table-row'; 
 
-// ----------------------------------------------------------------------
 
-// Removed _transactions mock data, as it will come from Redux now.
-
+ 
 export function TransactionsView() {
   const dispatch: AppDispatch = useDispatch();
 
-  // Get data from Redux store
   const {
     transactions,
     loading,
     error,
     currentPage,
-    rowsPerPage: reduxRowsPerPage, // Get rowsPerPage from Redux state
+    rowsPerPage: reduxRowsPerPage, 
   } = useSelector((state: any) => state.savings);
 
-  // Use local state for table controls, but sync initial values from Redux
+
   const [page, setPage] = useState(currentPage);
   const [orderBy, setOrderBy] = useState('createdAt');
-  const [rowsPerPage, setLocalRowsPerPage] = useState(reduxRowsPerPage); // Use local state for rowsPerPage
+  const [rowsPerPage, setLocalRowsPerPage] = useState(reduxRowsPerPage);  
   const [selected, setSelected] = useState<string[]>([]);
   const [order, setOrder] = useState<'desc' | 'asc'>('desc');
   const [filterName, setFilterName] = useState('');
 
-  // --- API Call Effect ---
   useEffect(() => {
-    // Dispatch action to fetch data whenever page, rowsPerPage, orderBy, order, or filterName changes
     dispatch(getRecentTransactions(page, rowsPerPage, orderBy, order, filterName));
   }, [dispatch, page, rowsPerPage, orderBy, order, filterName]);
 
-  // --- Error Clearing Effect ---
-  // eslint-disable-next-line consistent-return
-  useEffect(() => {
-    if (error) {
-      const timer = setTimeout(() => {
-        dispatch(clearSavingsError());
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [error, dispatch]);
-
-
-  // --- Table Control Callbacks ---
+ 
   const handleSort = useCallback(
     (id: string) => {
       const isAsc = orderBy === id && order === 'asc';
       setOrder(isAsc ? 'desc' : 'asc');
       setOrderBy(id);
-      // When sorting changes, reset page to 0 to ensure correct data is fetched
-      setPage(0); // This will trigger useEffect and refetch data
+      setPage(0); 
     },
     [order, orderBy]
   );
 
-  const handleSelectAllRows = useCallback((checked: boolean) => {
-    if (checked) {
-      setSelected(transactions.map((tx: { id: any; }) => tx.id));
-      return;
-    }
-    setSelected([]);
-  }, [transactions]);
-
-  const handleSelectRow = useCallback(
-    (inputValue: string) => {
-      const newSelected = selected.includes(inputValue)
-        ? selected.filter((value) => value !== inputValue)
-        : [...selected, inputValue];
-
-      setSelected(newSelected);
-    },
-    [selected]
-  );
-
-  const handleResetPage = useCallback(() => {
-    setPage(0);
-  }, []);
-
+ 
   const handleChangePage = useCallback((event: unknown, newPage: number) => {
     setPage(newPage);
   }, []);
@@ -116,24 +73,20 @@ export function TransactionsView() {
   const handleChangeRowsPerPage = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setLocalRowsPerPage(parseInt(event.target.value, 10));
-      setPage(0); // Reset page when rows per page changes
+      setPage(0); 
     },
     []
   );
-
-  const handleFilterName = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setFilterName(event.target.value);
-    setPage(0); // Reset page when filter changes
-  }, []);
+ 
 
   const dataFiltered: TransactionProps[] = applyFilter({
-    inputData: transactions as TransactionProps[], // Cast to match TransactionProps
+    inputData: transactions as TransactionProps[],  
     comparator: getComparator(order, orderBy),
     filterName,
   });
 
 
-  const notFound = !dataFiltered.length && !!filterName && !loading; // Adjust notFound logic
+  const notFound = !dataFiltered.length && !!filterName && !loading; 
 
   return (
     <DashboardContent>
@@ -147,25 +100,17 @@ export function TransactionsView() {
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
           My Transactions
         </Typography>
-        {/* <Button
-          variant="contained"
-          color="primary"
-          startIcon={<Iconify icon="mingcute:add-line" />}
-    
-        >
-          Perform Transaction
-        </Button> */}
       </Box>
 
       <Card>
-        {loading && transactions.length === 0 && ( // Show main loader if initial data is loading
+        {loading && transactions.length === 0 && (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 3 }}>
             <CircularProgress />
             <Typography variant="subtitle1" sx={{ ml: 2 }}>Loading transactions...</Typography>
           </Box>
         )}
 
-        {error && ( // Show error alert
+        {error && (
           <Alert severity="error" sx={{ m: 3 }}>
             <AlertTitle>Error</AlertTitle>
             {error}
@@ -185,26 +130,21 @@ export function TransactionsView() {
               <TransactionTableHead
                 order={order}
                 orderBy={orderBy}
-                rowCount={transactions.length} // Pass current page row count for checkbox
+                rowCount={transactions.length} 
                 numSelected={selected.length}
                 onSort={handleSort}
-                headLabel={[
-                  // { id: 'id', label: 'Transaction ID' },
+                headLabel={[ 
+                  { id: 'name', label: 'Description' }, 
                 
-                  { id: 'name', label: 'Description' }, // Assuming 'name' is the description
-                
-                  { id: 'transaction_type_display', label: 'Type' }, // 'role' mapped to 'Type'
+                  { id: 'transaction_type_display', label: 'Type' }, 
                   { id: 'timestamp', label: 'Date' },
                   { id: 'amount', label: 'Amount (₦)', align: 'right' },
-                  // { id: 'status', label: 'Status', align: 'center' },
                   { id: '' },
                 ]}
               />
               <TableBody>
                 {dataFiltered
-                  // No need to slice if API handles pagination; otherwise, slice only the current page's data
-                  // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) // Keep if client-side pagination
-                  .map((row: TransactionProps) => ( // Cast row to TransactionProps
+                  .map((row: TransactionProps) => (
                     <TransactionTableRow
                       key={row.id}
                       row={row}
@@ -212,7 +152,6 @@ export function TransactionsView() {
                   ))}
  
                 {
-                  // Show empty rows if there's no data AND no filter applied AND not loading
                   !loading && !filterName && transactions.length === 0 && (
                     <TableEmptyRows
                       height={68}
@@ -230,7 +169,7 @@ export function TransactionsView() {
         <TablePagination
           component="div"
           page={1}
-          count={transactions.length} // Use totalTransactions from Redux for actual count
+          count={transactions.length}
           rowsPerPage={transactions.length-1}
           onPageChange={handleChangePage}
           rowsPerPageOptions={[5, 10, 25]}

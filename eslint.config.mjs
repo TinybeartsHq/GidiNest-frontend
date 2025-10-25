@@ -7,7 +7,7 @@ import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import perfectionistPlugin from 'eslint-plugin-perfectionist';
 import unusedImportsPlugin from 'eslint-plugin-unused-imports';
 
-// ----------------------------------------------------------------------
+
 
 /**
  * @rules common
@@ -176,7 +176,7 @@ export const customConfig = {
   },
 };
 
-// ----------------------------------------------------------------------
+
 
 export default [
   { files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'] },

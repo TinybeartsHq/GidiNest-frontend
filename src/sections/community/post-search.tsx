@@ -8,7 +8,7 @@ import { Iconify } from 'src/components/iconify';
 
 import type { IPostItem } from './post-item';
 
-// ----------------------------------------------------------------------
+
 
 type PostSearchProps = {
   posts: IPostItem[];

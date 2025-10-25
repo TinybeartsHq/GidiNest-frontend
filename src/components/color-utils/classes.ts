@@ -1,6 +1,6 @@
 import { createClasses } from 'src/theme/create-classes';
 
-// ----------------------------------------------------------------------
+
 
 export const colorPreviewClasses = {
   root: createClasses('color__preview__root'),

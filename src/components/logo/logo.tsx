@@ -10,7 +10,7 @@ import { RouterLink } from 'src/routes/components';
 
 import { logoClasses } from './classes';
 
-// ----------------------------------------------------------------------
+
 
 export type LogoProps = LinkProps & {
   isSingle?: boolean;
@@ -152,7 +152,7 @@ export function Logo({
   );
 }
 
-// ----------------------------------------------------------------------
+
 
 const LogoRoot = styled(Link)(() => ({
   flexShrink: 0,

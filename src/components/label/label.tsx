@@ -6,7 +6,7 @@ import { LabelRoot, LabelIcon } from './styles';
 
 import type { LabelProps } from './types';
 
-// ----------------------------------------------------------------------
+
 
 export function Label({
   sx,

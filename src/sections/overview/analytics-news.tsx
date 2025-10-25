@@ -12,7 +12,6 @@ import { fToNow } from 'src/utils/format-time';
 
 import { Scrollbar } from 'src/components/scrollbar';
 
-// ----------------------------------------------------------------------
 
 type Props = CardProps & {
   title?: string;
@@ -40,7 +39,7 @@ export function AnalyticsNews({ title, subheader, list, sx, ...other }: Props) {
       </Scrollbar>
 
       <Box sx={{ p: 2, textAlign: 'right' }}>
-        <Link href="https://gidinest.com" target="_blank" color="inherit">View all</Link>
+        <Link href="#" target="_blank" color="inherit">View all</Link>
       </Box>
     </Card>
   );
@@ -74,7 +73,7 @@ function Item({ item, sx, ...other }: ItemProps) {
       />
 
       <ListItemText
-        primary={<Link href="https://gidinest.com" target="_blank" color="inherit">{item.title}</Link>}
+        primary={<Link href="#" target="_blank" color="inherit">{item.title}</Link>}
         secondary={item.description}
         slotProps={{
           primary: { noWrap: true },

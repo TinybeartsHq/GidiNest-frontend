@@ -1,25 +1,25 @@
 import {
   _id,
-  _price, // Will be repurposed for financial amounts
+  _price, 
   _times,
-  _company, // Will be repurposed for financial entities or goal types
+  _company,  
   _boolean,
-  _fullName, // Will remain for user names
-  _taskNames, // Will be repurposed for financial tasks
-  _postTitles, // Will be repurposed for financial tips titles
-  _description, // Will be repurposed for financial descriptions
-  _productNames, // Not directly used in GidiNest context, but keeping for completeness if needed elsewhere
-} from './_mock'; // Assuming _mock contains helpers for generating random data
+  _fullName, 
+  _taskNames, 
+  _postTitles,  
+  _description,  
+  _productNames, 
+} from './_mock';
 
-// ----------------------------------------------------------------------
+
 
 export const _myAccount = {
-  displayName: 'test user', // A more Nigerian-sounding name
-  email: 'test@test.com', // GidiNest domain
-  photoURL: '/assets/images/avatar/avatar-gidinest-user.webp', // Placeholder for a GidiNest-specific user avatar
+  displayName: 'test user', 
+  email: 'test@test.com', 
+  photoURL: '/assets/images/avatar/avatar-gidinest-user.webp',
 };
 
-// ----------------------------------------------------------------------
+
 
 export const _users = [...Array(24)].map((_, index) => ({
   id: _id(index),
@@ -89,7 +89,7 @@ export const _transactions_data: TransactionProps[] = Array.from({ length: 24 })
     };
   });
 
-// ----------------------------------------------------------------------
+
 
 export const _posts = [...Array(23)].map((_, index) => ({
   id: _id(index),
@@ -107,7 +107,7 @@ export const _posts = [...Array(23)].map((_, index) => ({
   },
 }));
 
-// ----------------------------------------------------------------------
+
 
 const GIDINEST_COLORS = [
   '#00AB55', // Green for growth/success
@@ -144,7 +144,7 @@ export const _products = [...Array(24)].map((_, index) => {
   };
 });
 
-// ----------------------------------------------------------------------
+
 
 export const _langs = [
   {
@@ -155,7 +155,7 @@ export const _langs = [
  
 ];
 
-// ----------------------------------------------------------------------
+
 
 export const _timeline = [...Array(5)].map((_, index) => ({
   id: _id(index),
@@ -211,7 +211,7 @@ export const _tasks = Array.from({ length: 5 }, (_, index) => ({
   completed: _boolean(index % 2), // Randomly mark as true/false
 }));
 
-// ----------------------------------------------------------------------
+
 
 export const _notifications = [
   {

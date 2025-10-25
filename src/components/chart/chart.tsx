@@ -8,7 +8,6 @@ import { mergeClasses } from 'minimal-shared/utils';
 import { styled } from '@mui/material/styles';
 
 import { chartClasses } from './classes';
-// ----------------------------------------------------------------------
 import { ChartLoading } from './components';
 
 import type { ChartProps } from './types';
@@ -43,7 +42,7 @@ export function Chart({ type, series, options, slotProps, className, sx, ...othe
   );
 }
 
-// ----------------------------------------------------------------------
+
 
 const ChartRoot = styled('div')(({ theme }) => ({
   width: '100%',

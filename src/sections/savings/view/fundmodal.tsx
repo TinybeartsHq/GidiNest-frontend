@@ -14,11 +14,11 @@ import {
 interface FundsActionModalProps {
   open: boolean;
   onClose: () => void;
-  actionType: 'add' | 'withdraw'; // determines the mode
-  walletBalance: number;          // Gidinest wallet balance
-  goalBalance: number;            // Savings goal current balance
+  actionType: 'add' | 'withdraw'; 
+  walletBalance: number;        
+  goalBalance: number;          
   goalId: string | number;
-  onSubmit: (amount: number) => Promise<void>; // submission handler
+  onSubmit: (amount: number) => Promise<void>; 
   loading: boolean;
 }
 

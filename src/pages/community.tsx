@@ -2,7 +2,7 @@ import { CONFIG } from 'src/config-global';
 
 import { CommunityView } from 'src/sections/community/view';
 
-// ----------------------------------------------------------------------
+
 
 export default function Page() {
   return (

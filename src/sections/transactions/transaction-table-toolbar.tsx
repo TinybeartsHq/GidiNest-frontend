@@ -7,16 +7,13 @@ import InputAdornment from '@mui/material/InputAdornment';
 
 import { Iconify } from 'src/components/iconify';
 
-// ----------------------------------------------------------------------
 
-// Renamed type to TransactionTableToolbarProps for clarity
 type TransactionTableToolbarProps = {
   numSelected: number;
   filterName: string;
   onFilterName: (event: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
-// Renamed component from UserTableToolbar to TransactionTableToolbar
 export function TransactionTableToolbar({ numSelected, filterName, onFilterName }: TransactionTableToolbarProps) {
   return (
     <Toolbar
@@ -40,7 +37,7 @@ export function TransactionTableToolbar({ numSelected, filterName, onFilterName 
           fullWidth
           value={filterName}
           onChange={onFilterName}
-          placeholder="Search transactions..." // Updated placeholder text
+          placeholder="Search transactions..."
           startAdornment={
             <InputAdornment position="start">
               <Iconify width={20} icon="eva:search-fill" sx={{ color: 'text.disabled' }} />

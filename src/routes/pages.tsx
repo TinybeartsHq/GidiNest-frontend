@@ -10,22 +10,18 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 import { AuthLayout } from 'src/layouts/auth';
 import { DashboardLayout } from 'src/layouts/dashboard';
 
-// ----------------------------------------------------------------------
-
-export const DashboardPage = lazy(() => import('src/pages/dashboard'));
-export const CommunityPage = lazy(() => import('src/pages/community'));
-export const CommunityPostDetailPage = lazy(() => import('src/pages/communitydetail'));
-export const UserPage = lazy(() => import('src/pages/user'));
 export const SignInPage = lazy(() => import('src/pages/auth/sign-in'));
 export const SignUpPage = lazy(() => import('src/pages/auth/sign-up'));
 export const EmailActivationPage = lazy(() => import('src/pages/auth/email-activation'));
-export const ProductsPage = lazy(() => import('src/pages/products'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 export const Logout = lazy(() => import('src/pages/auth/logout'));
 
 
+export const DashboardPage = lazy(() => import('src/pages/dashboard'));
+export const CommunityPage = lazy(() => import('src/pages/community'));
+export const CommunityPostDetailPage = lazy(() => import('src/pages/communitydetail'));
+
 export const SavingsPage = lazy(() => import('src/pages/savings'));
-export const SingleSavingsGoalView = lazy(() => import('src/pages/savingsdetail'));
 
 
 export const TransactionsView = lazy(() => import('src/pages/transactions'));
@@ -64,10 +60,7 @@ export const routesSection: RouteObject[] = [
     ),
     children: [
       { path: 'dashboard', element: <DashboardPage /> },
-      { path: 'user', element: <UserPage /> },
-      { path: 'products', element: <ProductsPage /> },
       { path: 'savings', element: <SavingsPage /> },
-      { path: 'savings/:id', element: <SingleSavingsGoalView /> },
       { path: 'community', element: <CommunityPage /> },
       { path: 'community/:id', element: <CommunityPostDetailPage /> },
       { path: 'transactions', element: <TransactionsView /> }, 

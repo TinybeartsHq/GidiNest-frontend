@@ -382,9 +382,4 @@ export const validateAccountNumber = (accountData: any) => async (dispatch: (arg
 };
 
 
-
-
-// Action to clear savings-related errors
-export const clearSavingsError = () => ({
-    type: CLEAR_SAVINGS_ERROR,
-});
+ 

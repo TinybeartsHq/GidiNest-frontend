@@ -20,7 +20,7 @@ import { WorkspacesPopover } from '../components/workspaces-popover';
 import type { NavItem } from '../nav-config-dashboard';
 import type { WorkspacesPopoverProps } from '../components/workspaces-popover';
 
-// ----------------------------------------------------------------------
+
 
 export type NavContentProps = {
   data: NavItem[];
@@ -66,7 +66,7 @@ export function NavDesktop({
   );
 }
 
-// ----------------------------------------------------------------------
+
 
 export function NavMobile({
   sx,
@@ -104,7 +104,7 @@ export function NavMobile({
   );
 }
 
-// ----------------------------------------------------------------------
+
 
 export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
   const pathname = usePathname();

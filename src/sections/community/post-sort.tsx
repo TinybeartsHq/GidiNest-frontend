@@ -10,7 +10,6 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
 import { Iconify } from 'src/components/iconify';
 
-// ----------------------------------------------------------------------
 
 type PostSortProps = ButtonProps & {
   sortBy: string;

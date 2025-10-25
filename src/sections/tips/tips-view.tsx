@@ -17,10 +17,8 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
-
-// --- New static data structure for tips and FAQs ---
+ 
 const healthTipsData = [
-  // 1st Trimester Tips (Expanded)
   {
     id: 'tip_1_1',
     category: '1st Trimester Tips',
@@ -58,7 +56,6 @@ const healthTipsData = [
     content: 'Your first visit will likely include a full medical history, a physical exam, blood and urine tests, and a dating scan to confirm your due date. Feel free to bring a list of questions for your doctor.',
   },
 
-  // 2nd Trimester Tips (Expanded)
   {
     id: 'tip_2_1',
     category: '2nd Trimester Tips',
@@ -90,7 +87,6 @@ const healthTipsData = [
     content: 'Around week 20, you\'ll have an anatomy scan to check the baby\'s growth, development, and to screen for any potential issues. This is also when the baby\'s gender can often be determined accurately.',
   },
 
-  // 3rd Trimester Tips (Expanded)
   {
     id: 'tip_3_1',
     category: '3rd Trimester Tips',
@@ -121,8 +117,6 @@ const healthTipsData = [
     title: 'What to pack in your hospital bag',
     content: 'For you: ID, birth plan, comfortable clothes, toiletries, snacks. For baby: a few outfits, swaddles, mittens, socks, and a car seat already installed in your car. For your partner: snacks, a change of clothes, and phone chargers.',
   },
-
-  // Post-Natal Tips (Expanded)
   {
     id: 'tip_4_1',
     category: 'Post-Natal Tips',
@@ -161,7 +155,6 @@ const categories = ['1st Trimester Tips', '2nd Trimester Tips', '3rd Trimester T
 export function TipsView() {
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Use useMemo to filter tips whenever the search query changes
   const filteredTips = useMemo(() => {
     if (!searchQuery) {
       return healthTipsData;
@@ -209,10 +202,8 @@ export function TipsView() {
 
       <Grid container spacing={4}>
         {categories.map((category) => {
-          // Filter tips for the current category and search query
           const categoryTips = filteredTips.filter((tip) => tip.category === category);
 
-          // Only render a category if it has matching tips
           if (categoryTips.length === 0) {
             return null;
           }
@@ -241,7 +232,6 @@ export function TipsView() {
         })}
       </Grid>
 
-      {/* Show message if no tips match the search query */}
       {filteredTips.length === 0 && searchQuery && (
         <Alert severity="info" sx={{ mt: 4 }}>
           <AlertTitle>No Results Found</AlertTitle>
