@@ -121,9 +121,14 @@ export function SignInView() {
         required
       />
 
-      {/* <Link variant="body2" color="inherit" sx={{ mb: 1.5 }}>
+      <Link
+        variant="body2"
+        color="inherit"
+        sx={{ mb: 1.5, cursor: 'pointer' }}
+        onClick={() => router.push('/forgot-password')}
+      >
         Forgot password?
-      </Link> */}
+      </Link>
 
       <TextField
         fullWidth

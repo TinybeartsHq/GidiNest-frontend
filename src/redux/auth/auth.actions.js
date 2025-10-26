@@ -16,6 +16,15 @@ import {
     FINALIZE_SIGNUP_REQUEST,
     FINALIZE_SIGNUP_SUCCESS,
     FINALIZE_SIGNUP_FAILURE,
+    REQUEST_OTP_REQUEST,
+    REQUEST_OTP_SUCCESS,
+    REQUEST_OTP_FAILURE,
+    VERIFY_RESET_OTP_REQUEST,
+    VERIFY_RESET_OTP_SUCCESS,
+    VERIFY_RESET_OTP_FAILURE,
+    RESET_PASSWORD_REQUEST,
+    RESET_PASSWORD_SUCCESS,
+    RESET_PASSWORD_FAILURE,
 } from './auth.types';
 
 // --- Login Actions (Existing) ---
@@ -134,7 +143,7 @@ export const finalizeSignup = (finalData) => async (dispatch) => {
     dispatch({ type: FINALIZE_SIGNUP_REQUEST });
     try {
         const response = await apiClient.post('onboarding/register/complete', finalData); // Your finalize signup endpoint
-  
+
         const user = response.data.data.user
         const refresh = response.data.data.token.refresh
 
@@ -151,6 +160,59 @@ export const finalizeSignup = (finalData) => async (dispatch) => {
     } catch (error) {
         const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.response?.data?.error || error.message || 'Signup finalization failed.';
         dispatch({ type: FINALIZE_SIGNUP_FAILURE, payload: errorMessage });
+        return { success: false, error: errorMessage };
+    }
+};
+
+// --- Password Reset Actions ---
+
+// Request OTP (Step 1: User provides email to receive OTP)
+export const requestPasswordResetOtp = (emailData) => async (dispatch) => {
+    dispatch({ type: REQUEST_OTP_REQUEST });
+    try {
+        const response = await apiClient.post('onboarding/request-otp', emailData);
+        dispatch({
+            type: REQUEST_OTP_SUCCESS,
+            payload: response.data.message || 'OTP sent successfully. Check your email.',
+        });
+        return { success: true, data: response.data };
+    } catch (error) {
+        const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.response?.data?.error || error.message || 'Failed to send OTP.';
+        dispatch({ type: REQUEST_OTP_FAILURE, payload: errorMessage });
+        return { success: false, error: errorMessage };
+    }
+};
+
+// Verify Reset OTP (Step 2: User provides email and OTP)
+export const verifyPasswordResetOtp = (otpData) => async (dispatch) => {
+    dispatch({ type: VERIFY_RESET_OTP_REQUEST });
+    try {
+        const response = await apiClient.post('onboarding/verify-otp', otpData);
+        dispatch({
+            type: VERIFY_RESET_OTP_SUCCESS,
+            payload: response.data.message || 'OTP verified successfully.',
+        });
+        return { success: true, data: response.data };
+    } catch (error) {
+        const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.response?.data?.error || error.message || 'OTP verification failed.';
+        dispatch({ type: VERIFY_RESET_OTP_FAILURE, payload: errorMessage });
+        return { success: false, error: errorMessage };
+    }
+};
+
+// Reset Password (Step 3: User provides email, OTP, and new password)
+export const resetPassword = (resetData) => async (dispatch) => {
+    dispatch({ type: RESET_PASSWORD_REQUEST });
+    try {
+        const response = await apiClient.post('onboarding/reset-password', resetData);
+        dispatch({
+            type: RESET_PASSWORD_SUCCESS,
+            payload: response.data.message || 'Password reset successfully.',
+        });
+        return { success: true, data: response.data };
+    } catch (error) {
+        const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.response?.data?.error || error.message || 'Password reset failed.';
+        dispatch({ type: RESET_PASSWORD_FAILURE, payload: errorMessage });
         return { success: false, error: errorMessage };
     }
 };
