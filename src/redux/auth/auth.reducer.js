@@ -12,9 +12,18 @@ import {
     VERIFY_OTP_REQUEST,
     VERIFY_OTP_SUCCESS,
     VERIFY_OTP_FAILURE,
+    REQUEST_OTP_REQUEST,
+    REQUEST_OTP_FAILURE,
+    REQUEST_OTP_SUCCESS,
+    RESET_PASSWORD_REQUEST,
+    RESET_PASSWORD_SUCCESS,
+    RESET_PASSWORD_FAILURE,
     FINALIZE_SIGNUP_REQUEST,
     FINALIZE_SIGNUP_SUCCESS,
     FINALIZE_SIGNUP_FAILURE,
+    VERIFY_RESET_OTP_REQUEST,
+    VERIFY_RESET_OTP_SUCCESS,
+    VERIFY_RESET_OTP_FAILURE,
 } from './auth.types';
 
 const initialState = {
@@ -23,10 +32,9 @@ const initialState = {
     user: null,
     loading: false,
     error: null,
-    registrationMessage: null, // Message after initial registration step
-    otpVerified: false,        // Status after OTP verification
-    signupFinalized: false,    // Status after final signup step
-    // tempUserId: null,         // If your backend returns a temporary ID for the user session during signup
+    registrationMessage: null,  
+    otpVerified: false,  
+    signupFinalized: false
 };
 
 const authReducer = (state = initialState, action) => {
@@ -35,6 +43,9 @@ const authReducer = (state = initialState, action) => {
         case REGISTER_REQUEST:
         case VERIFY_OTP_REQUEST:
         case FINALIZE_SIGNUP_REQUEST:
+        case REQUEST_OTP_REQUEST:
+        case VERIFY_RESET_OTP_REQUEST:
+        case RESET_PASSWORD_REQUEST:
             return {
                 ...state,
                 loading: true,
@@ -62,9 +73,8 @@ const authReducer = (state = initialState, action) => {
             return {
                 ...state,
                 loading: false,
-                registrationMessage: action.payload, // Store the success message from registration
+                registrationMessage: action.payload,  
                 error: null,
-                // tempUserId: action.payload.user_id || null, // If backend returns temporary user ID
             };
 
         case VERIFY_OTP_SUCCESS:
@@ -72,27 +82,39 @@ const authReducer = (state = initialState, action) => {
                 ...state,
                 loading: false,
                 otpVerified: true,
-                registrationMessage: action.payload, // Can update message here too
+                registrationMessage: action.payload, 
                 error: null,
             };
 
         case FINALIZE_SIGNUP_SUCCESS:
             return {
                 ...state,
-                token: action.payload.user ? state.token : null, // Token should be set from localStorage in action
-                isAuthenticated: true, // Set isAuthenticated to true upon finalization
-                user: action.payload.user, // User data on finalization
+                token: action.payload.user ? state.token : null,  
+                isAuthenticated: true,  
+                user: action.payload.user, 
                 loading: false,
                 error: null,
-                registrationMessage: action.payload.message, // Store the success message from finalization
-                otpVerified: true, // Remains true
-                signupFinalized: true, // Set true on completion
+                registrationMessage: action.payload.message, 
+                otpVerified: true, 
+                signupFinalized: true, 
+            };
+        
+        case REQUEST_OTP_SUCCESS:
+        case VERIFY_RESET_OTP_SUCCESS:
+        case RESET_PASSWORD_SUCCESS:
+            return {
+                ...state,
+                loading: false,
+                error: null,
             };
 
         case LOGIN_FAILURE:
         case REGISTER_FAILURE:
         case VERIFY_OTP_FAILURE:
+        case REQUEST_OTP_FAILURE:
         case FINALIZE_SIGNUP_FAILURE:
+        case VERIFY_RESET_OTP_FAILURE:
+        case RESET_PASSWORD_FAILURE:
             return {
                 ...state,
                 loading: false,

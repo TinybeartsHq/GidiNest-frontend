@@ -15,10 +15,10 @@ import { useRouter } from 'src/routes/hooks';
 import { Iconify } from 'src/components/iconify';
 
 import {
-  requestPasswordResetOtp,
-  verifyPasswordResetOtp,
   resetPassword,
   clearAuthError,
+  verifyPasswordResetOtp,
+  requestPasswordResetOtp,
 } from '../../redux/auth/auth.actions';
 
 import type { RootState, AppDispatch } from '../../redux/types';
