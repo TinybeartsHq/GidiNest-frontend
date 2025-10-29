@@ -21,6 +21,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
+import { getTierLimits } from '../../config-global';
 import {
   fetchUserProfile,
   updateUserProfile,
@@ -29,7 +30,6 @@ import {
 } from '../../redux/userProfile/userProfile.actions';
 
 import type { AppDispatch } from '../../redux/types';
-import { getTierLimits } from '../../config-global';
 
 export function UserProfileView() {
   const theme = useTheme();
