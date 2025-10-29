@@ -29,6 +29,7 @@ import {
 } from '../../redux/userProfile/userProfile.actions';
 
 import type { AppDispatch } from '../../redux/types';
+import { getTierLimits } from '../../config-global';
 
 export function UserProfileView() {
   const theme = useTheme();
@@ -139,10 +140,13 @@ export function UserProfileView() {
   const getTierColor = (tier: string) => {
     switch (tier) {
       case 'Basic':
+      case 'Tier 1':
         return 'default';
       case 'Standard':
+      case 'Tier 2':
         return 'info';
       case 'Premium':
+      case 'Tier 3':
         return 'success';
       default:
         return 'default';
@@ -308,12 +312,30 @@ export function UserProfileView() {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Box>
                     <Typography variant="body2" color="text.secondary">
-                      Transaction Limit
+                      Tier Requirements
+                    </Typography>
+                    <Typography variant="body1" fontWeight={500}>
+                      {getTierLimits(userProfile?.account_tier).requirements}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Daily Transaction Limit
                     </Typography>
                     <Typography variant="h6">
-                      {userProfile.account_tier === 'Basic' && '₦50,000/day'}
-                      {userProfile.account_tier === 'Standard' && '₦200,000/day'}
-                      {userProfile.account_tier === 'Premium' && 'Unlimited'}
+                      {getTierLimits(userProfile?.account_tier).dailyTransactionLimitFormatted}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Cumulative Transaction Limit
+                    </Typography>
+                    <Typography variant="h6">
+                      {getTierLimits(userProfile?.account_tier).cumulativeTransactionLimitFormatted}
                     </Typography>
                   </Box>
                 </Grid>
@@ -323,9 +345,7 @@ export function UserProfileView() {
                       Account Balance Limit
                     </Typography>
                     <Typography variant="h6">
-                      {userProfile.account_tier === 'Basic' && '₦300,000'}
-                      {userProfile.account_tier === 'Standard' && '₦5,000,000'}
-                      {userProfile.account_tier === 'Premium' && 'Unlimited'}
+                      {getTierLimits(userProfile?.account_tier).balanceLimitFormatted}
                     </Typography>
                   </Box>
                 </Grid>

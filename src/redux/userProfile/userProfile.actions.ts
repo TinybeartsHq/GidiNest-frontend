@@ -30,9 +30,10 @@ export interface UserProfileData {
     phone: string;
     bvn: string;
     has_bvn?: boolean;
-    account_tier: 'Basic' | 'Standard' | 'Premium';
+    account_tier: 'Basic' | 'Standard' | 'Premium' | 'Tier 1' | 'Tier 2' | 'Tier 3'; // Support both old and new tier names
     dob: string; // YYYY-MM-DD format usually
     is_verified: boolean;
+    email_verified?: boolean;
 
     // NIN-related fields
     nin?: string;
