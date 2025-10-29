@@ -4,6 +4,9 @@ import {
     UPDATE_BVN_REQUEST,
     UPDATE_BVN_SUCCESS,
     UPDATE_BVN_FAILURE,
+    UPDATE_NIN_REQUEST,
+    UPDATE_NIN_SUCCESS,
+    UPDATE_NIN_FAILURE,
     CLEAR_USER_PROFILE_ERROR,
     FETCH_USER_PROFILE_REQUEST,
     FETCH_USER_PROFILE_SUCCESS,
@@ -84,6 +87,25 @@ const userProfileReducer = (state = initialState, action: any): UserProfileState
                 error: null,
             };
         case UPDATE_BVN_FAILURE:
+            return {
+                ...state,
+                updating: false,
+                error: action.payload,
+            };
+
+        case UPDATE_NIN_REQUEST:
+            return {
+                ...state,
+                updating: true,
+                error: null,
+            };
+        case UPDATE_NIN_SUCCESS:
+            return {
+                ...state,
+                updating: false,
+                error: null,
+            };
+        case UPDATE_NIN_FAILURE:
             return {
                 ...state,
                 updating: false,

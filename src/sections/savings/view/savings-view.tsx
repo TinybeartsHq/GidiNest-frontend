@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { toast } from 'react-toastify';
+import { ShieldCheck } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 
@@ -39,10 +40,11 @@ import { _nigerianBanks } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { BVNVerificationModal } from 'src/components/verification/bvn';
+import { NINVerificationModal } from 'src/components/verification/nin';
 
 import { FundsActionModal } from './fundmodal';
 import { AnalyticsWidgetSummary } from '../analytics-widget-summary';
-import { updateBVN, fetchUserProfile } from '../../../redux/userProfile/userProfile.actions';
+import { updateBVN, updateNIN, fetchUserProfile } from '../../../redux/userProfile/userProfile.actions';
 import {
   getWallet,
   getSavingsGoals,
@@ -86,21 +88,104 @@ export function SavingsView() {
 
   const [openBvnModal, setOpenBvnModal] = useState(false);
   const [bvn, setBvn] = useState('');
-  // State for verification status (e.g., 'idle', 'loading', 'success', 'error')
   const [verificationStatus, setVerificationStatus] = useState('idle');
   const [verificationError, setVerificationError] = useState(null);
-
   const [isAccountVerified, setIsAccountVerified] = useState(false);
+
+  // NIN verification states
+  const [openNinModal, setOpenNinModal] = useState(false);
+  const [nin, setNin] = useState('');
+  const [ninFirstname, setNinFirstname] = useState('');
+  const [ninLastname, setNinLastname] = useState('');
+  const [ninDob, setNinDob] = useState('');
+  const [ninVerificationStatus, setNinVerificationStatus] = useState('idle');
+  const [ninVerificationError, setNinVerificationError] = useState(null);
+  const [isNinAccountVerified, setIsNinAccountVerified] = useState(false);
+  const [showVerificationChoice, setShowVerificationChoice] = useState(false);
 
   const handleBvnInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setBvn(event.target.value);
   };
 
+  // NIN input handlers
+  const handleNinInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNin(event.target.value);
+  };
+
+  const handleNinFirstnameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNinFirstname(event.target.value);
+  };
+
+  const handleNinLastnameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNinLastname(event.target.value);
+  };
+
+  const handleNinDobChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNinDob(event.target.value);
+  };
+
   const { profile: userProfile } = useSelector((state: any) => state.profile);
 
+  // Pre-fill NIN form with user profile data when modal opens
   useEffect(() => {
-    if (userProfile && !userProfile.has_bvn) {
+    if (openNinModal) {
+      console.log('NIN Modal Opened. User Profile:', userProfile);
+
+      if (userProfile) {
+        console.log('Pre-filling NIN form with:', {
+          first_name: userProfile.first_name,
+          last_name: userProfile.last_name,
+          dob: userProfile.dob,
+        });
+
+        // Pre-fill with profile data
+        if (userProfile.first_name) {
+          setNinFirstname(userProfile.first_name);
+          console.log('Set NIN firstname to:', userProfile.first_name);
+        }
+        if (userProfile.last_name) {
+          setNinLastname(userProfile.last_name);
+          console.log('Set NIN lastname to:', userProfile.last_name);
+        }
+        if (userProfile.dob) {
+          setNinDob(userProfile.dob);
+          console.log('Set NIN DOB to:', userProfile.dob);
+        }
+      } else {
+        console.warn('User profile not loaded yet!');
+      }
+    }
+  }, [openNinModal, userProfile]);
+
+  // Auto-trigger verification modal only for first-time users with no verification
+  useEffect(() => {
+    if (userProfile && !userProfile.has_bvn && !userProfile.has_nin && wallet?.wallet?.account_number) {
+      // Only show once per session to avoid annoyance
+      const hasShownModal = sessionStorage.getItem('verificationModalShown');
+      if (!hasShownModal) {
+        setShowVerificationChoice(true);
+        sessionStorage.setItem('verificationModalShown', 'true');
+      }
+    }
+  }, [userProfile, wallet]);
+
+  // Handle URL parameters for verification
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const verifyType = urlParams.get('verify');
+
+    if (verifyType === 'bvn' && !userProfile?.has_bvn) {
       setOpenBvnModal(true);
+      // Clean URL
+      window.history.replaceState({}, '', '/savings');
+    } else if (verifyType === 'nin' && !userProfile?.has_nin) {
+      setOpenNinModal(true);
+      // Clean URL
+      window.history.replaceState({}, '', '/savings');
+    } else if (verifyType) {
+      // If user clicks verify button but already verified, show choice dialog
+      setShowVerificationChoice(true);
+      window.history.replaceState({}, '', '/savings');
     }
   }, [userProfile]);
 
@@ -125,6 +210,7 @@ export function SavingsView() {
     }
 
     if (isAuthenticated) {
+      dispatch(fetchUserProfile()); // Fetch user profile to ensure it's loaded
       dispatch(getWallet());
       dispatch(getSavingsGoals());
       dispatch(getRecentSavingTransactions());
@@ -335,6 +421,47 @@ export function SavingsView() {
       setIsAccountVerified(false);
     }
   }, [bvn]);
+
+  // NIN verification handlers
+  const handleCloseNinModal = useCallback(() => {
+    if (ninVerificationStatus !== 'loading') {
+      setOpenNinModal(false);
+      setNinVerificationStatus('idle');
+      setNin('');
+      setNinFirstname('');
+      setNinLastname('');
+      setNinDob('');
+    }
+  }, [ninVerificationStatus]);
+
+  const handleVerifyNin = useCallback(async () => {
+    if (nin.length !== 11 || !ninFirstname || !ninLastname || !ninDob) {
+      setNinVerificationStatus('error');
+      return;
+    }
+
+    setNinVerificationStatus('loading');
+
+    const result = await dispatch(updateNIN({
+      nin,
+      firstname: ninFirstname,
+      lastname: ninLastname,
+      dob: ninDob,
+    }));
+
+    if (result.success) {
+      setNinVerificationStatus('success');
+      setIsNinAccountVerified(true);
+
+      toast('Account verified successfully with NIN');
+
+      await dispatch(fetchUserProfile());
+    } else {
+      setNinVerificationStatus('error');
+      setNinVerificationError(result.error);
+      setIsNinAccountVerified(false);
+    }
+  }, [nin, ninFirstname, ninLastname, ninDob]);
 
   const currentSummary = summary || { totalBalance: 0, currency: '₦', lastUpdated: 'N/A' };
 
@@ -1042,6 +1169,118 @@ export function SavingsView() {
         handleVerifyBvn={handleVerifyBvn}
         handleBvnInputChange={handleBvnInputChange}
       />
+
+      <NINVerificationModal
+        nin={nin}
+        firstname={ninFirstname}
+        lastname={ninLastname}
+        dob={ninDob}
+        handleNinInputChange={handleNinInputChange}
+        handleFirstnameChange={handleNinFirstnameChange}
+        handleLastnameChange={handleNinLastnameChange}
+        handleDobChange={handleNinDobChange}
+        openNinModal={openNinModal && !isNinAccountVerified}
+        handleCloseNinModal={handleCloseNinModal}
+        verificationStatus={ninVerificationStatus}
+        verificationError={ninVerificationError}
+        handleVerifyNin={handleVerifyNin}
+      />
+
+      {/* Verification Choice Dialog */}
+      <Dialog
+        open={showVerificationChoice}
+        onClose={() => setShowVerificationChoice(false)}
+        aria-labelledby="verification-choice-title"
+        PaperProps={{
+          sx: {
+            minWidth: { xs: '90%', sm: 400 },
+            p: 2,
+          },
+        }}
+      >
+        <DialogTitle id="verification-choice-title" sx={{ pb: 1 }}>
+          <Typography variant="h6">
+            {!userProfile?.has_bvn && !userProfile?.has_nin && 'Account Verification Required'}
+            {userProfile?.has_bvn && !userProfile?.has_nin && 'Add NIN Verification'}
+            {!userProfile?.has_bvn && userProfile?.has_nin && 'Add BVN Verification'}
+          </Typography>
+        </DialogTitle>
+        <DialogContent dividers sx={{ pt: 2, pb: 2 }}>
+          {/* Show current verification status if any */}
+          {(userProfile?.has_bvn || userProfile?.has_nin) && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              <AlertTitle>Current Status</AlertTitle>
+              You have verified with {userProfile?.has_bvn ? 'BVN' : 'NIN'}. Add{' '}
+              {userProfile?.has_bvn ? 'NIN' : 'BVN'} verification to upgrade your account tier and
+              increase transaction limits.
+            </Alert>
+          )}
+
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {!userProfile?.has_bvn && !userProfile?.has_nin &&
+              'To unlock all GidiNest features and ensure the security of your funds, please verify your account. You can choose to verify with either your BVN or NIN.'}
+            {(userProfile?.has_bvn || userProfile?.has_nin) &&
+              'Choose an additional verification method to fully secure your account and unlock higher limits.'}
+          </Typography>
+
+          <Stack spacing={2}>
+            {!userProfile?.has_bvn && (
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                onClick={() => {
+                  setShowVerificationChoice(false);
+                  setOpenBvnModal(true);
+                }}
+                startIcon={<ShieldCheck size={18} />}
+              >
+                {userProfile?.has_nin ? 'Add BVN Verification' : 'Verify with BVN'}
+              </Button>
+            )}
+            {!userProfile?.has_nin && (
+              <Button
+                variant={userProfile?.has_bvn ? 'contained' : 'outlined'}
+                color="primary"
+                fullWidth
+                onClick={() => {
+                  setShowVerificationChoice(false);
+                  setOpenNinModal(true);
+                }}
+                startIcon={<ShieldCheck size={18} />}
+              >
+                {userProfile?.has_bvn ? 'Add NIN Verification' : 'Verify with NIN'}
+              </Button>
+            )}
+          </Stack>
+
+          {/* Show benefits of full verification */}
+          {(userProfile?.has_bvn || userProfile?.has_nin) && !(userProfile?.has_bvn && userProfile?.has_nin) && (
+            <Box sx={{ mt: 2, p: 2, backgroundColor: 'background.neutral', borderRadius: 1 }}>
+              <Typography variant="caption" fontWeight={600} display="block" gutterBottom>
+                Benefits of Full Verification:
+              </Typography>
+              <Typography variant="caption" display="block">
+                • Higher daily transaction limits
+              </Typography>
+              <Typography variant="caption" display="block">
+                • Increased account balance cap
+              </Typography>
+              <Typography variant="caption" display="block">
+                • Priority customer support
+              </Typography>
+              <Typography variant="caption" display="block">
+                • Access to premium features
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowVerificationChoice(false)} color="inherit">
+            {userProfile?.has_bvn || userProfile?.has_nin ? 'Maybe Later' : 'Later'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </DashboardContent>
   );
 }
