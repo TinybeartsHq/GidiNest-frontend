@@ -1,8 +1,8 @@
+import { toast } from 'react-toastify';
 import { useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Box from '@mui/material/Box';
-import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -27,7 +27,7 @@ export function ForgotPasswordView() {
   const router = useRouter();
   const dispatch: AppDispatch = useDispatch();
 
-  const { loading, error } = useSelector((state: RootState) => state.auth);
+  const { loading } = useSelector((state: RootState) => state.auth);
 
   // State management
   const [step, setStep] = useState<'email' | 'otp' | 'password'>('email');
@@ -37,11 +37,11 @@ export function ForgotPasswordView() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
 
   // Step 1: Request OTP
   const handleRequestOtp = useCallback(async () => {
     if (!email) {
+      toast.error('Please enter your email address');
       return;
     }
 
@@ -49,14 +49,17 @@ export function ForgotPasswordView() {
     const result = await dispatch(requestPasswordResetOtp({ email }));
 
     if (result.success) {
-      setSuccessMessage('OTP sent to your email. Please check your inbox.');
+      toast.success('OTP sent to your email. Please check your inbox.');
       setStep('otp');
+    } else if (result.error) {
+      toast.error(result.error);
     }
   }, [email, dispatch]);
 
   // Step 2: Verify OTP
   const handleVerifyOtp = useCallback(async () => {
     if (!email || !otp) {
+      toast.error('Please enter the OTP code');
       return;
     }
 
@@ -64,8 +67,10 @@ export function ForgotPasswordView() {
     const result = await dispatch(verifyPasswordResetOtp({ email, otp }));
 
     if (result.success) {
-      setSuccessMessage('OTP verified successfully. Please set your new password.');
+      toast.success('OTP verified successfully. Please set your new password.');
       setStep('password');
+    } else if (result.error) {
+      toast.error(result.error);
     }
   }, [email, otp, dispatch]);
 
@@ -73,10 +78,12 @@ export function ForgotPasswordView() {
   const handleResetPassword = useCallback(async () => {
     if (newPassword !== confirmPassword) {
       setPasswordError("Passwords don't match.");
+      toast.error("Passwords don't match.");
       return;
     }
 
     if (!email || !otp || !newPassword) {
+      toast.error('Please fill in all fields');
       return;
     }
 
@@ -86,10 +93,14 @@ export function ForgotPasswordView() {
     );
 
     if (result.success) {
-      setSuccessMessage('Password reset successfully! Redirecting to login...');
+      toast.success('Password reset successfully! Redirecting to login...', {
+        autoClose: 2000,
+      });
       setTimeout(() => {
         router.push('/');
       }, 2000);
+    } else if (result.error) {
+      toast.error(result.error);
     }
   }, [email, otp, newPassword, confirmPassword, dispatch, router]);
 
@@ -120,12 +131,6 @@ export function ForgotPasswordView() {
         }}
         required
       />
-
-      {successMessage && (
-        <Alert severity="success">{successMessage}</Alert>
-      )}
-
-      {error && <Alert severity="error">{error}</Alert>}
 
       <Button
         fullWidth
@@ -167,12 +172,6 @@ export function ForgotPasswordView() {
         }}
         required
       />
-
-      {successMessage && (
-        <Alert severity="success">{successMessage}</Alert>
-      )}
-
-      {error && <Alert severity="error">{error}</Alert>}
 
       <Button
         fullWidth
@@ -263,12 +262,6 @@ export function ForgotPasswordView() {
         helperText={passwordError}
         required
       />
-
-      {successMessage && (
-        <Alert severity="success">{successMessage}</Alert>
-      )}
-
-      {error && <Alert severity="error">{error}</Alert>}
 
       <Button
         fullWidth
