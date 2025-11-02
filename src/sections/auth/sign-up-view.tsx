@@ -7,6 +7,7 @@ import Link from '@mui/material/Link';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Select from '@mui/material/Select';
+import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -15,6 +16,7 @@ import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 import { useRouter } from 'src/routes/hooks';
 
@@ -202,6 +204,16 @@ export function SignUpView() {
       onSubmit={(e) => { e.preventDefault(); handleRegister(); }}
       sx={{ display: 'flex', alignItems: 'flex-end', flexDirection: 'column' }}
     >
+      <Alert severity="info" sx={{ width: '100%', mb: 3 }}>
+        <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
+          Important: Accurate Information Required
+        </Typography>
+        <Typography variant="body2">
+          Please provide accurate information as it will be used for KYC (Know Your Customer) verification.
+          Ensure your details match your official documents.
+        </Typography>
+      </Alert>
+
       <TextField
         fullWidth
         name="phone_number"
@@ -210,7 +222,20 @@ export function SignUpView() {
         placeholder='08082737272'
         onChange={(e) => setPhoneNumber(e.target.value)}
         sx={{ mb: 3 }}
-        slotProps={{ inputLabel: { shrink: true } }}
+        slotProps={{
+          inputLabel: { shrink: true },
+          input: {
+            endAdornment: (
+              <InputAdornment position="end">
+                <Tooltip title="Enter your active phone number. This will be used for OTP verification and account recovery.">
+                  <IconButton edge="end" size="small">
+                    <InfoOutlinedIcon sx={{ fontSize: 20 }} />
+                  </IconButton>
+                </Tooltip>
+              </InputAdornment>
+            ),
+          },
+        }}
         required
       />
       <TextField
@@ -221,10 +246,23 @@ export function SignUpView() {
         placeholder='test@test.com'
         onChange={(e) => setEmail(e.target.value)}
         sx={{ mb: 3 }}
-        slotProps={{ inputLabel: { shrink: true } }}
+        slotProps={{
+          inputLabel: { shrink: true },
+          input: {
+            endAdornment: (
+              <InputAdornment position="end">
+                <Tooltip title="Provide a valid email address for account notifications and verification purposes.">
+                  <IconButton edge="end" size="small">
+                    <InfoOutlinedIcon sx={{ fontSize: 20 }} />
+                  </IconButton>
+                </Tooltip>
+              </InputAdornment>
+            ),
+          },
+        }}
         required
       />
-    
+
       <TextField
         fullWidth
         name="first_name"
@@ -232,7 +270,20 @@ export function SignUpView() {
         value={first_name}
         onChange={(e) => setFirstName(e.target.value)}
         sx={{ mb: 3 }}
-        slotProps={{ inputLabel: { shrink: true } }}
+        slotProps={{
+          inputLabel: { shrink: true },
+          input: {
+            endAdornment: (
+              <InputAdornment position="end">
+                <Tooltip title="Enter your first name exactly as it appears on your official ID or documents.">
+                  <IconButton edge="end" size="small">
+                    <InfoOutlinedIcon sx={{ fontSize: 20 }} />
+                  </IconButton>
+                </Tooltip>
+              </InputAdornment>
+            ),
+          },
+        }}
         required
       />
       <TextField
@@ -242,7 +293,20 @@ export function SignUpView() {
         value={last_name}
         onChange={(e) => setLastName(e.target.value)}
         sx={{ mb: 3 }}
-        slotProps={{ inputLabel: { shrink: true } }}
+        slotProps={{
+          inputLabel: { shrink: true },
+          input: {
+            endAdornment: (
+              <InputAdornment position="end">
+                <Tooltip title="Enter your last name exactly as it appears on your official ID or documents.">
+                  <IconButton edge="end" size="small">
+                    <InfoOutlinedIcon sx={{ fontSize: 20 }} />
+                  </IconButton>
+                </Tooltip>
+              </InputAdornment>
+            ),
+          },
+        }}
         required
       />
 
@@ -311,7 +375,12 @@ export function SignUpView() {
       component="form"
       onSubmit={(e) => { e.preventDefault(); handleCollectProfileDetails(); }}
       sx={{ display: 'flex', alignItems: 'flex-end', flexDirection: 'column' }}
-    >   
+    >
+      <Alert severity="info" sx={{ width: '100%', mb: 3 }}>
+        <Typography variant="body2">
+          Provide accurate personal details. This information must match your government-issued ID for successful KYC verification.
+        </Typography>
+      </Alert>
 
       <TextField
         fullWidth
@@ -321,7 +390,20 @@ export function SignUpView() {
         value={dob}
         onChange={(e) => setDob(e.target.value)}
         sx={{ mb: 3 }}
-        slotProps={{ inputLabel: { shrink: true } }}
+        slotProps={{
+          inputLabel: { shrink: true },
+          input: {
+            endAdornment: (
+              <InputAdornment position="end">
+                <Tooltip title="Enter your date of birth as it appears on your official ID or birth certificate.">
+                  <IconButton edge="end" size="small">
+                    <InfoOutlinedIcon sx={{ fontSize: 20 }} />
+                  </IconButton>
+                </Tooltip>
+              </InputAdornment>
+            ),
+          },
+        }}
         required
       />
 
@@ -333,6 +415,15 @@ export function SignUpView() {
           value={state}
           label="State / Province"
           onChange={(e) => setState(e.target.value)}
+          endAdornment={
+            <InputAdornment position="end" sx={{ mr: 3 }}>
+              <Tooltip title="Select your state of residence as shown on your official documents.">
+                <IconButton edge="end" size="small">
+                  <InfoOutlinedIcon sx={{ fontSize: 20 }} />
+                </IconButton>
+              </Tooltip>
+            </InputAdornment>
+          }
         >
           {country && countryStateData[country as keyof typeof countryStateData]?.map((s) => (
             <MenuItem key={s} value={s}>{s}</MenuItem>
@@ -352,7 +443,20 @@ export function SignUpView() {
          }
         }
         sx={{ mb: 3 }}
-        slotProps={{ inputLabel: { shrink: true } }}
+        slotProps={{
+          inputLabel: { shrink: true },
+          input: {
+            endAdornment: (
+              <InputAdornment position="end">
+                <Tooltip title="Enter your complete residential address. This should match your utility bills or proof of address documents.">
+                  <IconButton edge="end" size="small">
+                    <InfoOutlinedIcon sx={{ fontSize: 20 }} />
+                  </IconButton>
+                </Tooltip>
+              </InputAdornment>
+            ),
+          },
+        }}
         required
       />
 
