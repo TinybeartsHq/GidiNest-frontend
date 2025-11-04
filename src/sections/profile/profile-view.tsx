@@ -43,6 +43,7 @@ export function UserProfileView() {
   } = useSelector((state: any) => state.profile);
 
   const [isEditing, setIsEditing] = useState(false);
+  const [hasShownVerificationToast, setHasShownVerificationToast] = useState(false);
 
   const [editedProfile, setEditedProfile] = useState<UserProfileData | null>(null);
 
@@ -64,6 +65,28 @@ export function UserProfileView() {
       return () => clearTimeout(timer);
     }
   }, [error, dispatch]);
+
+  // Show verification success toast when profile loads (only once)
+  useEffect(() => {
+    if (userProfile && (userProfile?.has_bvn || userProfile?.has_nin) && !hasShownVerificationToast) {
+      const verificationMessage = `Account verified with ${
+        userProfile?.has_bvn && userProfile?.has_nin
+          ? 'both BVN and NIN'
+          : userProfile?.has_bvn
+            ? 'BVN'
+            : 'NIN'
+      }. Your information is secure and protected.`;
+      toast.success(verificationMessage, { autoClose: 5000 });
+      setHasShownVerificationToast(true);
+    }
+  }, [userProfile, hasShownVerificationToast]);
+
+  // Show info toast about matching details when editing
+  useEffect(() => {
+    if (isEditing) {
+      toast.info('Important: Please ensure these details match the information on your BVN or NIN to avoid verification issues.', { autoClose: 6000 });
+    }
+  }, [isEditing]);
 
   const handleEditToggle = useCallback(() => {
     setIsEditing((prev) => !prev);
@@ -292,8 +315,135 @@ export function UserProfileView() {
           </Grid>
 
           <Grid size={{ xs: 12, md: 8 }}>
+            <Typography variant="h5" sx={{ mb: 3 }}>
+              Personal Information
+            </Typography>
+
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="First Name"
+                  name="first_name"
+                  value={editedProfile?.first_name || ''}
+                  onChange={handleFieldChange}
+                  disabled={!isEditing || updating}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="Last Name"
+                  name="last_name"
+                  value={editedProfile?.last_name || ''}
+                  onChange={handleFieldChange}
+                  disabled={!isEditing || updating}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="Email Address"
+                  name="email"
+                  type="email"
+                  value={editedProfile?.email || ''}
+                  onChange={handleFieldChange}
+                  disabled
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="Phone Number"
+                  name="phone"
+                  value={editedProfile?.phone || ''}
+                  onChange={handleFieldChange}
+                  disabled
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="Date of Birth"
+                  name="dob"
+                  type="date"
+                  value={editedProfile?.dob || ''}
+                  onChange={handleFieldChange}
+                  disabled
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="BVN"
+                  name="bvn"
+                  value={editedProfile?.bvn || 'Not provided'}
+                  onChange={handleFieldChange}
+                  disabled
+                  helperText={
+                    editedProfile?.has_bvn
+                      ? '✓ BVN verified and cannot be edited.'
+                      : 'BVN not verified. Go to Savings to verify.'
+                  }
+                  // InputProps={{
+                  //   sx: {
+                  //     backgroundColor: editedProfile?.has_bvn
+                  //       ? 'success.lighter'
+                  //       : 'background.paper',
+                  //     '& input:-webkit-autofill': {
+                  //       WebkitBoxShadow: '0 0 0 100px transparent inset',
+                  //       WebkitTextFillColor: 'inherit',
+                  //     },
+                  //   },
+                  // }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="NIN"
+                  name="nin"
+                  value={editedProfile?.nin || 'Not provided'}
+                  onChange={handleFieldChange}
+                  disabled
+                  helperText={
+                    editedProfile?.has_nin
+                      ? '✓ NIN verified and cannot be edited.'
+                      : 'NIN not verified. Go to Savings to verify.'
+                  }
+                  // InputProps={{
+                  //   sx: {
+                  //     backgroundColor: editedProfile?.has_nin
+                  //       ? 'success.lighter'
+                  //       : 'background.paper',
+                  //     '& input:-webkit-autofill': {
+                  //       WebkitBoxShadow: '0 0 0 100px transparent inset',
+                  //       WebkitTextFillColor: 'inherit',
+                  //     },
+                  //   },
+                  // }}
+                />
+              </Grid>
+            </Grid>
+            {isEditing && (
+              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSaveProfile}
+                  startIcon={<Save size={18} />}
+                  disabled={updating}
+                >
+                  {updating ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </Box>
+            )}
+
             {/* Account Tier & Limits Section */}
-            <Box sx={{ mb: 4, p: 3, backgroundColor: 'background.neutral', borderRadius: 2 }}>
+            <Box sx={{ mt: 4, mb: 4, p: 3, backgroundColor: 'background.neutral', borderRadius: 2 }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
                 Account Tier & Limits
               </Typography>
@@ -409,145 +559,6 @@ export function UserProfileView() {
                 )}
               </Stack>
             </Box>
-
-            <Typography variant="h5" sx={{ mb: 3 }}>
-              Personal Information
-            </Typography>
-
-            {/* Added Note */}
-            <Alert severity="info" sx={{ mb: 3 }}>
-              Important: Please ensure these details match the information on your BVN or NIN to avoid
-              verification issues.
-            </Alert>
-
-            {/* Show verification success message */}
-            {(userProfile?.has_bvn || userProfile?.has_nin) && (
-              <Alert severity="success" sx={{ mb: 3 }}>
-                <AlertTitle>Account Verified</AlertTitle>
-                Your account has been verified with{' '}
-                {userProfile?.has_bvn && userProfile?.has_nin
-                  ? 'both BVN and NIN'
-                  : userProfile?.has_bvn
-                    ? 'BVN'
-                    : 'NIN'}
-                . Your information is secure and protected.
-              </Alert>
-            )}
-
-            <Grid container spacing={3}>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="First Name"
-                  name="first_name"
-                  value={editedProfile?.first_name || ''}
-                  onChange={handleFieldChange}
-                  disabled={!isEditing || updating}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Last Name"
-                  name="last_name"
-                  value={editedProfile?.last_name || ''}
-                  onChange={handleFieldChange}
-                  disabled={!isEditing || updating}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Email Address"
-                  name="email"
-                  type="email"
-                  value={editedProfile?.email || ''}
-                  onChange={handleFieldChange}
-                  disabled
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Phone Number"
-                  name="phone"
-                  value={editedProfile?.phone || ''}
-                  onChange={handleFieldChange}
-                  disabled
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Date of Birth"
-                  name="dob"
-                  type="date"
-                  value={editedProfile?.dob || ''}
-                  onChange={handleFieldChange}
-                  disabled
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="BVN"
-                  name="bvn"
-                  value={editedProfile?.bvn || 'Not provided'}
-                  onChange={handleFieldChange}
-                  disabled
-                  helperText={
-                    editedProfile?.has_bvn
-                      ? '✓ BVN verified and cannot be edited.'
-                      : 'BVN not verified. Go to Savings to verify.'
-                  }
-                  InputProps={{
-                    sx: {
-                      backgroundColor: editedProfile?.has_bvn
-                        ? 'success.lighter'
-                        : 'background.paper',
-                    },
-                  }}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="NIN"
-                  name="nin"
-                  value={editedProfile?.nin || 'Not provided'}
-                  onChange={handleFieldChange}
-                  disabled
-                  helperText={
-                    editedProfile?.has_nin
-                      ? '✓ NIN verified and cannot be edited.'
-                      : 'NIN not verified. Go to Savings to verify.'
-                  }
-                  InputProps={{
-                    sx: {
-                      backgroundColor: editedProfile?.has_nin
-                        ? 'success.lighter'
-                        : 'background.paper',
-                    },
-                  }}
-                />
-              </Grid>
-            </Grid>
-            {isEditing && (
-              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleSaveProfile}
-                  startIcon={<Save size={18} />}
-                  disabled={updating}
-                >
-                  {updating ? 'Saving...' : 'Save Changes'}
-                </Button>
-              </Box>
-            )}
 
             {/* Additional NIN Verification Details */}
             {userProfile?.has_nin && (userProfile?.nin_dob || userProfile?.nin_gender || userProfile?.nin_marital_status) && (

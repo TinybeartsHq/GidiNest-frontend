@@ -66,7 +66,13 @@ export function BVNVerificationModal({
               ? 'BVN must be 11 digits.'
               : 'Your BVN is secure and used for verification purposes only.'
           }
-          sx={{ mb: 2 }}
+          sx={{
+            mb: 2,
+            '& input:-webkit-autofill': {
+              WebkitBoxShadow: '0 0 0 100px transparent inset',
+              WebkitTextFillColor: 'inherit',
+            },
+          }}
           disabled={verificationStatus === 'loading'}
         />
 

@@ -88,6 +88,12 @@ export function NINVerificationModal({
                 ? 'NIN must be 11 digits.'
                 : 'Your NIN is secure and used for verification purposes only.'
             }
+            sx={{
+              '& input:-webkit-autofill': {
+                WebkitBoxShadow: '0 0 0 100px transparent inset',
+                WebkitTextFillColor: 'inherit',
+              },
+            }}
             disabled={verificationStatus === 'loading'}
           />
 
@@ -103,6 +109,12 @@ export function NINVerificationModal({
                 ? 'First name is required.'
                 : 'Enter your first name as it appears on your NIN.'
             }
+            sx={{
+              '& input:-webkit-autofill': {
+                WebkitBoxShadow: '0 0 0 100px transparent inset',
+                WebkitTextFillColor: 'inherit',
+              },
+            }}
             disabled={verificationStatus === 'loading'}
           />
 
@@ -118,6 +130,12 @@ export function NINVerificationModal({
                 ? 'Last name is required.'
                 : 'Enter your last name as it appears on your NIN.'
             }
+            sx={{
+              '& input:-webkit-autofill': {
+                WebkitBoxShadow: '0 0 0 100px transparent inset',
+                WebkitTextFillColor: 'inherit',
+              },
+            }}
             disabled={verificationStatus === 'loading'}
           />
 
@@ -137,6 +155,12 @@ export function NINVerificationModal({
                 ? 'Date of birth is required.'
                 : 'Enter your date of birth as it appears on your NIN.'
             }
+            sx={{
+              '& input:-webkit-autofill': {
+                WebkitBoxShadow: '0 0 0 100px transparent inset',
+                WebkitTextFillColor: 'inherit',
+              },
+            }}
             disabled={verificationStatus === 'loading'}
           />
         </Stack>
