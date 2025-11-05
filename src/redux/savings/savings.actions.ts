@@ -203,20 +203,24 @@ export const getRecentTransactions = (page?: any, rowsPerPage?: any, orderBy?: s
 export const getRecentSavingTransactions = (page?: any, rowsPerPage?: any, orderBy?: string, order?: string, filterName?: string) => async (dispatch: (arg0: { type: string; payload?: any; }) => void) => {
     dispatch({ type: GET_SAVINGS_RECENT_TRANSACTIONS_REQUEST });
     try {
-        const response = await apiClient.get('savings/history/all'); // Example endpoint
+        const response = await apiClient.get('savings/history/all');
+        console.log('Savings History Response:', response.data);
+
         if (response.data.status) {
+            console.log('Savings Transactions Data:', response.data.data);
             dispatch({
                 type: GET_SAVINGS_RECENT_TRANSACTIONS_SUCCESS,
                 payload: response.data.data,
             });
         } else {
+            console.log('Savings History Failed:', response.data.message);
             dispatch({
                 type: GET_SAVINGS_RECENT_TRANSACTIONS_FAILURE,
                 payload: response.data.message || 'Failed to fetch recent transactions.',
             });
         }
     } catch (error: any) {
-        console.error('Error fetching recent transactions:', error.response ? error.response.data : error.message);
+        console.error('Error fetching savings transactions:', error.response ? error.response.data : error.message);
         dispatch({
             type: GET_SAVINGS_RECENT_TRANSACTIONS_FAILURE,
             payload: error.response?.data?.detail || error.message || 'Network Error',
