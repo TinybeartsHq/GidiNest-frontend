@@ -316,11 +316,11 @@ export function SavingsView() {
       );
 
       console.log('Validation Result:', result);
-      console.log('Account Name Path:', result?.data?.data?.accountName);
+      console.log('Account Name Path:', result?.data?.data?.account_name);
 
       if (result.success) {
-        setWithdrawalAccountName(result?.data?.data?.accountName);
-        toast.success(`Account validated: ${result?.data?.data?.accountName}`);
+        setWithdrawalAccountName(result?.data?.data?.account_name);
+        toast.success(`Account validated: ${result?.data?.data?.account_name}`);
       } else {
         toast.error(`Account validation failed: ${result.error || 'Invalid account number or bank'}`);
       }

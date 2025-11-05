@@ -359,7 +359,7 @@ export const validateAccountNumber = (accountData: any) => async (dispatch: (arg
 
         console.log('Validate Account Response:', response.data);
 
-        if (response.data.succeeded) {
+        if (response.data.status) {
             dispatch({
                 type: INITIATE_WALLET_WITHDRAWAL_SUCCESS,
                 payload: response.data.data,
