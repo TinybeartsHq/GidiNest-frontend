@@ -314,6 +314,10 @@ export function SavingsView() {
           bank_code: withdrawalBankCode,
         })
       );
+
+      console.log('Validation Result:', result);
+      console.log('Account Name Path:', result?.data?.data?.accountName);
+
       if (result.success) {
         setWithdrawalAccountName(result?.data?.data?.accountName);
         toast.success(`Account validated: ${result?.data?.data?.accountName}`);

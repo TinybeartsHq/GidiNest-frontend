@@ -357,6 +357,8 @@ export const validateAccountNumber = (accountData: any) => async (dispatch: (arg
     try {
         const response = await apiClient.post('wallet/resolve-bank-account', accountData);
 
+        console.log('Validate Account Response:', response.data);
+
         if (response.data.succeeded) {
             dispatch({
                 type: INITIATE_WALLET_WITHDRAWAL_SUCCESS,
