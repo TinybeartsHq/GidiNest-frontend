@@ -227,6 +227,13 @@ export function SavingsView() {
     };
   }, [isAuthenticated, dispatch, router]);
 
+  // Clear account name when account number or bank changes
+  useEffect(() => {
+    if (withdrawalAccountName) {
+      setWithdrawalAccountName('');
+    }
+  }, [withdrawalAccountNum, withdrawalBankCode]);
+
   const handleOpenDepositModal = useCallback(() => setOpenDepositModal(true), []);
   const handleCloseDepositModal = useCallback(() => {
     setOpenDepositModal(false);
@@ -239,6 +246,7 @@ export function SavingsView() {
     setWithdrawalAccountNum('');
     setWithdrawalBank('');
     setWithdrawalBankCode('');
+    setWithdrawalAccountName('');
   }, []);
 
   const handleCloseGoalInfoModal = useCallback(() => {
@@ -307,9 +315,10 @@ export function SavingsView() {
         })
       );
       if (result.success) {
-        setWithdrawalAccountName(result?.data?.data?.data?.account_name);
+        setWithdrawalAccountName(result?.data?.data?.accountName);
+        toast.success(`Account validated: ${result?.data?.data?.accountName}`);
       } else {
-        alert(`Account validation failed: ${result.error || 'An unknown error occurred.'}`);
+        toast.error(`Account validation failed: ${result.error || 'Invalid account number or bank'}`);
       }
     } else {
       const result = await dispatch(
@@ -323,13 +332,13 @@ export function SavingsView() {
       );
 
       if (result.success) {
-        alert(
-          `Withdrawal of ${withdrawalAmount} to ${withdrawalAccountNum} initiated. Please note, this transaction is linked to your BVN for security.`
+        toast.success(
+          `Withdrawal of ₦${parseFloat(withdrawalAmount).toLocaleString()} to ${withdrawalAccountName} initiated successfully!`
         );
         dispatch(getRecentSavingTransactions());
         handleCloseWithdrawModal();
       } else {
-        alert(`Withdrawal failed: ${result.error || 'An unknown error occurred.'}`);
+        toast.error(`Withdrawal failed: ${result.error || 'Please try again or contact support'}`);
       }
     }
   }, [

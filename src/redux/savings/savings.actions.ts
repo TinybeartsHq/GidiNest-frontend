@@ -355,9 +355,9 @@ export const initiateWalletWithdrawal = (withdrawalData: any) => async (dispatch
 export const validateAccountNumber = (accountData: any) => async (dispatch: (arg0: { type: string; payload?: any; }) => void) => {
     dispatch({ type: INITIATE_WALLET_WITHDRAWAL_REQUEST });
     try {
-        const response = await apiClient.post('wallet/resolve-bank-account', accountData); // Example endpoint
+        const response = await apiClient.post('wallet/resolve-bank-account', accountData);
 
-        if (response.data.status) {
+        if (response.data.succeeded) {
             dispatch({
                 type: INITIATE_WALLET_WITHDRAWAL_SUCCESS,
                 payload: response.data.data,
@@ -369,7 +369,7 @@ export const validateAccountNumber = (accountData: any) => async (dispatch: (arg
 
             dispatch({
                 type: INITIATE_WALLET_WITHDRAWAL_FAILURE,
-                payload: response.data.detail || 'Failed to validating account.',
+                payload: response.data.message || 'Failed to validate account.',
             });
 
             return { success: false, error: response.data.message };
@@ -378,9 +378,9 @@ export const validateAccountNumber = (accountData: any) => async (dispatch: (arg
         console.error('Error validating account:', error.response ? error.response.data : error.message);
         dispatch({
             type: INITIATE_WALLET_WITHDRAWAL_FAILURE,
-            payload: error.response?.data?.detail || error.message || 'Network Error',
+            payload: error.response?.data?.message || error.message || 'Network Error',
         });
-        return { success: false, error: error.response?.data?.detail || error.message || 'Network Error' };
+        return { success: false, error: error.response?.data?.message || error.message || 'Network Error' };
     }
 };
 
