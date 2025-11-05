@@ -52,6 +52,7 @@ import {
   initiateWithdrawal,
   deleteSavingsGoals,
   validateAccountNumber,
+  getRecentTransactions,
   initiateWalletWithdrawal,
   getRecentSavingTransactions,
 } from '../../../redux/savings/savings.actions';
@@ -62,7 +63,7 @@ export function SavingsView() {
   const dispatch: AppDispatch = useDispatch();
   const router = useRouter();
 
-  const { summary, goals, savings_transactions, wallet, banks, loading, error } = useSelector(
+  const { summary, goals, savings_transactions, transactions, wallet, banks, loading, error } = useSelector(
     (state: any) => state.savings
   );
 
@@ -213,7 +214,8 @@ export function SavingsView() {
       dispatch(fetchUserProfile()); // Fetch user profile to ensure it's loaded
       dispatch(getWallet());
       dispatch(getSavingsGoals());
-      dispatch(getRecentSavingTransactions());
+      dispatch(getRecentSavingTransactions()); // Savings goal transactions
+      dispatch(getRecentTransactions()); // Wallet transactions
       dispatch(getBanks()); // Fetch banks list from API
       startPolling();
       document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -697,11 +699,16 @@ export function SavingsView() {
         {/* Savings History / Recent Transactions */}
         <Grid size={{ xs: 12 }}>
           <Typography variant="h5" sx={{ mb: 3, mt: 5 }}>
-            Savings Transaction History
+            {savings_transactions && savings_transactions.length > 0 ? 'Savings' : 'Wallet'} Transaction History
           </Typography>
+          {savings_transactions && savings_transactions.length === 0 && transactions && transactions.length > 0 && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              No savings goal transactions yet. Showing wallet transactions instead.
+            </Alert>
+          )}
           <Card>
             <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 650 }} aria-label="savings history table">
+              <Table sx={{ minWidth: 650 }} aria-label="transaction history table">
                 <TableHead>
                   <TableRow>
                     <TableCell>Date</TableCell>
@@ -715,32 +722,32 @@ export function SavingsView() {
                     <TableRow>
                       <TableCell colSpan={4} align="center">
                         <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>
-                          Loading your savings transactions....
+                          Loading transactions...
                         </Typography>
                       </TableCell>
                     </TableRow>
-                  ) : savings_transactions.length === 0 ? (
+                  ) : (savings_transactions && savings_transactions.length > 0 ? savings_transactions : transactions || []).length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={4} align="center">
                         <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>
-                          No recent transactions found.
+                          No transactions found.
                         </Typography>
                       </TableCell>
                     </TableRow>
                   ) : (
-                    savings_transactions.map((row: any) => (
+                    (savings_transactions && savings_transactions.length > 0 ? savings_transactions : transactions || []).map((row: any) => (
                       <TableRow
                         key={row.id}
                         sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                       >
                         <TableCell component="th" scope="row">
-                          {new Date(row.timestamp).toLocaleDateString()}
+                          {new Date(row.created_at || row.timestamp).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
                           <Typography
                             variant="subtitle2"
                             color={
-                              row.transaction_type === 'contribution'
+                              (row.transaction_type === 'contribution' || row.transaction_type === 'credit')
                                 ? 'success.main'
                                 : 'error.main'
                             }
@@ -751,7 +758,7 @@ export function SavingsView() {
                         </TableCell>
                         <TableCell>{row.description}</TableCell>
                         <TableCell align="right">
-                          {formatCurrency(row.amount, currentSummary.currency)}
+                          ₦{parseFloat(row.amount).toLocaleString()}
                         </TableCell>
                       </TableRow>
                     ))
