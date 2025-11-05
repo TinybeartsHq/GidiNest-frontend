@@ -330,7 +330,7 @@ export function SavingsView() {
           amount: parseFloat(withdrawalAmount),
           account_number: withdrawalAccountNum,
           bank_name: withdrawalBankMainName,
-          bank_account_name: withdrawalAccountName,
+          account_name: withdrawalAccountName,
           bank_code: withdrawalBankCode,
         })
       );
