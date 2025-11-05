@@ -36,7 +36,6 @@ import { Chip, Tooltip, Divider, IconButton, LinearProgress } from '@mui/materia
 
 import { useRouter } from 'src/routes/hooks';
 
-import { _nigerianBanks } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { BVNVerificationModal } from 'src/components/verification/bvn';
@@ -46,6 +45,7 @@ import { FundsActionModal } from './fundmodal';
 import { AnalyticsWidgetSummary } from '../analytics-widget-summary';
 import { updateBVN, updateNIN, fetchUserProfile } from '../../../redux/userProfile/userProfile.actions';
 import {
+  getBanks,
   getWallet,
   getSavingsGoals,
   createSavingsGoal,
@@ -62,7 +62,7 @@ export function SavingsView() {
   const dispatch: AppDispatch = useDispatch();
   const router = useRouter();
 
-  const { summary, goals, savings_transactions, wallet, loading, error } = useSelector(
+  const { summary, goals, savings_transactions, wallet, banks, loading, error } = useSelector(
     (state: any) => state.savings
   );
 
@@ -214,6 +214,7 @@ export function SavingsView() {
       dispatch(getWallet());
       dispatch(getSavingsGoals());
       dispatch(getRecentSavingTransactions());
+      dispatch(getBanks()); // Fetch banks list from API
       startPolling();
       document.addEventListener('visibilitychange', handleVisibilityChange);
     } else if (isAuthenticated === false) {
@@ -381,14 +382,14 @@ export function SavingsView() {
   const handleWithdrawalBankChange = useCallback((event: { target: { value: string } }) => {
     const selectedBankValue = event.target.value;
     setWithdrawalBank(selectedBankValue);
-    const bank = _nigerianBanks.find((b) => b.code === selectedBankValue);
+    const bank = banks.find((b: any) => b.bankcode === selectedBankValue);
     if (bank) {
-      setWithdrawalBankCode(bank.code);
-      setWithdrawalBankMainName(bank.label);
+      setWithdrawalBankCode(bank.bankcode);
+      setWithdrawalBankMainName(bank.name);
     } else {
       setWithdrawalBankCode('');
     }
-  }, []);
+  }, [banks]);
 
   const handleCloseBvnModal = useCallback(() => {
     if (verificationStatus !== 'loading') {
@@ -860,11 +861,17 @@ export function SavingsView() {
               label="Bank Name"
               onChange={handleWithdrawalBankChange}
             >
-              {_nigerianBanks.map((bank) => (
-                <MenuItem key={bank.value} value={bank.code}>
-                  {bank.label}
+              {banks && banks.length > 0 ? (
+                banks.map((bank: any) => (
+                  <MenuItem key={bank.bankcode} value={bank.bankcode}>
+                    {bank.name}
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem value="" disabled>
+                  Loading banks...
                 </MenuItem>
-              ))}
+              )}
             </Select>
           </FormControl>
 

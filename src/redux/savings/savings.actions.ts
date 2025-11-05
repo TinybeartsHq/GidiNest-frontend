@@ -37,8 +37,11 @@ import {
 
     GET_SAVINGS_RECENT_TRANSACTIONS_REQUEST,
     GET_SAVINGS_RECENT_TRANSACTIONS_SUCCESS,
-    GET_SAVINGS_RECENT_TRANSACTIONS_FAILURE,   
+    GET_SAVINGS_RECENT_TRANSACTIONS_FAILURE,
 
+    GET_BANKS_REQUEST,
+    GET_BANKS_SUCCESS,
+    GET_BANKS_FAILURE,
 
 } from './savings.types';
 
@@ -381,5 +384,28 @@ export const validateAccountNumber = (accountData: any) => async (dispatch: (arg
     }
 };
 
+// Action to get list of banks
+export const getBanks = () => async (dispatch: (arg0: { type: string; payload?: any; }) => void) => {
+    dispatch({ type: GET_BANKS_REQUEST });
+    try {
+        const response = await apiClient.get('wallet/banks');
+        if (response.data.status) {
+            dispatch({
+                type: GET_BANKS_SUCCESS,
+                payload: response.data.data,
+            });
+        } else {
+            dispatch({
+                type: GET_BANKS_FAILURE,
+                payload: response.data.message || 'Failed to fetch banks list.',
+            });
+        }
+    } catch (error: any) {
+        console.error('Error fetching banks:', error.response ? error.response.data : error.message);
+        dispatch({
+            type: GET_BANKS_FAILURE,
+            payload: error.response?.data?.detail || error.message || 'Network Error',
+        });
+    }
+};
 
- 

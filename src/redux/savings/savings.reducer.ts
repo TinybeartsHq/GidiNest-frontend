@@ -43,8 +43,9 @@ import {
     GET_SAVINGS_RECENT_TRANSACTIONS_SUCCESS,
     GET_SAVINGS_RECENT_TRANSACTIONS_FAILURE,
 
-    
-
+    GET_BANKS_REQUEST,
+    GET_BANKS_SUCCESS,
+    GET_BANKS_FAILURE,
 
 } from './savings.types';
 
@@ -53,8 +54,9 @@ const initialState = {
     savingsGoals: [], // Renamed for clarity to avoid conflict with `goals` in SavingsView
     summary: null, // New: For total balance, etc.
     goals: [],     // New: For individual savings goals in SavingsView
-    transactions: [],  
-    savings_transactions: [], 
+    transactions: [],
+    savings_transactions: [],
+    banks: [],     // New: For list of banks from API
     loading: false,
     error: null,
 };
@@ -123,7 +125,15 @@ const savingsReducer = (state = initialState, action: { type: any; payload: any;
             };
         case DELETE_SAVINGS_GOAL_FAILURE:
             return { ...state, loading: false, error: action.payload };
-   
+
+        // Banks
+        case GET_BANKS_REQUEST:
+            return { ...state, loading: true, error: null };
+        case GET_BANKS_SUCCESS:
+            return { ...state, loading: false, banks: action.payload };
+        case GET_BANKS_FAILURE:
+            return { ...state, loading: false, error: action.payload };
+
         case CLEAR_SAVINGS_ERROR:
             return { ...state, error: null };
 
