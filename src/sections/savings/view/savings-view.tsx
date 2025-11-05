@@ -385,7 +385,7 @@ export function SavingsView() {
     const bank = banks.find((b: any) => b.bankcode === selectedBankValue);
     if (bank) {
       setWithdrawalBankCode(bank.bankcode);
-      setWithdrawalBankMainName(bank.name);
+      setWithdrawalBankMainName(bank.bankname);
     } else {
       setWithdrawalBankCode('');
     }
@@ -864,7 +864,7 @@ export function SavingsView() {
               {banks && banks.length > 0 ? (
                 banks.map((bank: any) => (
                   <MenuItem key={bank.bankcode} value={bank.bankcode}>
-                    {bank.name}
+                    {bank.bankname}
                   </MenuItem>
                 ))
               ) : (

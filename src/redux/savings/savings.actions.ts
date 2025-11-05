@@ -389,7 +389,7 @@ export const getBanks = () => async (dispatch: (arg0: { type: string; payload?: 
     dispatch({ type: GET_BANKS_REQUEST });
     try {
         const response = await apiClient.get('wallet/banks');
-        if (response.data.status) {
+        if (response.data.succeeded) {
             dispatch({
                 type: GET_BANKS_SUCCESS,
                 payload: response.data.data,
