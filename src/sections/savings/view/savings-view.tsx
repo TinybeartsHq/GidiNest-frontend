@@ -40,6 +40,7 @@ import { DashboardContent } from 'src/layouts/dashboard';
 
 import { BVNVerificationModal } from 'src/components/verification/bvn';
 import { NINVerificationModal } from 'src/components/verification/nin';
+import { TransactionPinModal } from 'src/components/verification/transaction-pin';
 
 import { FundsActionModal } from './fundmodal';
 import { AnalyticsWidgetSummary } from '../analytics-widget-summary';
@@ -55,6 +56,8 @@ import {
   getRecentTransactions,
   initiateWalletWithdrawal,
   getRecentSavingTransactions,
+  setTransactionPin,
+  verifyTransactionPin,
 } from '../../../redux/savings/savings.actions';
 
 import type { AppDispatch } from '../../../redux/types';
@@ -103,6 +106,15 @@ export function SavingsView() {
   const [ninVerificationError, setNinVerificationError] = useState(null);
   const [isNinAccountVerified, setIsNinAccountVerified] = useState(false);
   const [showVerificationChoice, setShowVerificationChoice] = useState(false);
+
+  // Transaction PIN states
+  const [openPinModal, setOpenPinModal] = useState(false);
+  const [pinModalMode, setPinModalMode] = useState<'setup' | 'verify' | 'update'>('setup');
+  const [pinStatus, setPinStatus] = useState('idle');
+  const [pinError, setPinError] = useState<string | null>(null);
+  const [verifiedPin, setVerifiedPin] = useState<string | null>(null); // Store verified PIN for withdrawal
+  const [hasTransactionPin, setHasTransactionPin] = useState(false); // Track if PIN is set
+  const [pendingWithdrawal, setPendingWithdrawal] = useState<any>(null); // Store withdrawal data when PIN verification is needed
 
   const handleBvnInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setBvn(event.target.value);
@@ -169,6 +181,13 @@ export function SavingsView() {
       }
     }
   }, [userProfile, wallet]);
+
+  // Check if transaction PIN is set from wallet data
+  useEffect(() => {
+    if (wallet?.wallet?.has_transaction_pin !== undefined) {
+      setHasTransactionPin(wallet.wallet.has_transaction_pin);
+    }
+  }, [wallet]);
 
   // Handle URL parameters for verification
   useEffect(() => {
@@ -241,7 +260,21 @@ export function SavingsView() {
     setOpenDepositModal(false);
   }, []);
 
-  const handleOpenWithdrawModal = useCallback(() => setOpenWithdrawModal(true), []);
+  const handleOpenWithdrawModal = useCallback(() => {
+    // Check if PIN is set - we'll check wallet data or assume it's not set initially
+    // For now, we'll check if wallet has a has_transaction_pin flag
+    const pinIsSet = wallet?.wallet?.has_transaction_pin || hasTransactionPin;
+    
+    if (!pinIsSet) {
+      // Show PIN setup modal first
+      setPinModalMode('setup');
+      setOpenPinModal(true);
+      // Don't open withdrawal modal yet - wait for PIN setup
+    } else {
+      // PIN is set, open withdrawal modal normally
+      setOpenWithdrawModal(true);
+    }
+  }, [wallet, hasTransactionPin]);
   const handleCloseWithdrawModal = useCallback(() => {
     setOpenWithdrawModal(false);
     setWithdrawalAmount('');
@@ -327,24 +360,49 @@ export function SavingsView() {
         toast.error(`Account validation failed: ${result.error || 'Invalid account number or bank'}`);
       }
     } else {
-      const result = await dispatch(
-        initiateWalletWithdrawal({
+      // Check if PIN is set and verified
+      const pinIsSet = wallet?.wallet?.has_transaction_pin || hasTransactionPin;
+      
+      if (pinIsSet && !verifiedPin) {
+        // PIN is set but not verified yet - show verification modal
+        setPendingWithdrawal({
           amount: parseFloat(withdrawalAmount),
           account_number: withdrawalAccountNum,
           bank_name: withdrawalBankMainName,
           account_name: withdrawalAccountName,
           bank_code: withdrawalBankCode,
-        })
-      );
+        });
+        setPinModalMode('verify');
+        setOpenPinModal(true);
+        return;
+      }
+
+      // Proceed with withdrawal (PIN is verified or not required)
+      const withdrawalData: any = {
+        amount: parseFloat(withdrawalAmount),
+        account_number: withdrawalAccountNum,
+        bank_name: withdrawalBankMainName,
+        account_name: withdrawalAccountName,
+        bank_code: withdrawalBankCode,
+      };
+
+      // Include transaction_pin if verified
+      if (verifiedPin) {
+        withdrawalData.transaction_pin = verifiedPin;
+      }
+
+      const result = await dispatch(initiateWalletWithdrawal(withdrawalData));
 
       if (result.success) {
         toast.success(
           `Withdrawal of ₦${parseFloat(withdrawalAmount).toLocaleString()} to ${withdrawalAccountName} initiated successfully!`
         );
         dispatch(getRecentSavingTransactions());
+        setVerifiedPin(null); // Clear verified PIN after successful withdrawal
         handleCloseWithdrawModal();
       } else {
         toast.error(`Withdrawal failed: ${result.error || 'Please try again or contact support'}`);
+        setVerifiedPin(null); // Clear verified PIN on failure
       }
     }
   }, [
@@ -352,9 +410,13 @@ export function SavingsView() {
     withdrawalAccountNum,
     withdrawalBankCode,
     withdrawalAccountName,
+    withdrawalBankMainName,
     handleCloseWithdrawModal,
     dispatch,
     summary?.currency,
+    wallet,
+    hasTransactionPin,
+    verifiedPin,
   ]);
 
   const handleSubmitCreateGoal = useCallback(async () => {
@@ -413,6 +475,94 @@ export function SavingsView() {
       setBvn('');
     }
   }, [verificationStatus]);
+
+  // Transaction PIN handlers
+  const handleClosePinModal = useCallback(() => {
+    if (pinStatus !== 'loading') {
+      setOpenPinModal(false);
+      setPinStatus('idle');
+      setPinError(null);
+    }
+  }, [pinStatus]);
+
+  const handleSetPin = useCallback(async (pin: string, oldPin?: string) => {
+    setPinStatus('loading');
+    setPinError(null);
+
+    const result = await dispatch(setTransactionPin({ pin, ...(oldPin && { old_pin: oldPin }) }));
+
+    if (result.success) {
+      setPinStatus('success');
+      setHasTransactionPin(true);
+      toast.success('Transaction PIN set successfully!');
+      
+      // If PIN was set during withdrawal flow, open withdrawal modal
+      if (pinModalMode === 'setup') {
+        setTimeout(() => {
+          setOpenPinModal(false);
+          setPinStatus('idle');
+          setOpenWithdrawModal(true);
+        }, 1000);
+      }
+    } else {
+      setPinStatus('error');
+      setPinError(result.error || 'Failed to set PIN');
+    }
+  }, [dispatch, pinModalMode]);
+
+  const handleVerifyPin = useCallback(async (pin: string) => {
+    setPinStatus('loading');
+    setPinError(null);
+
+    const result = await dispatch(verifyTransactionPin(pin));
+
+    if (result.success) {
+      setPinStatus('success');
+      setVerifiedPin(pin);
+      toast.success('PIN verified successfully!');
+      
+      // If there's a pending withdrawal, proceed with it
+      if (pendingWithdrawal) {
+        setTimeout(async () => {
+          setOpenPinModal(false);
+          setPinStatus('idle');
+          
+          const withdrawalData: any = {
+            ...pendingWithdrawal,
+            transaction_pin: pin,
+          };
+
+          const withdrawalResult = await dispatch(initiateWalletWithdrawal(withdrawalData));
+
+          if (withdrawalResult.success) {
+            toast.success(
+              `Withdrawal of ₦${pendingWithdrawal.amount.toLocaleString()} to ${pendingWithdrawal.account_name} initiated successfully!`
+            );
+            dispatch(getRecentSavingTransactions());
+            handleCloseWithdrawModal();
+          } else {
+            toast.error(`Withdrawal failed: ${withdrawalResult.error || 'Please try again or contact support'}`);
+          }
+          
+          setPendingWithdrawal(null);
+          setVerifiedPin(null);
+        }, 1000);
+      }
+    } else {
+      setPinStatus('error');
+      setPinError(result.error || 'Invalid PIN');
+    }
+  }, [dispatch, pendingWithdrawal, handleCloseWithdrawModal]);
+
+  const handlePinVerified = useCallback(() => {
+    // This is called when PIN verification succeeds
+    // The withdrawal will proceed automatically in handleVerifyPin
+  }, []);
+
+  const handlePinSet = useCallback(() => {
+    // This is called when PIN setup succeeds
+    // The withdrawal modal will open automatically in handleSetPin
+  }, []);
 
   const handleVerifyBvn = useCallback(async () => {
     if (bvn.length !== 11) {
@@ -1211,6 +1361,18 @@ export function SavingsView() {
         verificationStatus={ninVerificationStatus}
         verificationError={ninVerificationError}
         handleVerifyNin={handleVerifyNin}
+      />
+
+      <TransactionPinModal
+        mode={pinModalMode}
+        openPinModal={openPinModal}
+        handleClosePinModal={handleClosePinModal}
+        pinStatus={pinStatus}
+        pinError={pinError}
+        handleSetPin={handleSetPin}
+        handleVerifyPin={handleVerifyPin}
+        onPinVerified={handlePinVerified}
+        onPinSet={handlePinSet}
       />
 
       {/* Verification Choice Dialog */}

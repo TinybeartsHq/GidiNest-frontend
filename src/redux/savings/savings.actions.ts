@@ -43,6 +43,13 @@ import {
     GET_BANKS_SUCCESS,
     GET_BANKS_FAILURE,
 
+    SET_TRANSACTION_PIN_REQUEST,
+    SET_TRANSACTION_PIN_SUCCESS,
+    SET_TRANSACTION_PIN_FAILURE,
+    VERIFY_TRANSACTION_PIN_REQUEST,
+    VERIFY_TRANSACTION_PIN_SUCCESS,
+    VERIFY_TRANSACTION_PIN_FAILURE,
+
 } from './savings.types';
 
 // Action to get dashboard analytics
@@ -412,6 +419,62 @@ export const getBanks = () => async (dispatch: (arg0: { type: string; payload?: 
             type: GET_BANKS_FAILURE,
             payload: error.response?.data?.detail || error.message || 'Network Error',
         });
+    }
+};
+
+// Action to set or update transaction PIN
+export const setTransactionPin = (pinData: { pin: string; old_pin?: string }) => async (dispatch: (arg0: { type: string; payload?: any; }) => void) => {
+    dispatch({ type: SET_TRANSACTION_PIN_REQUEST });
+    try {
+        const response = await apiClient.post('wallet/transaction-pin/set', pinData);
+        if (response.data.status) {
+            dispatch({
+                type: SET_TRANSACTION_PIN_SUCCESS,
+                payload: response.data.data,
+            });
+            return { success: true };
+        } else {
+            dispatch({
+                type: SET_TRANSACTION_PIN_FAILURE,
+                payload: response.data.message || 'Failed to set transaction PIN.',
+            });
+            return { success: false, error: response.data.message };
+        }
+    } catch (error: any) {
+        console.error('Error setting transaction PIN:', error.response ? error.response.data : error.message);
+        dispatch({
+            type: SET_TRANSACTION_PIN_FAILURE,
+            payload: error.response?.data?.detail || error.message || 'Network Error',
+        });
+        return { success: false, error: error.response?.data?.detail || error.message || 'Network Error' };
+    }
+};
+
+// Action to verify transaction PIN
+export const verifyTransactionPin = (pin: string) => async (dispatch: (arg0: { type: string; payload?: any; }) => void) => {
+    dispatch({ type: VERIFY_TRANSACTION_PIN_REQUEST });
+    try {
+        const response = await apiClient.post('wallet/transaction-pin/verify', { pin });
+        if (response.data.status) {
+            dispatch({
+                type: VERIFY_TRANSACTION_PIN_SUCCESS,
+                payload: response.data.data,
+            });
+            return { success: true };
+        } else {
+            dispatch({
+                type: VERIFY_TRANSACTION_PIN_FAILURE,
+                payload: response.data.message || 'Failed to verify transaction PIN.',
+            });
+            return { success: false, error: response.data.message };
+        }
+    } catch (error: any) {
+        console.error('Error verifying transaction PIN:', error.response ? error.response.data : error.message);
+        dispatch({
+            type: VERIFY_TRANSACTION_PIN_FAILURE,
+            payload: error.response?.data?.detail || error.message || 'Network Error',
+        });
+        return { success: false, error: error.response?.data?.detail || error.message || 'Network Error' };
     }
 };
 

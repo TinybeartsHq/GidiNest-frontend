@@ -47,6 +47,13 @@ import {
     GET_BANKS_SUCCESS,
     GET_BANKS_FAILURE,
 
+    SET_TRANSACTION_PIN_REQUEST,
+    SET_TRANSACTION_PIN_SUCCESS,
+    SET_TRANSACTION_PIN_FAILURE,
+    VERIFY_TRANSACTION_PIN_REQUEST,
+    VERIFY_TRANSACTION_PIN_SUCCESS,
+    VERIFY_TRANSACTION_PIN_FAILURE,
+
 } from './savings.types';
 
 const initialState = {
@@ -132,6 +139,17 @@ const savingsReducer = (state = initialState, action: { type: any; payload: any;
         case GET_BANKS_SUCCESS:
             return { ...state, loading: false, banks: action.payload };
         case GET_BANKS_FAILURE:
+            return { ...state, loading: false, error: action.payload };
+
+        // Transaction PIN
+        case SET_TRANSACTION_PIN_REQUEST:
+        case VERIFY_TRANSACTION_PIN_REQUEST:
+            return { ...state, loading: true, error: null };
+        case SET_TRANSACTION_PIN_SUCCESS:
+        case VERIFY_TRANSACTION_PIN_SUCCESS:
+            return { ...state, loading: false };
+        case SET_TRANSACTION_PIN_FAILURE:
+        case VERIFY_TRANSACTION_PIN_FAILURE:
             return { ...state, loading: false, error: action.payload };
 
         case CLEAR_SAVINGS_ERROR:
