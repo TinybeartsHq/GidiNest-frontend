@@ -58,6 +58,7 @@ import {
   getRecentSavingTransactions,
   setTransactionPin,
   verifyTransactionPin,
+  getTransactionPinStatus,
 } from '../../../redux/savings/savings.actions';
 
 import type { AppDispatch } from '../../../redux/types';
@@ -181,12 +182,39 @@ export function SavingsView() {
     }
   }, [userProfile, wallet]);
 
-  // Check if transaction PIN is set from wallet balance endpoint
+  // Check if transaction PIN is set from wallet balance endpoint or status endpoint
   useEffect(() => {
-    if (wallet?.wallet?.transaction_pin_set !== undefined) {
-      setHasTransactionPin(wallet.wallet.transaction_pin_set);
+    const checkPinStatus = async () => {
+      // Check multiple possible field paths in wallet response
+      const pinFromWallet = wallet?.wallet?.transaction_pin_set 
+        || wallet?.transaction_pin_set 
+        || wallet?.wallet?.has_transaction_pin
+        || wallet?.has_transaction_pin;
+      
+      if (pinFromWallet !== undefined) {
+        console.log('PIN found in wallet:', pinFromWallet);
+        setHasTransactionPin(Boolean(pinFromWallet));
+        return;
+      }
+      
+      // If not found, check status endpoint as fallback
+      const statusResult = await dispatch(getTransactionPinStatus());
+      if (statusResult.success && statusResult.data) {
+        // Check multiple possible field names
+        const statusPinSet = statusResult.data.transaction_pin_set 
+          || statusResult.data.has_transaction_pin
+          || statusResult.data.pin_set;
+        if (statusPinSet !== undefined) {
+          console.log('PIN found in status endpoint:', statusPinSet);
+          setHasTransactionPin(Boolean(statusPinSet));
+        }
+      }
+    };
+    
+    if (wallet) {
+      checkPinStatus();
     }
-  }, [wallet]);
+  }, [wallet, dispatch]);
 
   // Handle URL parameters for verification
   useEffect(() => {
@@ -259,9 +287,40 @@ export function SavingsView() {
     setOpenDepositModal(false);
   }, []);
 
-  const handleOpenWithdrawModal = useCallback(() => {
-    // Check if PIN is set from wallet balance endpoint
-    const pinIsSet = wallet?.wallet?.transaction_pin_set || hasTransactionPin;
+  const handleOpenWithdrawModal = useCallback(async () => {
+    // Check if PIN is set from wallet balance endpoint or status endpoint
+    // Check multiple possible field paths
+    const pinFromWallet = wallet?.wallet?.transaction_pin_set 
+      || wallet?.transaction_pin_set 
+      || wallet?.wallet?.has_transaction_pin
+      || wallet?.has_transaction_pin;
+    
+    let pinIsSet = pinFromWallet || hasTransactionPin;
+    
+    console.log('PIN Status Check:', {
+      walletData: wallet,
+      pinFromWallet,
+      hasTransactionPin,
+      pinIsSet
+    });
+    
+    // If not found in wallet, check status endpoint as fallback
+    if (!pinIsSet) {
+      const statusResult = await dispatch(getTransactionPinStatus());
+      console.log('Status endpoint result:', statusResult);
+      if (statusResult.success && statusResult.data) {
+        // Check multiple possible field names
+        const statusPinSet = statusResult.data.transaction_pin_set 
+          || statusResult.data.has_transaction_pin
+          || statusResult.data.pin_set;
+        if (statusPinSet !== undefined) {
+          pinIsSet = Boolean(statusPinSet);
+          setHasTransactionPin(pinIsSet);
+        }
+      }
+    }
+    
+    console.log('Final PIN status:', pinIsSet);
     
     if (!pinIsSet) {
       // Show PIN setup modal first
@@ -272,7 +331,7 @@ export function SavingsView() {
       // PIN is set, open withdrawal modal with PIN input field
       setOpenWithdrawModal(true);
     }
-  }, [wallet, hasTransactionPin]);
+  }, [wallet, hasTransactionPin, dispatch]);
   const handleCloseWithdrawModal = useCallback(() => {
     setOpenWithdrawModal(false);
     setWithdrawalAmount('');
@@ -341,8 +400,12 @@ export function SavingsView() {
       return;
     }
 
-    // Check if PIN is set and required
-    const pinIsSet = wallet?.wallet?.transaction_pin_set || hasTransactionPin;
+    // Check if PIN is set and required - check multiple possible field paths
+    const pinIsSet = wallet?.wallet?.transaction_pin_set 
+      || wallet?.transaction_pin_set 
+      || wallet?.wallet?.has_transaction_pin
+      || wallet?.has_transaction_pin
+      || hasTransactionPin;
     if (pinIsSet && (!withdrawalPin || withdrawalPin.length !== 4)) {
       alert('Please enter your 4-digit transaction PIN.');
       return;
@@ -1009,7 +1072,11 @@ export function SavingsView() {
           )}
 
           {/* Transaction PIN input - only show if PIN is set */}
-          {(wallet?.wallet?.transaction_pin_set || hasTransactionPin) && (
+          {(wallet?.wallet?.transaction_pin_set 
+            || wallet?.transaction_pin_set 
+            || wallet?.wallet?.has_transaction_pin
+            || wallet?.has_transaction_pin
+            || hasTransactionPin) && (
             <TextField
               margin="dense"
               label="Transaction PIN (4 digits)"
@@ -1043,7 +1110,11 @@ export function SavingsView() {
               !withdrawalAccountNum ||
               !withdrawalBank ||
               loading ||
-              ((wallet?.wallet?.transaction_pin_set || hasTransactionPin) && (!withdrawalPin || withdrawalPin.length !== 4))
+              ((wallet?.wallet?.transaction_pin_set 
+                || wallet?.transaction_pin_set 
+                || wallet?.wallet?.has_transaction_pin
+                || wallet?.has_transaction_pin
+                || hasTransactionPin) && (!withdrawalPin || withdrawalPin.length !== 4))
             }
           >
             {loading ? (
