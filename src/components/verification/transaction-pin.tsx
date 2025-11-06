@@ -246,7 +246,7 @@ export function TransactionPinModal({
           color="inherit"
           disabled={pinStatus === 'loading'}
         >
-          {mode === 'verify' ? 'Cancel' : 'Later'}
+          Later
         </Button>
         <Button
           onClick={handleSubmit}
