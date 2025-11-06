@@ -11,14 +11,12 @@ import DialogActions from '@mui/material/DialogActions';
 import { Box, Alert, Stack, Button, TextField, CircularProgress } from '@mui/material';
 
 type Props = CardProps & {
-  mode: 'setup' | 'verify' | 'update'; // setup for first time, verify for withdrawal, update for changing PIN
+  mode: 'setup' | 'update'; // setup for first time, update for changing PIN
   openPinModal: boolean;
   handleClosePinModal: () => void;
   pinStatus: string; // 'idle' | 'loading' | 'success' | 'error'
   pinError?: string | null;
   handleSetPin?: (pin: string, oldPin?: string) => Promise<void>;
-  handleVerifyPin?: (pin: string) => Promise<void>;
-  onPinVerified?: () => void; // Callback when PIN is verified successfully
   onPinSet?: () => void; // Callback when PIN is set successfully
 };
 
@@ -29,8 +27,6 @@ export function TransactionPinModal({
   pinStatus,
   pinError,
   handleSetPin,
-  handleVerifyPin,
-  onPinVerified,
   onPinSet,
 }: Props) {
   const [pin, setPin] = useState('');
@@ -59,14 +55,7 @@ export function TransactionPinModal({
   };
 
   const handleSubmit = async () => {
-    if (mode === 'verify') {
-      if (pin.length !== 4) {
-        return;
-      }
-      if (handleVerifyPin) {
-        await handleVerifyPin(pin);
-      }
-    } else if (mode === 'setup') {
+    if (mode === 'setup') {
       if (pin.length !== 4 || confirmPin.length !== 4) {
         return;
       }
@@ -74,7 +63,7 @@ export function TransactionPinModal({
         return;
       }
       if (handleSetPin) {
-        await handleSetPin(pin);
+        await handleSetPin(pin); // No old_pin for setup
       }
     } else if (mode === 'update') {
       if (pin.length !== 4 || confirmPin.length !== 4 || oldPin.length !== 4) {
@@ -84,7 +73,7 @@ export function TransactionPinModal({
         return;
       }
       if (handleSetPin) {
-        await handleSetPin(pin, oldPin);
+        await handleSetPin(pin, oldPin); // Include old_pin for update
       }
     }
   };
@@ -101,9 +90,7 @@ export function TransactionPinModal({
   // Reset form when modal closes
   const handleModalClose = () => {
     if (pinStatus === 'success') {
-      if (mode === 'verify' && onPinVerified) {
-        onPinVerified();
-      } else if ((mode === 'setup' || mode === 'update') && onPinSet) {
+      if ((mode === 'setup' || mode === 'update') && onPinSet) {
         onPinSet();
       }
     }
@@ -121,7 +108,6 @@ export function TransactionPinModal({
 
   const getTitle = () => {
     if (mode === 'setup') return 'Set Transaction PIN';
-    if (mode === 'verify') return 'Verify Transaction PIN';
     return 'Update Transaction PIN';
   };
 
@@ -129,16 +115,10 @@ export function TransactionPinModal({
     if (mode === 'setup') {
       return 'Set up a 4-digit transaction PIN to secure your withdrawals. You will need this PIN for all withdrawal transactions.';
     }
-    if (mode === 'verify') {
-      return 'Please enter your 4-digit transaction PIN to proceed with the withdrawal.';
-    }
     return 'Update your transaction PIN. You will need to enter your current PIN and choose a new one.';
   };
 
   const isFormValid = () => {
-    if (mode === 'verify') {
-      return pin.length === 4;
-    }
     if (mode === 'setup') {
       return pin.length === 4 && confirmPin.length === 4 && pin === confirmPin;
     }
@@ -193,7 +173,7 @@ export function TransactionPinModal({
 
         <TextField
           fullWidth
-          label={mode === 'verify' ? 'Enter PIN' : 'New PIN'}
+          label="New PIN"
           type="password"
           variant="outlined"
           value={pin}
@@ -203,12 +183,10 @@ export function TransactionPinModal({
           helperText={
             pinStatus === 'error' && pin.length !== 4
               ? 'PIN must be 4 digits.'
-              : mode === 'verify'
-                ? 'Enter your 4-digit transaction PIN'
-                : 'Enter a 4-digit PIN'
+              : 'Enter a 4-digit PIN'
           }
           sx={{
-            mb: mode === 'setup' || mode === 'update' ? 2 : 0,
+            mb: 2,
             '& input:-webkit-autofill': {
               WebkitBoxShadow: '0 0 0 100px transparent inset',
               WebkitTextFillColor: 'inherit',
@@ -252,13 +230,13 @@ export function TransactionPinModal({
 
         {pinStatus === 'success' && (
           <Alert severity="success" sx={{ mb: 2 }}>
-            {mode === 'verify' ? 'PIN verified successfully! 🎉' : 'PIN set successfully! 🎉'}
+            PIN set successfully! 🎉
           </Alert>
         )}
 
         {pinStatus === 'error' && pin.length === 4 && (
           <Alert severity="error" sx={{ mb: 2 }}>
-            {pinError || (mode === 'verify' ? 'Invalid PIN. Please try again.' : 'Failed to set PIN. Please try again.')}
+            {pinError || 'Failed to set PIN. Please try again.'}
           </Alert>
         )}
       </DialogContent>
@@ -277,14 +255,10 @@ export function TransactionPinModal({
           disabled={!isFormValid() || pinStatus === 'loading'}
         >
           {pinStatus === 'loading'
-            ? mode === 'verify'
-              ? 'Verifying...'
-              : 'Setting...'
-            : mode === 'verify'
-              ? 'Verify'
-              : mode === 'setup'
-                ? 'Set PIN'
-                : 'Update PIN'}
+            ? 'Setting...'
+            : mode === 'setup'
+              ? 'Set PIN'
+              : 'Update PIN'}
         </Button>
       </DialogActions>
     </Dialog>

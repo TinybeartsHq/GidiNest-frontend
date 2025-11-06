@@ -478,3 +478,18 @@ export const verifyTransactionPin = (pin: string) => async (dispatch: (arg0: { t
     }
 };
 
+// Action to get transaction PIN status
+export const getTransactionPinStatus = () => async (dispatch: (arg0: { type: string; payload?: any; }) => void) => {
+    try {
+        const response = await apiClient.get('wallet/transaction-pin/status');
+        if (response.data.status) {
+            return { success: true, data: response.data.data };
+        } else {
+            return { success: false, error: response.data.message };
+        }
+    } catch (error: any) {
+        console.error('Error fetching transaction PIN status:', error.response ? error.response.data : error.message);
+        return { success: false, error: error.response?.data?.detail || error.message || 'Network Error' };
+    }
+};
+
