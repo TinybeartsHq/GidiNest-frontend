@@ -56,8 +56,8 @@ import {
   getRecentTransactions,
   initiateWalletWithdrawal,
   getRecentSavingTransactions,
-  getTransactionPinStatus,
   setTransactionPin,
+  getTransactionPinStatus,
 } from '../../../redux/savings/savings.actions';
 
 import type { AppDispatch } from '../../../redux/types';
