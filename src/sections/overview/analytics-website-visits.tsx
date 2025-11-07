@@ -36,7 +36,14 @@ export function AnalyticsWebsiteVisits({ title, subheader, chart, sx, ...other }
     stroke: { width: 2, colors: ['transparent'] },
     xaxis: { categories: chart.categories },
     legend: { show: true },
-    tooltip: { y: { formatter: (value: number) => `${value} visits` } },
+    tooltip: { 
+      y: { 
+        formatter: (value: number) => {
+          // Format as currency (Naira)
+          return `₦${value.toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+        }
+      } 
+    },
     ...chart.options,
   });
 

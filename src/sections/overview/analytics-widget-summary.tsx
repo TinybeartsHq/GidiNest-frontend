@@ -56,7 +56,13 @@ export function AnalyticsWidgetSummary({
       },
     },
     tooltip: {
-      y: { formatter: (value: number) => fNumber(value), title: { formatter: () => '' } },
+      y: { 
+        formatter: (value: number) => {
+          // Format as currency (Naira)
+          return `₦${value.toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+        }, 
+        title: { formatter: () => '' } 
+      },
     },
     markers: {
       strokeWidth: 0,

@@ -168,22 +168,44 @@ export function OverviewAnalyticsView() {
                 : "(Data currently unavailable)"
             }
             chart={{
-              categories: analyticsData.savings_growth_data?.categories || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-              series: analyticsData.savings_growth_data
-                ? [
-                    { 
-                      name: 'Total Savings', 
-                      data: analyticsData.savings_growth_data.total_savings_series || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 
-                    },
-                    { 
-                      name: 'Monthly Deposits', 
-                      data: analyticsData.savings_growth_data.monthly_deposits_series || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 
-                    },
-                  ]
-                : [
+              // Ensure months are ordered correctly from January to December
+              categories: (() => {
+                const backendCategories = analyticsData.savings_growth_data?.categories;
+                if (!backendCategories || backendCategories.length === 0) {
+                  return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                }
+                // If backend sends months starting with Dec, reverse them
+                const monthOrder = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                if (backendCategories[0] === 'Dec' && backendCategories[backendCategories.length - 1] === 'Jan') {
+                  // Backend sent months in reverse order, reverse both categories and data
+                  return [...backendCategories].reverse();
+                }
+                return backendCategories;
+              })(),
+              series: (() => {
+                if (!analyticsData.savings_growth_data) {
+                  return [
                     { name: 'Total Savings', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
                     { name: 'Monthly Deposits', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-                  ],
+                  ];
+                }
+                const backendCategories = analyticsData.savings_growth_data.categories || [];
+                const totalSavings = analyticsData.savings_growth_data.total_savings_series || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+                const monthlyDeposits = analyticsData.savings_growth_data.monthly_deposits_series || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+                
+                // If backend sent months starting with Dec, reverse the data arrays too
+                if (backendCategories.length > 0 && backendCategories[0] === 'Dec' && backendCategories[backendCategories.length - 1] === 'Jan') {
+                  return [
+                    { name: 'Total Savings', data: [...totalSavings].reverse() },
+                    { name: 'Monthly Deposits', data: [...monthlyDeposits].reverse() },
+                  ];
+                }
+                
+                return [
+                  { name: 'Total Savings', data: totalSavings },
+                  { name: 'Monthly Deposits', data: monthlyDeposits },
+                ];
+              })(),
             }}
           />
         </Grid>

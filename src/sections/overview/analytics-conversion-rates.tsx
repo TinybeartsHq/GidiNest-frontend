@@ -40,7 +40,10 @@ export function AnalyticsConversionRates({ title, subheader, chart, sx, ...other
       shared: true,
       intersect: false,
       y: {
-        formatter: (value: number) => fNumber(value),
+        formatter: (value: number) => {
+          // Format as currency (Naira)
+          return `₦${value.toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+        },
         title: { formatter: (seriesName: string) => `${seriesName}: ` },
       },
     },
