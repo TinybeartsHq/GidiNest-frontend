@@ -43,8 +43,6 @@ export function UserProfileView() {
   } = useSelector((state: any) => state.profile);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [hasShownVerificationToast, setHasShownVerificationToast] = useState(false);
-
   const [editedProfile, setEditedProfile] = useState<UserProfileData | null>(null);
 
   useEffect(() => {
@@ -66,20 +64,27 @@ export function UserProfileView() {
     }
   }, [error, dispatch]);
 
-  // Show verification success toast when profile loads (only once)
+  // Show verification success toast when profile loads (only once per session)
   useEffect(() => {
-    if (userProfile && (userProfile?.has_bvn || userProfile?.has_nin) && !hasShownVerificationToast) {
-      const verificationMessage = `Account verified with ${
-        userProfile?.has_bvn && userProfile?.has_nin
-          ? 'both BVN and NIN'
-          : userProfile?.has_bvn
-            ? 'BVN'
-            : 'NIN'
-      }. Your information is secure and protected.`;
-      toast.success(verificationMessage, { autoClose: 5000 });
-      setHasShownVerificationToast(true);
+    if (userProfile && (userProfile?.has_bvn || userProfile?.has_nin)) {
+      // Check if we've already shown this toast in this session
+      const toastKey = `verification_toast_shown_${userProfile.id}`;
+      const hasShownToast = sessionStorage.getItem(toastKey);
+      
+      if (!hasShownToast) {
+        const verificationMessage = `Account verified with ${
+          userProfile?.has_bvn && userProfile?.has_nin
+            ? 'both BVN and NIN'
+            : userProfile?.has_bvn
+              ? 'BVN'
+              : 'NIN'
+        }. Your information is secure and protected.`;
+        toast.success(verificationMessage, { autoClose: 5000 });
+        // Mark as shown in sessionStorage
+        sessionStorage.setItem(toastKey, 'true');
+      }
     }
-  }, [userProfile, hasShownVerificationToast]);
+  }, [userProfile]);
 
   // Show info toast about matching details when editing
   useEffect(() => {
