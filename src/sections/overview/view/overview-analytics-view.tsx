@@ -175,7 +175,6 @@ export function OverviewAnalyticsView() {
                   return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 }
                 // If backend sends months starting with Dec, reverse them
-                const monthOrder = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 if (backendCategories[0] === 'Dec' && backendCategories[backendCategories.length - 1] === 'Jan') {
                   // Backend sent months in reverse order, reverse both categories and data
                   return [...backendCategories].reverse();

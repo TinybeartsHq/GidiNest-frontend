@@ -5,7 +5,6 @@ import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import { useTheme, alpha as hexAlpha } from '@mui/material/styles';
 
-import { fNumber } from 'src/utils/format-number';
 
 import { Chart, useChart } from 'src/components/chart';
 
@@ -40,10 +39,7 @@ export function AnalyticsConversionRates({ title, subheader, chart, sx, ...other
       shared: true,
       intersect: false,
       y: {
-        formatter: (value: number) => {
-          // Format as currency (Naira)
-          return `₦${value.toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-        },
+        formatter: (value: number) => `₦${value.toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
         title: { formatter: (seriesName: string) => `${seriesName}: ` },
       },
     },

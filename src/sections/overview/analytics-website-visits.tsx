@@ -38,10 +38,7 @@ export function AnalyticsWebsiteVisits({ title, subheader, chart, sx, ...other }
     legend: { show: true },
     tooltip: { 
       y: { 
-        formatter: (value: number) => {
-          // Format as currency (Naira)
-          return `₦${value.toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-        }
+        formatter: (value: number) => `₦${value.toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
       } 
     },
     ...chart.options,
