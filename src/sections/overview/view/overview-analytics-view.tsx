@@ -47,8 +47,9 @@ export function OverviewAnalyticsView() {
 
   const formatCurrency = (amount: string | number | null | undefined, currency = '₦') => {
     if (currency == 'NGN') currency = '₦';
-    if (amount === null || amount === undefined) return `${currency}0`;
+    if (amount === null || amount === undefined || amount === '') return `${currency}0`;
     const numericAmount = parseFloat(String(amount));
+    if (isNaN(numericAmount)) return `${currency}0`;
     return `${currency}${numericAmount.toLocaleString('en-NG', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
@@ -92,6 +93,8 @@ export function OverviewAnalyticsView() {
     goals_achieved_ytd: 0,
     monthly_contributions_change_percent: 0.0,
     goals_achieved_ytd_change_percent: 0.0,
+    savings_growth_data: null,
+    goal_progress_data: null,
   };
 
   return (
@@ -108,8 +111,8 @@ export function OverviewAnalyticsView() {
             total={formatCurrency(analyticsData.total_savings_balance, analyticsData.currency)}
             icon={<img alt="Savings Balance" src="/assets/icons/glass/ic-glass-bag.svg" />}
             chart={{
-              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-              series: [0, 0, 0, 0, 0, 0, 0, 0],
+              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+              series: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             }}
           />
         </Grid>
@@ -122,8 +125,8 @@ export function OverviewAnalyticsView() {
             color="secondary"
             icon={<img alt="Active Goals" src="/assets/icons/glass/ic-glass-users.svg" />}
             chart={{
-              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-              series: [0, 0, 0, 0, 0, 0, 0, 0],
+              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+              series: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             }}
           />
         </Grid>
@@ -136,8 +139,8 @@ export function OverviewAnalyticsView() {
             color="warning"
             icon={<img alt="Monthly Contributions" src="/assets/icons/glass/ic-glass-buy.svg" />}
             chart={{
-              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-              series: [0, 0, 0, 0, 0, 0, 0, 0],
+              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+              series: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             }}
           />
         </Grid>
@@ -150,8 +153,8 @@ export function OverviewAnalyticsView() {
             color="error"
             icon={<img alt="Goals Achieved" src="/assets/icons/glass/ic-glass-message.svg" />}
             chart={{
-              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-              series: [0, 0, 0, 0, 0, 0, 0, 0],
+              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+              series: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             }}
           />
         </Grid>
@@ -159,26 +162,56 @@ export function OverviewAnalyticsView() {
         <Grid size={{ xs: 12, md: 12, lg: 12 }}>
           <AnalyticsWebsiteVisits
             title="Savings Growth Over Time"
-            subheader="(Data currently unavailable)"
+            subheader={
+              analyticsData.savings_growth_data?.categories?.length > 0
+                ? "Your savings growth trend"
+                : "(Data currently unavailable)"
+            }
             chart={{
-              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
-              series: [
-                { name: 'Total Savings', data: [0, 0, 0, 0, 0, 0, 0, 0, 0] },
-                { name: 'Monthly Deposits', data: [0, 0, 0, 0, 0, 0, 0, 0, 0] },
-              ],
+              categories: analyticsData.savings_growth_data?.categories || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+              series: analyticsData.savings_growth_data
+                ? [
+                    { 
+                      name: 'Total Savings', 
+                      data: analyticsData.savings_growth_data.total_savings_series || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 
+                    },
+                    { 
+                      name: 'Monthly Deposits', 
+                      data: analyticsData.savings_growth_data.monthly_deposits_series || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 
+                    },
+                  ]
+                : [
+                    { name: 'Total Savings', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+                    { name: 'Monthly Deposits', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+                  ],
             }}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 12, lg: 12 }}>
           <AnalyticsConversionRates
             title="Goal Progress Status"
-            subheader="Overview of your savings goals"
+            subheader={
+              analyticsData.goal_progress_data?.categories?.length > 0
+                ? "Overview of your savings goals"
+                : "No goal data available yet"
+            }
             chart={{
-              categories: ['Education', 'Housing', 'Health', 'Travel', 'Emergency'],
-              series: [
-                { name: 'Progress (₦)', data: [0, 0, 0, 0, 0] },
-                { name: 'Target (₦)', data: [0, 0, 0, 0, 0] },
-              ],
+              categories: analyticsData.goal_progress_data?.categories || ['Education', 'Housing', 'Health', 'Travel', 'Emergency'],
+              series: analyticsData.goal_progress_data
+                ? [
+                    { 
+                      name: 'Progress (₦)', 
+                      data: analyticsData.goal_progress_data.progress_series || [0, 0, 0, 0, 0] 
+                    },
+                    { 
+                      name: 'Target (₦)', 
+                      data: analyticsData.goal_progress_data.target_series || [0, 0, 0, 0, 0] 
+                    },
+                  ]
+                : [
+                    { name: 'Progress (₦)', data: [0, 0, 0, 0, 0] },
+                    { name: 'Target (₦)', data: [0, 0, 0, 0, 0] },
+                  ],
             }}
           />
         </Grid>
