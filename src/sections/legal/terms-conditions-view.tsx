@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Alert, Button } from '@mui/material';
+import Typography from '@mui/material/Typography';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 

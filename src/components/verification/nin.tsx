@@ -1,7 +1,5 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+ 
 import type { CardProps } from '@mui/material/Card';
-
-import { useState } from 'react';
 
 import Dialog from '@mui/material/Dialog';
 import Typography from '@mui/material/Typography';

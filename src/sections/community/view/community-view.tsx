@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react'; // Import useEffect
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Alert from '@mui/material/Alert'; // For error messages
-import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Pagination from '@mui/material/Pagination';
 import AlertTitle from '@mui/material/AlertTitle'; // For error messages
@@ -13,8 +12,6 @@ import CircularProgress from '@mui/material/CircularProgress'; // For loading in
 import { RouterLink } from 'src/routes/components';
 
 import { DashboardContent } from 'src/layouts/dashboard';
-
-import { Iconify } from 'src/components/iconify';
 
 // Repurposing PostItem for CommunityPostItem or similar
 import { PostItem } from '../post-item';

@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+ 
 import type { CardProps } from '@mui/material/Card';
 
 import { useState, useEffect } from 'react';
