@@ -12,6 +12,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'src/routes/hooks';
+import { RouterLink } from 'src/routes/components';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -169,6 +170,40 @@ export function SignInView() {
       >
         {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign in'}
       </Button>
+
+      <Box
+        sx={{
+          mt: 3,
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+          gap: 1.5,
+          flexWrap: 'wrap',
+        }}
+      >
+        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          By signing in, you agree to our
+        </Typography>
+        <Link
+          component={RouterLink}
+          href="/privacy-policy"
+          variant="caption"
+          sx={{ cursor: 'pointer' }}
+        >
+          Privacy Policy
+        </Link>
+        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          and
+        </Typography>
+        <Link
+          component={RouterLink}
+          href="/terms-and-conditions"
+          variant="caption"
+          sx={{ cursor: 'pointer' }}
+        >
+          Terms & Conditions
+        </Link>
+      </Box>
     </Box>
   );
 

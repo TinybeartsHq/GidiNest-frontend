@@ -72,14 +72,14 @@ export function UserProfileView() {
       const hasShownToast = sessionStorage.getItem(toastKey);
       
       if (!hasShownToast) {
-        const verificationMessage = `Account verified with ${
-          userProfile?.has_bvn && userProfile?.has_nin
-            ? 'both BVN and NIN'
-            : userProfile?.has_bvn
-              ? 'BVN'
-              : 'NIN'
-        }. Your information is secure and protected.`;
-        toast.success(verificationMessage, { autoClose: 5000 });
+      const verificationMessage = `Account verified with ${
+        userProfile?.has_bvn && userProfile?.has_nin
+          ? 'both BVN and NIN'
+          : userProfile?.has_bvn
+            ? 'BVN'
+            : 'NIN'
+      }. Your information is secure and protected.`;
+      toast.success(verificationMessage, { autoClose: 5000 });
         // Mark as shown in sessionStorage
         sessionStorage.setItem(toastKey, 'true');
       }
