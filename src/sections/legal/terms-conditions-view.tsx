@@ -1,12 +1,11 @@
 import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
 import { Alert, Button } from '@mui/material';
 import Typography from '@mui/material/Typography';
 
-import { DashboardContent } from 'src/layouts/dashboard';
-
 export function TermsConditionsView() {
   return (
-    <DashboardContent maxWidth="lg">
+    <Container maxWidth="lg" sx={{ py: 5 }}>
       <Typography variant="h4" sx={{ mb: 3 }}>
         Terms and Conditions
       </Typography>
@@ -49,7 +48,7 @@ export function TermsConditionsView() {
         }}
         title="Terms and Conditions"
       />
-    </DashboardContent>
+    </Container>
   );
 }
 

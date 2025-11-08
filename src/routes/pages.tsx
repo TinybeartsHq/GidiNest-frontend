@@ -69,9 +69,23 @@ export const routesSection: RouteObject[] = [
       { path: 'transactions', element: <TransactionsView /> }, 
       { path: 'profile', element: <UserProfileView /> },
       { path: 'tips', element: <TipsView /> },
-      { path: 'privacy-policy', element: <PrivacyPolicyPage /> },
-      { path: 'terms-and-conditions', element: <TermsConditionsPage /> },
     ],
+  },
+  {
+    path: 'privacy-policy',
+    element: (
+      <AuthLayout>
+        <PrivacyPolicyPage />
+      </AuthLayout>
+    ),
+  },
+  {
+    path: 'terms-and-conditions',
+    element: (
+      <AuthLayout>
+        <TermsConditionsPage />
+      </AuthLayout>
+    ),
   }, 
   {
     element: (
