@@ -8,6 +8,8 @@ import Alert from '@mui/material/Alert';
 
 import { RouterLink } from 'src/routes/components';
 
+import { Logo } from 'src/components/logo';
+
 import { AuthContent } from './content';
 import { MainSection } from '../core/main-section';
 import { LayoutSection } from '../core/layout-section';
@@ -48,20 +50,16 @@ export function AuthLayout({
         </Alert>
       ),
       leftArea: (
-        <>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           {/** @slot Logo */}
-          <div className='text-center mb-5'>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <img src="assets/icons/Logo 2.png" width="140" height="45" alt="Logo" />
-            </Box>
-          </div>
-        </>
+          <Logo isSingle={false} sx={{ width: 130, height: 41 }} />
+        </Box>
       ),
       rightArea: (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 } }}>
@@ -128,10 +126,10 @@ export function AuthLayout({
        *************************************** */
       cssVars={{ '--layout-auth-content-width': '420px', ...cssVars }}
       sx={[
-        (theme) => ({
+        {
           position: 'relative',
           '&::before': backgroundStyles(),
-        }),
+        },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >

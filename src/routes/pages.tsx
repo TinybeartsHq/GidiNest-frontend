@@ -73,19 +73,11 @@ export const routesSection: RouteObject[] = [
   },
   {
     path: 'privacy-policy',
-    element: (
-      <AuthLayout>
-        <PrivacyPolicyPage />
-      </AuthLayout>
-    ),
+    element: <PrivacyPolicyPage />,
   },
   {
     path: 'terms-and-conditions',
-    element: (
-      <AuthLayout>
-        <TermsConditionsPage />
-      </AuthLayout>
-    ),
+    element: <TermsConditionsPage />,
   }, 
   {
     element: (
