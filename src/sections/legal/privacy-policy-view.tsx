@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
 import { Alert, Button } from '@mui/material';
+import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 
 export function PrivacyPolicyView() {
