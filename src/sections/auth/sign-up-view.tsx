@@ -36,7 +36,7 @@ export function SignUpView() {
   const router = useRouter();
   const dispatch: AppDispatch = useDispatch();
 
-  const { loading, error, registrationMessage, otpVerified } = useSelector(
+  const { loading, error } = useSelector(
     (state: RootState) => state.auth
   );
 
@@ -46,7 +46,7 @@ export function SignUpView() {
   const [first_name, setFirstName] = useState('');
   const [last_name, setLastName] = useState('');
   const [otp, setOtp] = useState('');
-  const [country, setCountry] = useState('Nigeria');
+  const [country] = useState('Nigeria');
   const [state, setState] = useState('');
 
   const [dob, setDob] = useState('');
@@ -97,15 +97,15 @@ export function SignUpView() {
     };
 
     try {
-      const result = await dispatch(
-        registerUser(registrationData)
-      );
+    const result = await dispatch(
+      registerUser(registrationData)
+    );
 
-      if (result.success) {
-        if (result.data?.data?.session_id) {
-          setSessionId(result.data.data.session_id);
-        } else {
-          console.warn('Session ID not found in registration response.');
+    if (result.success) {
+      if (result.data?.data?.session_id) {
+        setSessionId(result.data.data.session_id);
+      } else {
+        console.warn('Session ID not found in registration response.');
           toast.warn('Registration successful but session ID missing. Please try again.');
           return;
         }
@@ -116,8 +116,8 @@ export function SignUpView() {
         const errorMsg = result.error || 'Failed to send OTP. Please check your information and try again.';
         toast.error(errorMsg);
       }
-    } catch (error: any) {
-      const errorMsg = error?.message || 'An unexpected error occurred. Please try again.';
+    } catch (err: any) {
+      const errorMsg = err?.message || 'An unexpected error occurred. Please try again.';
       toast.error(errorMsg);
     }
   }, [email, first_name, last_name, dispatch]);
@@ -139,21 +139,21 @@ export function SignUpView() {
     }
 
     try {
-      const result = await dispatch(
-        verifyOtp({ session_id: sessionId, otp })
-      );
+    const result = await dispatch(
+      verifyOtp({ session_id: sessionId, otp })
+    );
 
-      if (result.success) {
+    if (result.success) {
         toast.success('Email verified successfully!');
         setCurrentStep('phoneNumber');
         setOtp(''); // Clear OTP after successful verification
-      } else {
+    } else {
         const errorMsg = result.error || 'OTP verification failed. Please check the code and try again.';
         toast.error(errorMsg);
         setOtp(''); // Clear OTP on failure to allow retry
       }
-    } catch (error: any) {
-      const errorMsg = error?.message || 'An unexpected error occurred. Please try again.';
+    } catch (err: any) {
+      const errorMsg = err?.message || 'An unexpected error occurred. Please try again.';
       toast.error(errorMsg);
       setOtp(''); // Clear OTP on error
     }
@@ -228,29 +228,29 @@ export function SignUpView() {
     }
 
     try {
-      const result = await dispatch(
-        finalizeSignup({
-          session_id: sessionId,
-          password,
+    const result = await dispatch(
+      finalizeSignup({
+        session_id: sessionId,
+        password,
           phone: phone_number,
-          country,
-          state,
-          address,
-          dob
-        })
-      );
+        country,
+        state,
+        address,
+        dob
+      })
+    );
 
-      if (result.success) {
+    if (result.success) {
         toast.success('Account created successfully! Redirecting...');
         setTimeout(() => {
-          router.push('/dashboard');
+      router.push('/dashboard');
         }, 1000);
-      } else {
+    } else {
         const errorMsg = result.error || 'Failed to complete registration. Please try again.';
         toast.error(errorMsg);
       }
-    } catch (error: any) {
-      const errorMsg = error?.message || 'An unexpected error occurred. Please try again.';
+    } catch (err: any) {
+      const errorMsg = err?.message || 'An unexpected error occurred. Please try again.';
       toast.error(errorMsg);
     }
   }, [password, confirmPassword, sessionId, phone_number, country, state, address, dob, dispatch, router]);
@@ -572,7 +572,7 @@ export function SignUpView() {
           }}
         >
           Back to OTP verification
-        </Link>
+      </Link>
       </Box>
     </Box>
   );
