@@ -93,7 +93,8 @@ export function SignUpView() {
     const registrationData = {
       first_name,
       last_name,
-      email
+      email,
+      phone: '' // Phone will be collected after email verification
     };
 
     try {

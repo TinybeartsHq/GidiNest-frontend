@@ -80,6 +80,7 @@ export const clearAuthError = () => ({ type: CLEAR_AUTH_ERROR });
 export const registerUser = (userData) => async (dispatch) => {
     dispatch({ type: REGISTER_REQUEST });
     try {
+        console.log('Registration data being sent:', userData);
         const response = await apiClient.post('onboarding/register/initiate', userData);
         dispatch({
             type: REGISTER_SUCCESS,
@@ -91,10 +92,27 @@ export const registerUser = (userData) => async (dispatch) => {
         
         if (error.response) {
             // Server responded with error status
-            errorMessage = error.response?.data?.detail 
-                || error.response?.data?.message 
-                || error.response?.data?.error 
-                || `Server error: ${error.response.status}`;
+            const responseData = error.response.data;
+            
+            // Handle validation errors (422)
+            if (error.response.status === 422 && responseData.errors) {
+                console.log('Validation errors from backend:', responseData.errors);
+                // Format validation errors into a readable message
+                const validationErrors = Object.entries(responseData.errors)
+                    .map(([field, messages]) => {
+                        const fieldName = field.replace(/_/g, ' ');
+                        const messageList = Array.isArray(messages) ? messages.join(', ') : messages;
+                        return `${fieldName}: ${messageList}`;
+                    })
+                    .join('; ');
+                
+                errorMessage = validationErrors || responseData.detail || responseData.message || 'Validation failed. Please check your input.';
+            } else {
+                errorMessage = responseData?.detail 
+                    || responseData?.message 
+                    || responseData?.error 
+                    || `Server error: ${error.response.status}`;
+            }
         } else if (error.request) {
             // Request made but no response received (network error, timeout, etc.)
             if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
