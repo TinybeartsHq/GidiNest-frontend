@@ -79,36 +79,45 @@ export function SignUpView() {
     dispatch(clearAuthError());
 
     if ((!email && !phone_number) || !first_name || !last_name) {
-      console.error('Email or phone number, first name, and last name are required for registration.');
-      toast('All fields are required')
+      toast.error('All fields are required');
       return;
     }
 
-    if (phone_number.length !== 11 ){
-      toast('Phone number must be 11 digits')
+    if (phone_number && phone_number.length !== 11) {
+      toast.error('Phone number must be 11 digits');
       return;
     }
 
     const registrationData = {
       first_name,
       last_name,
-      phone:phone_number,
+      phone: phone_number,
       email
     };
 
-    const result = await dispatch(
-      registerUser(registrationData)
-    );
+    try {
+      const result = await dispatch(
+        registerUser(registrationData)
+      );
 
-    if (result.success) {
-      if (result.data?.data?.session_id) {
-        setSessionId(result.data.data.session_id);
+      if (result.success) {
+        if (result.data?.data?.session_id) {
+          setSessionId(result.data.data.session_id);
+        } else {
+          console.warn('Session ID not found in registration response.');
+          toast.warn('Registration successful but session ID missing. Please try again.');
+          return;
+        }
+        toast.success('OTP sent successfully! Please check your phone and email.');
+        setCurrentStep('otp');
+        setOtp(''); // Clear any previous OTP input
       } else {
-        console.warn('Session ID not found in registration response.');
+        const errorMsg = result.error || 'Failed to send OTP. Please check your information and try again.';
+        toast.error(errorMsg);
       }
-      setCurrentStep('otp');
-    } else {
-      console.error('Registration failed:', result.error);
+    } catch (error: any) {
+      const errorMsg = error?.message || 'An unexpected error occurred. Please try again.';
+      toast.error(errorMsg);
     }
   }, [email, phone_number, first_name, last_name, dispatch]);
 
@@ -117,23 +126,35 @@ export function SignUpView() {
   const handleVerifyOtp = useCallback(async () => {
     dispatch(clearAuthError());
 
-    if (otp.length !== 6) {
-      console.error('OTP must be 6 digits long.');
+    if (!otp || otp.length !== 6) {
+      toast.error('Please enter a valid 6-digit OTP code');
       return;
     }
+    
     if (!sessionId) {
-      console.error('Session ID missing for OTP verification. Please restart registration.');
+      toast.error('Session expired. Please restart registration.');
+      setCurrentStep('register');
       return;
     }
 
-    const result = await dispatch(
-      verifyOtp({ session_id: sessionId, otp })
-    );
+    try {
+      const result = await dispatch(
+        verifyOtp({ session_id: sessionId, otp })
+      );
 
-    if (result.success) {
-      setCurrentStep('profileDetails');
-    } else {
-      console.error('OTP verification failed:', result.error);
+      if (result.success) {
+        toast.success('OTP verified successfully!');
+        setCurrentStep('profileDetails');
+        setOtp(''); // Clear OTP after successful verification
+      } else {
+        const errorMsg = result.error || 'OTP verification failed. Please check the code and try again.';
+        toast.error(errorMsg);
+        setOtp(''); // Clear OTP on failure to allow retry
+      }
+    } catch (error: any) {
+      const errorMsg = error?.message || 'An unexpected error occurred. Please try again.';
+      toast.error(errorMsg);
+      setOtp(''); // Clear OTP on error
     }
   }, [otp, sessionId, dispatch]);
 
@@ -143,15 +164,14 @@ export function SignUpView() {
     dispatch(clearAuthError());
  
     if (!address || !dob) {
-      console.error('Address and Dob are required.');
+      toast.error('Address and date of birth are required.');
       return;
     }
 
     if (!country || !state) {
-      console.error('Country and State are required.');
+      toast.error('Country and state are required.');
       return;
     }
-
 
     setCurrentStep('setPassword');
   }, [address, dob, country, state, dispatch]);
@@ -163,40 +183,53 @@ export function SignUpView() {
 
     if (password !== confirmPassword) {
       setPasswordError("Passwords don't match.");
+      toast.error("Passwords don't match.");
       return;
     }
     if (password.length < 8) {
       setPasswordError('Password must be at least 8 characters long.');
+      toast.error('Password must be at least 8 characters long.');
       return;
     }
     if (!/[0-9]/.test(password) || !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
       setPasswordError('Password must contain at least one number and one special character.');
+      toast.error('Password must contain at least one number and one special character.');
       return;
     }
     setPasswordError('');
 
     if (!sessionId) {
-      console.error('Session ID missing for signup finalization. Please restart registration.');
+      toast.error('Session expired. Please restart registration.');
+      setCurrentStep('register');
       return;
     }
 
-    const result = await dispatch(
-      finalizeSignup({
-        session_id: sessionId,
-        password,
-        country,
-        state,
-        address,
-        dob
-      })
-    );
+    try {
+      const result = await dispatch(
+        finalizeSignup({
+          session_id: sessionId,
+          password,
+          country,
+          state,
+          address,
+          dob
+        })
+      );
 
-    if (result.success) {
-      router.push('/dashboard');
-    } else {
-      console.error('Signup finalization failed:', result.error);
+      if (result.success) {
+        toast.success('Account created successfully! Redirecting...');
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 1000);
+      } else {
+        const errorMsg = result.error || 'Failed to complete registration. Please try again.';
+        toast.error(errorMsg);
+      }
+    } catch (error: any) {
+      const errorMsg = error?.message || 'An unexpected error occurred. Please try again.';
+      toast.error(errorMsg);
     }
-  }, [password, confirmPassword, sessionId, country, state, dispatch, router]);
+  }, [password, confirmPassword, sessionId, country, state, address, dob, dispatch, router]);
 
  
   const renderRegisterInput = (
@@ -370,16 +403,46 @@ export function SignUpView() {
       onSubmit={(e) => { e.preventDefault(); handleVerifyOtp(); }}
       sx={{ display: 'flex', alignItems: 'flex-end', flexDirection: 'column' }}
     >
+      <Alert severity="info" sx={{ width: '100%', mb: 3 }}>
+        <Typography variant="body2">
+          {phone_number 
+            ? `A 6-digit code has been sent to ${phone_number}. Please check your SMS messages.`
+            : email
+            ? `A 6-digit code has been sent to ${email}. Please check your email inbox and spam folder.`
+            : 'A 6-digit code has been sent to your provided contact methods.'}
+        </Typography>
+      </Alert>
+
       <TextField
         fullWidth
         name="otp"
         label="One-Time Password (OTP)"
         value={otp}
-        onChange={(e) => setOtp(e.target.value)}
+        onChange={(e) => {
+          const value = e.target.value.replace(/\D/g, '').slice(0, 6); // Only numbers, max 6 digits
+          setOtp(value);
+          dispatch(clearAuthError()); // Clear error when user starts typing
+        }}
         sx={{ mb: 3 }}
-        slotProps={{ inputLabel: { shrink: true } }}
-        helperText={registrationMessage || "A 6-digit code has been sent to your provided contact methods."}
+        slotProps={{ 
+          inputLabel: { shrink: true },
+          input: {
+            inputMode: 'numeric',
+            inputProps: {
+              pattern: '[0-9]*',
+            }
+          }
+        }}
+        error={!!error && otp.length > 0}
+        helperText={
+          error && otp.length > 0 
+            ? error 
+            : otp.length === 6 
+            ? 'Ready to verify' 
+            : `Enter ${6 - otp.length} more digit${6 - otp.length !== 1 ? 's' : ''}`
+        }
         required
+        autoFocus
       />
 
       {error && (
@@ -399,9 +462,32 @@ export function SignUpView() {
         {loading ? <CircularProgress size={24} color="inherit" /> : 'Verify OTP'}
       </Button>
 
-      <Link variant="subtitle2" sx={{ ml: 0.5, cursor: 'pointer' }} onClick={() => handleRegister()} >
-        Resend OTP
-      </Link>
+      <Box sx={{ mt: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+        <Link 
+          variant="subtitle2" 
+          sx={{ cursor: loading ? 'not-allowed' : 'pointer', textDecoration: 'none', opacity: loading ? 0.6 : 1 }} 
+          onClick={async () => {
+            if (loading) return;
+            dispatch(clearAuthError());
+            setOtp('');
+            await handleRegister();
+          }}
+        >
+          {loading ? 'Sending...' : 'Resend OTP'}
+        </Link>
+        <Link 
+          variant="caption" 
+          sx={{ cursor: 'pointer', textDecoration: 'none', color: 'text.secondary' }} 
+          onClick={() => {
+            dispatch(clearAuthError());
+            setCurrentStep('register');
+            setOtp('');
+            setSessionId(null);
+          }}
+        >
+          Change phone number or email
+        </Link>
+      </Box>
     </Box>
   );
 

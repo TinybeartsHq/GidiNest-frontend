@@ -80,18 +80,34 @@ export const clearAuthError = () => ({ type: CLEAR_AUTH_ERROR });
 export const registerUser = (userData) => async (dispatch) => {
     dispatch({ type: REGISTER_REQUEST });
     try {
-        const response = await apiClient.post('onboarding/register/initiate', userData); // Your registration endpoint
-        // Assuming API returns success message or initial user details (e.g., user_id to identify session)
+        const response = await apiClient.post('onboarding/register/initiate', userData);
         dispatch({
             type: REGISTER_SUCCESS,
             payload: response.data.message || 'Registration initiated successfully. Check your email for OTP.',
         });
         return { success: true, data: response.data };
     } catch (error) {
-        console.log(error)
-        const errorMessage = 
-        error.response?.data?.detail || error.response?.data?.message 
-         || error.response?.data?.error || error.message || 'Registration failed.';
+        let errorMessage = 'Failed to send OTP. Please try again.';
+        
+        if (error.response) {
+            // Server responded with error status
+            errorMessage = error.response?.data?.detail 
+                || error.response?.data?.message 
+                || error.response?.data?.error 
+                || `Server error: ${error.response.status}`;
+        } else if (error.request) {
+            // Request made but no response received (network error, timeout, etc.)
+            if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+                errorMessage = 'Request timed out. Please check your internet connection and try again.';
+            } else {
+                errorMessage = 'Network error: Unable to reach the server. Please check your internet connection.';
+            }
+        } else {
+            // Something else happened
+            errorMessage = error.message || 'An unexpected error occurred. Please try again.';
+        }
+        
+        console.error('Registration error:', error);
         dispatch({ type: REGISTER_FAILURE, payload: errorMessage });
         return { success: false, error: errorMessage };
     }
@@ -101,15 +117,49 @@ export const registerUser = (userData) => async (dispatch) => {
 export const verifyOtp = (otpData) => async (dispatch) => {
     dispatch({ type: VERIFY_OTP_REQUEST });
     try {
-        const response = await apiClient.post('onboarding/register/verify-otp', otpData); // Your OTP verification endpoint
-        // Assuming API returns a temporary token or confirms OTP success
+        const response = await apiClient.post('onboarding/register/verify-otp', otpData);
         dispatch({
             type: VERIFY_OTP_SUCCESS,
             payload: response.data.message || 'OTP verified successfully. Proceed to finalize signup.',
         });
         return { success: true, data: response.data };
     } catch (error) {
-        const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.response?.data?.error || error.message || 'OTP verification failed.';
+        let errorMessage = 'OTP verification failed. Please check the code and try again.';
+        
+        if (error.response) {
+            // Server responded with error status
+            const status = error.response.status;
+            const data = error.response.data;
+            
+            if (status === 400 || status === 422) {
+                // Bad request - likely invalid OTP
+                errorMessage = data?.detail 
+                    || data?.message 
+                    || data?.error 
+                    || 'Invalid OTP code. Please check and try again.';
+            } else if (status === 404) {
+                errorMessage = 'Session not found. Please restart registration.';
+            } else if (status === 410) {
+                errorMessage = 'OTP has expired. Please request a new code.';
+            } else {
+                errorMessage = data?.detail 
+                    || data?.message 
+                    || data?.error 
+                    || `Server error: ${status}`;
+            }
+        } else if (error.request) {
+            // Request made but no response received
+            if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+                errorMessage = 'Request timed out. Please check your internet connection and try again.';
+            } else {
+                errorMessage = 'Network error: Unable to reach the server. Please check your internet connection.';
+            }
+        } else {
+            // Something else happened
+            errorMessage = error.message || 'An unexpected error occurred. Please try again.';
+        }
+        
+        console.error('OTP verification error:', error);
         dispatch({ type: VERIFY_OTP_FAILURE, payload: errorMessage });
         return { success: false, error: errorMessage };
     }
@@ -142,7 +192,7 @@ export const activateUserByEmail = (emailData) => async (dispatch) => {
 export const finalizeSignup = (finalData) => async (dispatch) => {
     dispatch({ type: FINALIZE_SIGNUP_REQUEST });
     try {
-        const response = await apiClient.post('onboarding/register/complete', finalData); // Your finalize signup endpoint
+        const response = await apiClient.post('onboarding/register/complete', finalData);
 
         const user = response.data.data.user
         const refresh = response.data.data.token.refresh
@@ -158,7 +208,27 @@ export const finalizeSignup = (finalData) => async (dispatch) => {
         dispatch({ type: SET_AUTHENTICATED, payload: true });
         return { success: true, data: response.data };
     } catch (error) {
-        const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.response?.data?.error || error.message || 'Signup finalization failed.';
+        let errorMessage = 'Failed to complete registration. Please try again.';
+        
+        if (error.response) {
+            // Server responded with error status
+            errorMessage = error.response?.data?.detail 
+                || error.response?.data?.message 
+                || error.response?.data?.error 
+                || `Server error: ${error.response.status}`;
+        } else if (error.request) {
+            // Request made but no response received
+            if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+                errorMessage = 'Request timed out. Please check your internet connection and try again.';
+            } else {
+                errorMessage = 'Network error: Unable to reach the server. Please check your internet connection.';
+            }
+        } else {
+            // Something else happened
+            errorMessage = error.message || 'An unexpected error occurred. Please try again.';
+        }
+        
+        console.error('Signup finalization error:', error);
         dispatch({ type: FINALIZE_SIGNUP_FAILURE, payload: errorMessage });
         return { success: false, error: errorMessage };
     }
@@ -177,7 +247,24 @@ export const requestPasswordResetOtp = (emailData) => async (dispatch) => {
         });
         return { success: true, data: response.data };
     } catch (error) {
-        const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.response?.data?.error || error.message || 'Failed to send OTP.';
+        let errorMessage = 'Failed to send OTP. Please try again.';
+        
+        if (error.response) {
+            errorMessage = error.response?.data?.detail 
+                || error.response?.data?.message 
+                || error.response?.data?.error 
+                || `Server error: ${error.response.status}`;
+        } else if (error.request) {
+            if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+                errorMessage = 'Request timed out. Please check your internet connection and try again.';
+            } else {
+                errorMessage = 'Network error: Unable to reach the server. Please check your internet connection.';
+            }
+        } else {
+            errorMessage = error.message || 'An unexpected error occurred. Please try again.';
+        }
+        
+        console.error('Password reset OTP request error:', error);
         dispatch({ type: REQUEST_OTP_FAILURE, payload: errorMessage });
         return { success: false, error: errorMessage };
     }
@@ -194,7 +281,38 @@ export const verifyPasswordResetOtp = (otpData) => async (dispatch) => {
         });
         return { success: true, data: response.data };
     } catch (error) {
-        const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.response?.data?.error || error.message || 'OTP verification failed.';
+        let errorMessage = 'OTP verification failed. Please check the code and try again.';
+        
+        if (error.response) {
+            const status = error.response.status;
+            const data = error.response.data;
+            
+            if (status === 400 || status === 422) {
+                errorMessage = data?.detail 
+                    || data?.message 
+                    || data?.error 
+                    || 'Invalid OTP code. Please check and try again.';
+            } else if (status === 404) {
+                errorMessage = 'Session not found. Please request a new OTP.';
+            } else if (status === 410) {
+                errorMessage = 'OTP has expired. Please request a new code.';
+            } else {
+                errorMessage = data?.detail 
+                    || data?.message 
+                    || data?.error 
+                    || `Server error: ${status}`;
+            }
+        } else if (error.request) {
+            if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+                errorMessage = 'Request timed out. Please check your internet connection and try again.';
+            } else {
+                errorMessage = 'Network error: Unable to reach the server. Please check your internet connection.';
+            }
+        } else {
+            errorMessage = error.message || 'An unexpected error occurred. Please try again.';
+        }
+        
+        console.error('Password reset OTP verification error:', error);
         dispatch({ type: VERIFY_RESET_OTP_FAILURE, payload: errorMessage });
         return { success: false, error: errorMessage };
     }
@@ -211,7 +329,24 @@ export const resetPassword = (resetData) => async (dispatch) => {
         });
         return { success: true, data: response.data };
     } catch (error) {
-        const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.response?.data?.error || error.message || 'Password reset failed.';
+        let errorMessage = 'Password reset failed. Please try again.';
+        
+        if (error.response) {
+            errorMessage = error.response?.data?.detail 
+                || error.response?.data?.message 
+                || error.response?.data?.error 
+                || `Server error: ${error.response.status}`;
+        } else if (error.request) {
+            if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+                errorMessage = 'Request timed out. Please check your internet connection and try again.';
+            } else {
+                errorMessage = 'Network error: Unable to reach the server. Please check your internet connection.';
+            }
+        } else {
+            errorMessage = error.message || 'An unexpected error occurred. Please try again.';
+        }
+        
+        console.error('Password reset error:', error);
         dispatch({ type: RESET_PASSWORD_FAILURE, payload: errorMessage });
         return { success: false, error: errorMessage };
     }
