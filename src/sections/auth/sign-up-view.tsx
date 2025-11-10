@@ -90,8 +90,9 @@ export function SignUpView() {
       return;
     }
 
-    if (phone_number.length !== 11) {
-      toast.error('Phone number must be 11 digits');
+    // Phone number is required but format validation is relaxed since OTP is sent via email
+    if (phone_number.trim().length === 0) {
+      toast.error('Phone number is required');
       return;
     }
 
@@ -149,11 +150,11 @@ export function SignUpView() {
       verifyOtp({ session_id: sessionId, otp })
     );
 
-      if (result.success) {
+    if (result.success) {
         toast.success('Email verified successfully!');
-        setCurrentStep('profileDetails');
+      setCurrentStep('profileDetails');
         setOtp(''); // Clear OTP after successful verification
-      } else {
+    } else {
         const errorMsg = result.error || 'OTP verification failed. Please check the code and try again.';
         toast.error(errorMsg);
         setOtp(''); // Clear OTP on failure to allow retry
@@ -263,21 +264,16 @@ export function SignUpView() {
         value={phone_number}
         placeholder='08082737272'
         onChange={(e) => {
-          const value = e.target.value.replace(/\D/g, '').slice(0, 11); // Only numbers, max 11 digits
-          setPhoneNumber(value);
+          setPhoneNumber(e.target.value);
           dispatch(clearAuthError());
         }}
         sx={{ mb: 3 }}
         slotProps={{
           inputLabel: { shrink: true },
           input: {
-            inputMode: 'numeric',
-            inputProps: {
-              pattern: '[0-9]*',
-            },
             endAdornment: (
               <InputAdornment position="end">
-                <Tooltip title="Enter your active phone number. This will be stored for account security.">
+                <Tooltip title="Enter your phone number. This will be stored for account records. OTP will be sent to your email.">
                   <IconButton edge="end" size="small">
                     <InfoOutlinedIcon sx={{ fontSize: 20 }} />
                   </IconButton>
@@ -290,11 +286,7 @@ export function SignUpView() {
         helperText={
           error && phone_number.length > 0
             ? error
-            : phone_number.length === 11
-            ? 'Ready to continue'
-            : phone_number.length > 0
-            ? `Enter ${11 - phone_number.length} more digit${11 - phone_number.length !== 1 ? 's' : ''}`
-            : 'Enter your 11-digit phone number'
+            : 'Phone number will be stored for account records'
         }
         required
       />
@@ -382,7 +374,7 @@ export function SignUpView() {
         variant="contained"
         color="primary"
         type="submit"
-        disabled={loading || !email || !phone_number || !first_name || !last_name || phone_number.length !== 11}
+        disabled={loading || !email || !phone_number || !first_name || !last_name}
       >
         {loading ? <CircularProgress size={24} color="inherit" /> : 'Register & Send OTP'}
       </Button>
@@ -510,7 +502,7 @@ export function SignUpView() {
           }}
         >
           Change email address
-        </Link>
+      </Link>
       </Box>
     </Box>
   );
