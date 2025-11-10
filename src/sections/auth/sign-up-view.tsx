@@ -55,7 +55,7 @@ export function SignUpView() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const [currentStep, setCurrentStep] = useState<'register' | 'otp' | 'profileDetails' | 'setPassword'>('register');
+  const [currentStep, setCurrentStep] = useState<'register' | 'otp' | 'phoneNumber' | 'profileDetails' | 'setPassword'>('register');
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   const [showPassword, setShowPassword] = useState(false);
@@ -74,24 +74,25 @@ export function SignUpView() {
   };
 
 
-  // --- Step 1: Handle Registration (Send OTP) ---
+  // --- Step 1: Handle Registration (Send OTP to Email) ---
   const handleRegister = useCallback(async () => {
     dispatch(clearAuthError());
 
-    if ((!email && !phone_number) || !first_name || !last_name) {
-      toast.error('All fields are required');
+    if (!email || !first_name || !last_name) {
+      toast.error('Email, first name, and last name are required');
       return;
     }
 
-    if (phone_number && phone_number.length !== 11) {
-      toast.error('Phone number must be 11 digits');
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error('Please enter a valid email address');
       return;
     }
 
     const registrationData = {
       first_name,
       last_name,
-      phone: phone_number,
       email
     };
 
@@ -108,7 +109,7 @@ export function SignUpView() {
           toast.warn('Registration successful but session ID missing. Please try again.');
           return;
         }
-        toast.success('OTP sent successfully! Please check your phone and email.');
+        toast.success('OTP sent successfully! Please check your email inbox.');
         setCurrentStep('otp');
         setOtp(''); // Clear any previous OTP input
       } else {
@@ -119,7 +120,7 @@ export function SignUpView() {
       const errorMsg = error?.message || 'An unexpected error occurred. Please try again.';
       toast.error(errorMsg);
     }
-  }, [email, phone_number, first_name, last_name, dispatch]);
+  }, [email, first_name, last_name, dispatch]);
 
 
   // --- Step 2: Handle OTP Verification ---
@@ -143,8 +144,8 @@ export function SignUpView() {
       );
 
       if (result.success) {
-        toast.success('OTP verified successfully!');
-        setCurrentStep('profileDetails');
+        toast.success('Email verified successfully!');
+        setCurrentStep('phoneNumber');
         setOtp(''); // Clear OTP after successful verification
       } else {
         const errorMsg = result.error || 'OTP verification failed. Please check the code and try again.';
@@ -159,7 +160,24 @@ export function SignUpView() {
   }, [otp, sessionId, dispatch]);
 
 
-  // --- Step 3: Handle Profile Details Collection (New Step) ---
+  // --- Step 3: Handle Phone Number Collection ---
+  const handlePhoneNumberSubmit = useCallback(() => {
+    dispatch(clearAuthError());
+
+    if (!phone_number) {
+      toast.error('Phone number is required');
+      return;
+    }
+
+    if (phone_number.length !== 11) {
+      toast.error('Phone number must be 11 digits');
+      return;
+    }
+
+    setCurrentStep('profileDetails');
+  }, [phone_number, dispatch]);
+
+  // --- Step 4: Handle Profile Details Collection ---
   const handleCollectProfileDetails = useCallback(() => {
     dispatch(clearAuthError());
  
@@ -177,7 +195,7 @@ export function SignUpView() {
   }, [address, dob, country, state, dispatch]);
 
 
-  // --- Step 4: Handle Finalizing Signup (Setting Password) ---
+  // --- Step 5: Handle Finalizing Signup (Setting Password) ---
   const handleFinalizeSignup = useCallback(async () => {
     dispatch(clearAuthError());
 
@@ -204,11 +222,17 @@ export function SignUpView() {
       return;
     }
 
+    if (!phone_number) {
+      toast.error('Phone number is required. Please go back and provide it.');
+      return;
+    }
+
     try {
       const result = await dispatch(
         finalizeSignup({
           session_id: sessionId,
           password,
+          phone: phone_number,
           country,
           state,
           address,
@@ -229,7 +253,7 @@ export function SignUpView() {
       const errorMsg = error?.message || 'An unexpected error occurred. Please try again.';
       toast.error(errorMsg);
     }
-  }, [password, confirmPassword, sessionId, country, state, address, dob, dispatch, router]);
+  }, [password, confirmPassword, sessionId, phone_number, country, state, address, dob, dispatch, router]);
 
  
   const renderRegisterInput = (
@@ -250,30 +274,6 @@ export function SignUpView() {
 
       <TextField
         fullWidth
-        name="phone_number"
-        label="Phone Number"
-        value={phone_number}
-        placeholder='08082737272'
-        onChange={(e) => setPhoneNumber(e.target.value)}
-        sx={{ mb: 3 }}
-        slotProps={{
-          inputLabel: { shrink: true },
-          input: {
-            endAdornment: (
-              <InputAdornment position="end">
-                <Tooltip title="Enter your active phone number. This will be used for OTP verification and account recovery.">
-                  <IconButton edge="end" size="small">
-                    <InfoOutlinedIcon sx={{ fontSize: 20 }} />
-                  </IconButton>
-                </Tooltip>
-              </InputAdornment>
-            ),
-          },
-        }}
-        required
-      />
-      <TextField
-        fullWidth
         name="email"
         label="Email address"
         value={email}
@@ -285,7 +285,7 @@ export function SignUpView() {
           input: {
             endAdornment: (
               <InputAdornment position="end">
-                <Tooltip title="Provide a valid email address for account notifications and verification purposes.">
+                <Tooltip title="Provide a valid email address. An OTP code will be sent to this email for verification.">
                   <IconButton edge="end" size="small">
                     <InfoOutlinedIcon sx={{ fontSize: 20 }} />
                   </IconButton>
@@ -356,7 +356,7 @@ export function SignUpView() {
         variant="contained"
         color="primary"
         type="submit"
-        disabled={loading || (!email && !phone_number) || !first_name || !last_name}
+        disabled={loading || !email || !first_name || !last_name}
       >
         {loading ? <CircularProgress size={24} color="inherit" /> : 'Register & Send OTP'}
       </Button>
@@ -405,11 +405,9 @@ export function SignUpView() {
     >
       <Alert severity="info" sx={{ width: '100%', mb: 3 }}>
         <Typography variant="body2">
-          {phone_number 
-            ? `A 6-digit code has been sent to ${phone_number}. Please check your SMS messages.`
-            : email
+          {email 
             ? `A 6-digit code has been sent to ${email}. Please check your email inbox and spam folder.`
-            : 'A 6-digit code has been sent to your provided contact methods.'}
+            : 'A 6-digit code has been sent to your email address.'}
         </Typography>
       </Alert>
 
@@ -485,7 +483,95 @@ export function SignUpView() {
             setSessionId(null);
           }}
         >
-          Change phone number or email
+          Change email address
+        </Link>
+      </Box>
+    </Box>
+  );
+
+  const renderPhoneNumberInput = (
+    <Box
+      component="form"
+      onSubmit={(e) => { e.preventDefault(); handlePhoneNumberSubmit(); }}
+      sx={{ display: 'flex', alignItems: 'flex-end', flexDirection: 'column' }}
+    >
+      <Alert severity="info" sx={{ width: '100%', mb: 3 }}>
+        <Typography variant="body2">
+          Your email has been verified! Now please provide your phone number for account security and notifications.
+        </Typography>
+      </Alert>
+
+      <TextField
+        fullWidth
+        name="phone_number"
+        label="Phone Number"
+        value={phone_number}
+        placeholder='08082737272'
+        onChange={(e) => {
+          const value = e.target.value.replace(/\D/g, '').slice(0, 11); // Only numbers, max 11 digits
+          setPhoneNumber(value);
+          dispatch(clearAuthError());
+        }}
+        sx={{ mb: 3 }}
+        slotProps={{
+          inputLabel: { shrink: true },
+          input: {
+            inputMode: 'numeric',
+            inputProps: {
+              pattern: '[0-9]*',
+            },
+            endAdornment: (
+              <InputAdornment position="end">
+                <Tooltip title="Enter your active phone number. This will be used for account security and notifications.">
+                  <IconButton edge="end" size="small">
+                    <InfoOutlinedIcon sx={{ fontSize: 20 }} />
+                  </IconButton>
+                </Tooltip>
+              </InputAdornment>
+            ),
+          },
+        }}
+        error={!!error && phone_number.length > 0}
+        helperText={
+          error && phone_number.length > 0
+            ? error
+            : phone_number.length === 11
+            ? 'Ready to continue'
+            : phone_number.length > 0
+            ? `Enter ${11 - phone_number.length} more digit${11 - phone_number.length !== 1 ? 's' : ''}`
+            : 'Enter your 11-digit phone number'
+        }
+        required
+        autoFocus
+      />
+
+      {error && (
+        <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      <Button
+        fullWidth
+        size="large"
+        variant="contained"
+        color="primary"
+        type="submit"
+        disabled={loading || phone_number.length !== 11}
+      >
+        {loading ? <CircularProgress size={24} color="inherit" /> : 'Continue'}
+      </Button>
+
+      <Box sx={{ mt: 2, width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <Link 
+          variant="caption" 
+          sx={{ cursor: 'pointer', textDecoration: 'none', color: 'text.secondary' }} 
+          onClick={() => {
+            dispatch(clearAuthError());
+            setCurrentStep('otp');
+          }}
+        >
+          Back to OTP verification
         </Link>
       </Box>
     </Box>
@@ -738,6 +824,8 @@ export function SignUpView() {
         return renderRegisterInput;
       case 'otp':
         return renderOtpInput;
+      case 'phoneNumber':
+        return renderPhoneNumberInput;
       case 'profileDetails':
         return renderProfileDetailsInput;
       case 'setPassword':
@@ -760,7 +848,8 @@ export function SignUpView() {
       >
         <Typography variant="h5">
           {currentStep === 'register' && 'Sign up'}
-          {currentStep === 'otp' && 'Verify Your Account'}
+          {currentStep === 'otp' && 'Verify Your Email'}
+          {currentStep === 'phoneNumber' && 'Add Phone Number'}
           {currentStep === 'profileDetails' && 'Tell Us More'}
           {currentStep === 'setPassword' && 'Set Your Password'}
         </Typography>
@@ -778,7 +867,8 @@ export function SignUpView() {
               </Link>
             </>
           )}
-          {currentStep === 'otp' && `Enter the OTP sent to your ${phone_number} number (SMS)`}
+          {currentStep === 'otp' && email && `Enter the OTP sent to ${email}`}
+          {currentStep === 'phoneNumber' && 'Please provide your phone number for account security.'}
           {currentStep === 'profileDetails' && 'Just a few more details to get started.'}
           {currentStep === 'setPassword' && 'Please set a strong password for your account.'}
         </Typography>
