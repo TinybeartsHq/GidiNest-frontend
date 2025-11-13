@@ -155,15 +155,19 @@ export default function MyLinksView() {
     handleMenuClose();
   };
 
-  const formatCurrency = (amount: number) => new Intl.NumberFormat('en-NG', {
+  const formatCurrency = (amount: number | undefined | null) => {
+    const safeAmount = amount || 0;
+    return new Intl.NumberFormat('en-NG', {
       style: 'currency',
       currency: 'NGN',
       minimumFractionDigits: 0,
-    }).format(amount);
+    }).format(safeAmount);
+  };
 
   const calculateProgress = (link: PaymentLink) => {
     if (!link.target_amount) return 0;
-    return Math.min((link.amount_raised / link.target_amount) * 100, 100);
+    const amountRaised = link.amount_raised || 0;
+    return Math.min((amountRaised / link.target_amount) * 100, 100);
   };
 
   const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', {
@@ -316,7 +320,7 @@ export default function MyLinksView() {
                       <Box display="flex" alignItems="center" gap={1}>
                         <Users size={18} color="#666" />
                         <Typography variant="body2" color="text.secondary">
-                          {link.contributors_count} contributors
+                          {link.contributors_count || 0} contributors
                         </Typography>
                       </Box>
                     </Box>

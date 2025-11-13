@@ -52,11 +52,14 @@ export default function AnalyticsView() {
     };
   }, [token, dispatch]);
 
-  const formatCurrency = (amount: number) => new Intl.NumberFormat('en-NG', {
+  const formatCurrency = (amount: number | undefined | null) => {
+    const safeAmount = amount || 0;
+    return new Intl.NumberFormat('en-NG', {
       style: 'currency',
       currency: 'NGN',
       minimumFractionDigits: 0,
-    }).format(amount);
+    }).format(safeAmount);
+  };
 
   const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
@@ -168,7 +171,7 @@ export default function AnalyticsView() {
                   </Box>
                   <Box>
                     <Typography variant="h5" fontWeight="bold">
-                      {analytics.total_contributions}
+                      {analytics.total_contributions || 0}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
                       Total Contributors
