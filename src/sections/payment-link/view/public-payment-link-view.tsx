@@ -80,9 +80,12 @@ export default function PublicPaymentLinkView() {
 
   const handleCopyAccountNumber = async () => {
     try {
-      await navigator.clipboard.writeText(
-        currentLink?.bank_details.account_number || ''
-      );
+      const accountNumber = currentLink?.bank_details?.account_number;
+      if (!accountNumber) {
+        toast.error('Account number not available');
+        return;
+      }
+      await navigator.clipboard.writeText(accountNumber);
       setCopiedAccountNumber(true);
       toast.success('Account number copied!');
       setTimeout(() => setCopiedAccountNumber(false), 2000);
@@ -281,30 +284,37 @@ export default function PublicPaymentLinkView() {
               How to Contribute
             </Typography>
 
-            <Alert severity="info" sx={{ mb: 3 }}>
-              Transfer any amount to the account below and use the unique payment reference
-            </Alert>
+            {!currentLink.bank_details ? (
+              <Alert severity="warning" sx={{ mb: 3 }}>
+                Bank account details are not yet configured for this payment link.
+                Please contact the link owner.
+              </Alert>
+            ) : (
+              <>
+                <Alert severity="info" sx={{ mb: 3 }}>
+                  Transfer any amount to the account below and use the unique payment reference
+                </Alert>
 
-            <Stack spacing={2.5}>
-              {/* Bank Name */}
-              <Box>
-                <Typography variant="caption" color="text.secondary" display="block">
-                  Bank Name
-                </Typography>
-                <Typography variant="body1" fontWeight="medium">
-                  {currentLink.bank_details.bank_name}
-                </Typography>
-              </Box>
+                <Stack spacing={2.5}>
+                  {/* Bank Name */}
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Bank Name
+                    </Typography>
+                    <Typography variant="body1" fontWeight="medium">
+                      {currentLink.bank_details.bank_name || 'Not provided'}
+                    </Typography>
+                  </Box>
 
-              {/* Account Number */}
-              <Box>
-                <Typography variant="caption" color="text.secondary" display="block">
-                  Account Number
-                </Typography>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <Typography variant="h6" fontWeight="bold">
-                    {currentLink.bank_details.account_number}
-                  </Typography>
+                  {/* Account Number */}
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Account Number
+                    </Typography>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Typography variant="h6" fontWeight="bold">
+                        {currentLink.bank_details.account_number || 'Not provided'}
+                      </Typography>
                   <Tooltip title={copiedAccountNumber ? 'Copied!' : 'Copy'}>
                     <IconButton
                       size="small"
@@ -329,7 +339,7 @@ export default function PublicPaymentLinkView() {
                   Account Name
                 </Typography>
                 <Typography variant="body1" fontWeight="medium">
-                  {currentLink.bank_details.account_name}
+                  {currentLink.bank_details.account_name || 'Not provided'}
                 </Typography>
               </Box>
 
@@ -391,6 +401,8 @@ export default function PublicPaymentLinkView() {
                 </Alert>
               </>
             )}
+            </>
+          )}
           </CardContent>
         </Card>
 
