@@ -50,6 +50,15 @@ export default function PublicPaymentLinkView() {
     };
   }, [token, dispatch]);
 
+  // Debug: Log the current link data
+  useEffect(() => {
+    if (currentLink) {
+      console.log('Payment Link Data:', currentLink);
+      console.log('is_active value:', currentLink.is_active);
+      console.log('is_active type:', typeof currentLink.is_active);
+    }
+  }, [currentLink]);
+
   useEffect(() => {
     // Generate unique payment reference with timestamp
     if (token) {
@@ -136,7 +145,11 @@ export default function PublicPaymentLinkView() {
     );
   }
 
-  if (!currentLink.is_active) {
+  // Check if link is explicitly inactive (default to active if undefined)
+  // Only show inactive message if is_active is explicitly false
+  const isExplicitlyInactive = currentLink.is_active === false || (currentLink.is_active as any) === 'false';
+
+  if (isExplicitlyInactive) {
     return (
       <Container maxWidth="sm">
         <Box mt={8}>
