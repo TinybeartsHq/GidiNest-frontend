@@ -68,7 +68,6 @@ export const getDashboardAnalytics = () => async (dispatch: (arg0: { type: strin
             });
         }
     } catch (error:any) {
-        console.error('Error fetching dashboard analytics:', error.response ? error.response.data : error.message);
         dispatch({
             type: GET_DASHBOARD_ANALYTICS_FAILURE,
             payload: error.response?.data?.detail || error.message || 'Network Error',
@@ -93,7 +92,6 @@ export const getSavingsGoals = () => async (dispatch: (arg0: { type: string; pay
             });
         }
     } catch (error:any) {
-        console.error('Error fetching savings goals:', error.response ? error.response.data : error.message);
         dispatch({
             type: GET_SAVINGS_GOALS_FAILURE,
             payload: error.response?.data?.detail || error.message || 'Network Error',
@@ -106,7 +104,6 @@ export const deleteSavingsGoals = (goal_id: any) => async (dispatch: (arg0: { ty
     dispatch({ type: DELETE_SAVINGS_GOAL_REQUEST });
     try {
         const response = await apiClient.delete(`savings/goals/${goal_id}`); // Use apiClient
-        console.log(response)
         if (response.data.status) {
             dispatch({
                 type: DELETE_SAVINGS_GOAL_SUCCESS,
@@ -147,7 +144,6 @@ export const getWallet = () => async (dispatch: (arg0: { type: string; payload?:
             });
         }
     } catch (error: any) {
-        console.error('Error fetching wallet:', error.response ? error.response.data : error.message);
         dispatch({
             type: GET_WALLET_FAILURE,
             payload: error.response?.data?.detail || error.message || 'Network Error',
@@ -172,7 +168,6 @@ export const getSavingsSummary = () => async (dispatch: (arg0: { type: string; p
             });
         }
     } catch (error:any) {
-        console.error('Error fetching savings summary:', error.response ? error.response.data : error.message);
         dispatch({
             type: GET_SAVINGS_SUMMARY_FAILURE,
             payload: error.response?.data?.detail || error.message || 'Network Error',
@@ -197,7 +192,6 @@ export const getRecentTransactions = (page?: any, rowsPerPage?: any, orderBy?: s
             });
         }
     } catch (error:any) {
-        console.error('Error fetching recent transactions:', error.response ? error.response.data : error.message);
         dispatch({
             type: GET_RECENT_TRANSACTIONS_FAILURE,
             payload: error.response?.data?.detail || error.message || 'Network Error',
@@ -210,23 +204,19 @@ export const getRecentSavingTransactions = (page?: any, rowsPerPage?: any, order
     dispatch({ type: GET_SAVINGS_RECENT_TRANSACTIONS_REQUEST });
     try {
         const response = await apiClient.get('savings/history/all');
-        console.log('Savings History Response:', response.data);
 
         if (response.data.status) {
-            console.log('Savings Transactions Data:', response.data.data);
             dispatch({
                 type: GET_SAVINGS_RECENT_TRANSACTIONS_SUCCESS,
                 payload: response.data.data,
             });
         } else {
-            console.log('Savings History Failed:', response.data.message);
             dispatch({
                 type: GET_SAVINGS_RECENT_TRANSACTIONS_FAILURE,
                 payload: response.data.message || 'Failed to fetch recent transactions.',
             });
         }
     } catch (error: any) {
-        console.error('Error fetching savings transactions:', error.response ? error.response.data : error.message);
         dispatch({
             type: GET_SAVINGS_RECENT_TRANSACTIONS_FAILURE,
             payload: error.response?.data?.detail || error.message || 'Network Error',
@@ -254,7 +244,6 @@ export const createSavingsGoal = (goalData: any) => async (dispatch: (arg0: { ty
             return { success: false, error: response.data.message }; // Indicate failure
         }
     } catch (error:any) {
-        console.error('Error creating savings goal:', error.response ? error.response.data : error.message);
         dispatch({
             type: CREATE_SAVINGS_GOAL_FAILURE,
             payload: error.response?.data?.detail || error.message || 'Network Error',
@@ -288,7 +277,6 @@ export const initiateDeposit = (depositData: any) => async (dispatch: (arg0: { t
         dispatch({ type: INITIATE_DEPOSIT_SUCCESS });
         return { success: true };
     } catch (error:any) {
-        console.error('Error initiating deposit:', error.response ? error.response.data : error.message);
         dispatch({
             type: INITIATE_DEPOSIT_FAILURE,
             payload: error.response?.data?.detail || error.message || 'Network Error',
@@ -316,7 +304,6 @@ export const initiateWithdrawal = (withdrawalData: any) => async (dispatch: (arg
             return { success: false, error: response.data.message };
         }
     } catch (error:any) {
-        console.error('Error initiating withdrawal:', error.response ? error.response.data : error.message);
         dispatch({
             type: INITIATE_WITHDRAWAL_FAILURE,
             payload: error.response?.data?.detail || error.message || 'Network Error',
@@ -350,7 +337,6 @@ export const initiateWalletWithdrawal = (withdrawalData: any) => async (dispatch
             return { success: false, error: response.data.message };
         }
     }catch (error: any) {
-        console.error('Error initiating withdrawal:', error.response ? error.response.data : error.message);
         dispatch({
             type: INITIATE_WALLET_WITHDRAWAL_FAILURE,
             payload: error.response?.data?.detail || error.message || 'Network Error',
@@ -366,8 +352,6 @@ export const validateAccountNumber = (accountData: any) => async (dispatch: (arg
     dispatch({ type: INITIATE_WALLET_WITHDRAWAL_REQUEST });
     try {
         const response = await apiClient.post('wallet/resolve-bank-account', accountData);
-
-        console.log('Validate Account Response:', response.data);
 
         if (response.data.status) {
             dispatch({
@@ -387,7 +371,6 @@ export const validateAccountNumber = (accountData: any) => async (dispatch: (arg
             return { success: false, error: response.data.message };
         }
     } catch (error: any) {
-        console.error('Error validating account:', error.response ? error.response.data : error.message);
         dispatch({
             type: INITIATE_WALLET_WITHDRAWAL_FAILURE,
             payload: error.response?.data?.message || error.message || 'Network Error',
@@ -413,7 +396,6 @@ export const getBanks = () => async (dispatch: (arg0: { type: string; payload?: 
             });
         }
     } catch (error: any) {
-        console.error('Error fetching banks:', error.response ? error.response.data : error.message);
         dispatch({
             type: GET_BANKS_FAILURE,
             payload: error.response?.data?.detail || error.message || 'Network Error',
@@ -440,7 +422,6 @@ export const setTransactionPin = (pinData: { pin: string; old_pin?: string }) =>
             return { success: false, error: response.data.message };
         }
     } catch (error: any) {
-        console.error('Error setting transaction PIN:', error.response ? error.response.data : error.message);
         dispatch({
             type: SET_TRANSACTION_PIN_FAILURE,
             payload: error.response?.data?.detail || error.message || 'Network Error',
@@ -468,7 +449,6 @@ export const verifyTransactionPin = (pin: string) => async (dispatch: (arg0: { t
             return { success: false, error: response.data.message };
         }
     } catch (error: any) {
-        console.error('Error verifying transaction PIN:', error.response ? error.response.data : error.message);
         dispatch({
             type: VERIFY_TRANSACTION_PIN_FAILURE,
             payload: error.response?.data?.detail || error.message || 'Network Error',
@@ -487,7 +467,6 @@ export const getTransactionPinStatus = () => async (dispatch: (arg0: { type: str
             return { success: false, error: response.data.message };
         }
     } catch (error: any) {
-        console.error('Error fetching transaction PIN status:', error.response ? error.response.data : error.message);
         return { success: false, error: error.response?.data?.detail || error.message || 'Network Error' };
     }
 };

@@ -31,6 +31,13 @@ export const TipsView = lazy(() => import('src/pages/tips'));
 export const PrivacyPolicyPage = lazy(() => import('src/pages/privacy-policy'));
 export const TermsConditionsPage = lazy(() => import('src/pages/terms-conditions'));
 
+// Payment Link Pages
+export const PublicPaymentLinkPage = lazy(() => import('src/pages/payment-link/public-payment-link'));
+export const MyLinksPage = lazy(() => import('src/pages/payment-link/my-links'));
+export const CreateLinkPage = lazy(() => import('src/pages/payment-link/create-link'));
+export const EditLinkPage = lazy(() => import('src/pages/payment-link/edit-link'));
+export const AnalyticsPage = lazy(() => import('src/pages/payment-link/analytics'));
+
 
 const renderFallback = () => (
   <Box
@@ -66,9 +73,13 @@ export const routesSection: RouteObject[] = [
       { path: 'savings', element: <SavingsPage /> },
       { path: 'community', element: <CommunityPage /> },
       { path: 'community/:id', element: <CommunityPostDetailPage /> },
-      { path: 'transactions', element: <TransactionsView /> }, 
+      { path: 'transactions', element: <TransactionsView /> },
       { path: 'profile', element: <UserProfileView /> },
       { path: 'tips', element: <TipsView /> },
+      { path: 'payment-links', element: <MyLinksPage /> },
+      { path: 'payment-links/create', element: <CreateLinkPage /> },
+      { path: 'payment-links/:token/edit', element: <EditLinkPage /> },
+      { path: 'payment-links/:token/analytics', element: <AnalyticsPage /> },
     ],
   },
   {
@@ -78,6 +89,10 @@ export const routesSection: RouteObject[] = [
   {
     path: 'terms-and-conditions',
     element: <TermsConditionsPage />,
+  },
+  {
+    path: 'pay/:token',
+    element: <PublicPaymentLinkPage />,
   }, 
   {
     element: (

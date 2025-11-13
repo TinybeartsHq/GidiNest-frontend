@@ -5,13 +5,15 @@ import authReducer from './auth/auth.reducer';
 // import walletReducer from './wallet/wallet.reducer';
 import savingsReducer from './savings/savings.reducer';
 import communityReducer from './community/community.reducer';
+import paymentLinkReducer from './paymentLink/paymentLink.slice';
 import userProfileReducer from './userProfile/userProfile.reducer';
 
 const rootReducer = combineReducers({
     auth: authReducer,
     savings: savingsReducer,
     community: communityReducer,
-    profile: userProfileReducer
+    profile: userProfileReducer,
+    paymentLink: paymentLinkReducer
     // wallet: walletReducer,
     // Add other feature reducers here
 });

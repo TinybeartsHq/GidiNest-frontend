@@ -141,30 +141,17 @@ export function SavingsView() {
   // Pre-fill NIN form with user profile data when modal opens
   useEffect(() => {
     if (openNinModal) {
-      console.log('NIN Modal Opened. User Profile:', userProfile);
-
       if (userProfile) {
-        console.log('Pre-filling NIN form with:', {
-          first_name: userProfile.first_name,
-          last_name: userProfile.last_name,
-          dob: userProfile.dob,
-        });
-
         // Pre-fill with profile data
         if (userProfile.first_name) {
           setNinFirstname(userProfile.first_name);
-          console.log('Set NIN firstname to:', userProfile.first_name);
         }
         if (userProfile.last_name) {
           setNinLastname(userProfile.last_name);
-          console.log('Set NIN lastname to:', userProfile.last_name);
         }
         if (userProfile.dob) {
           setNinDob(userProfile.dob);
-          console.log('Set NIN DOB to:', userProfile.dob);
         }
-      } else {
-        console.warn('User profile not loaded yet!');
       }
     }
   }, [openNinModal, userProfile]);
@@ -185,13 +172,12 @@ export function SavingsView() {
   useEffect(() => {
     const checkPinStatus = async () => {
       // Check multiple possible field paths in wallet response
-      const pinFromWallet = wallet?.wallet?.transaction_pin_set 
-        || wallet?.transaction_pin_set 
+      const pinFromWallet = wallet?.wallet?.transaction_pin_set
+        || wallet?.transaction_pin_set
         || wallet?.wallet?.has_transaction_pin
         || wallet?.has_transaction_pin;
-      
+
       if (pinFromWallet !== undefined) {
-        console.log('PIN found in wallet:', pinFromWallet);
         setHasTransactionPin(Boolean(pinFromWallet));
         return;
       }
@@ -200,11 +186,10 @@ export function SavingsView() {
       const statusResult = await dispatch(getTransactionPinStatus());
       if (statusResult.success && statusResult.data) {
         // Check multiple possible field names
-        const statusPinSet = statusResult.data.transaction_pin_set 
+        const statusPinSet = statusResult.data.transaction_pin_set
           || statusResult.data.has_transaction_pin
           || statusResult.data.pin_set;
         if (statusPinSet !== undefined) {
-          console.log('PIN found in status endpoint:', statusPinSet);
           setHasTransactionPin(Boolean(statusPinSet));
         }
       }
@@ -295,21 +280,13 @@ export function SavingsView() {
       || wallet?.has_transaction_pin;
     
     let pinIsSet = pinFromWallet || hasTransactionPin;
-    
-    console.log('PIN Status Check:', {
-      walletData: wallet,
-      pinFromWallet,
-      hasTransactionPin,
-      pinIsSet
-    });
-    
+
     // If not found in wallet, check status endpoint as fallback
     if (!pinIsSet) {
       const statusResult = await dispatch(getTransactionPinStatus());
-      console.log('Status endpoint result:', statusResult);
       if (statusResult.success && statusResult.data) {
         // Check multiple possible field names
-        const statusPinSet = statusResult.data.transaction_pin_set 
+        const statusPinSet = statusResult.data.transaction_pin_set
           || statusResult.data.has_transaction_pin
           || statusResult.data.pin_set;
         if (statusPinSet !== undefined) {
@@ -318,8 +295,6 @@ export function SavingsView() {
         }
       }
     }
-    
-    console.log('Final PIN status:', pinIsSet);
     
     if (!pinIsSet) {
       // Show PIN setup modal first
@@ -417,9 +392,6 @@ export function SavingsView() {
           bank_code: withdrawalBankCode,
         })
       );
-
-      console.log('Validation Result:', result);
-      console.log('Account Name Path:', result?.data?.data?.account_name);
 
       if (result.success) {
         setWithdrawalAccountName(result?.data?.data?.account_name);
@@ -1370,7 +1342,6 @@ export function SavingsView() {
               }
             } catch (err: any) {
               alert('An error occurred. Please try again.');
-              console.error('Funds action error:', err);
             } finally {
               dispatch(getRecentSavingTransactions());
               setOpenFundsModal(false);

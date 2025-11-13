@@ -75,8 +75,6 @@ export const fetchUserProfile = () => async (dispatch: Dispatch) => {
             errorMessage = error.message || 'An unexpected error occurred';
         }
 
-        console.error('Profile fetch error:', error);
-
         dispatch({
             type: FETCH_USER_PROFILE_FAILURE,
             payload: errorMessage,

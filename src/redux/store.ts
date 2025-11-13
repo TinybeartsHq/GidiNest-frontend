@@ -1,4 +1,4 @@
-// src/redux/store.js
+// src/redux/store.ts
 import { configureStore } from '@reduxjs/toolkit'; // Import configureStore
 
 import rootReducer from './rootReducer';
@@ -10,5 +10,9 @@ const store = configureStore({
     // middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(myCustomMiddleware),
     devTools: process.env.NODE_ENV !== 'production', // Enable Redux DevTools Extension in development
 });
+
+// Export types
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
 
 export default store;

@@ -112,7 +112,6 @@ export function SignUpView() {
       if (result.data?.data?.session_id) {
         setSessionId(result.data.data.session_id);
       } else {
-        console.warn('Session ID not found in registration response.');
           toast.warn('Registration successful but session ID missing. Please try again.');
           return;
         }
@@ -212,17 +211,61 @@ export function SignUpView() {
       return;
     }
 
+    // Validate all required fields before sending
+    if (!phone_number || phone_number.trim().length === 0) {
+      toast.error('Phone number is required.');
+      return;
+    }
+    if (!country || country.trim().length === 0) {
+      toast.error('Country is required.');
+      return;
+    }
+    if (!state || state.trim().length === 0) {
+      toast.error('State is required.');
+      return;
+    }
+    if (!address || address.trim().length === 0) {
+      toast.error('Address is required.');
+      return;
+    }
+    if (!dob || dob.trim().length === 0) {
+      toast.error('Date of birth is required.');
+      return;
+    }
+
+    // Validate date format (should be YYYY-MM-DD)
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(dob)) {
+      toast.error('Invalid date format. Please select a valid date.');
+      return;
+    }
+
+    // Prepare the payload, ensuring all values are strings and not empty
+    const payload: Record<string, string> = {};
+    payload.session_id = sessionId;
+    payload.password = password.trim();
+    payload.phone = phone_number.trim();
+    payload.country = country.trim();
+    payload.state = state.trim();
+    payload.address = address.trim();
+    payload.dob = dob.trim();
+
+    // Final validation - ensure no empty strings
+    const emptyFields = Object.entries(payload)
+      .filter(([key, value]) => !value || value.trim().length === 0)
+      .map(([key]) => key);
+    
+    if (emptyFields.length > 0) {
+      toast.error(`Please fill in all required fields: ${emptyFields.join(', ')}`);
+      return;
+    }
+
+    // Log payload for debugging
+    console.log('Submitting signup completion with payload:', payload);
+
     try {
     const result = await dispatch(
-      finalizeSignup({
-        session_id: sessionId,
-        password,
-          phone: phone_number,
-        country,
-        state,
-        address,
-        dob
-      })
+      finalizeSignup(payload)
     );
 
     if (result.success) {
@@ -707,7 +750,19 @@ export function SignUpView() {
         type="submit"
         color="primary"
         variant="contained"
-        disabled={loading || !password || !confirmPassword || password !== confirmPassword || !!passwordError}
+        disabled={
+          loading || 
+          !password || 
+          !confirmPassword || 
+          password !== confirmPassword || 
+          !!passwordError ||
+          !sessionId ||
+          !phone_number ||
+          !country ||
+          !state ||
+          !address ||
+          !dob
+        }
       >
         {loading ? <CircularProgress size={24} color="inherit" /> : 'Set Password'}
       </Button>

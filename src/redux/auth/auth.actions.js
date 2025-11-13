@@ -80,7 +80,6 @@ export const clearAuthError = () => ({ type: CLEAR_AUTH_ERROR });
 export const registerUser = (userData) => async (dispatch) => {
     dispatch({ type: REGISTER_REQUEST });
     try {
-        console.log('Registration data being sent:', userData);
         const response = await apiClient.post('onboarding/register/initiate', userData);
         dispatch({
             type: REGISTER_SUCCESS,
@@ -96,7 +95,6 @@ export const registerUser = (userData) => async (dispatch) => {
             
             // Handle validation errors (422)
             if (error.response.status === 422 && responseData.errors) {
-                console.log('Validation errors from backend:', responseData.errors);
                 // Format validation errors into a readable message
                 const validationErrors = Object.entries(responseData.errors)
                     .map(([field, messages]) => {
@@ -124,8 +122,7 @@ export const registerUser = (userData) => async (dispatch) => {
             // Something else happened
             errorMessage = error.message || 'An unexpected error occurred. Please try again.';
         }
-        
-        console.error('Registration error:', error);
+
         dispatch({ type: REGISTER_FAILURE, payload: errorMessage });
         return { success: false, error: errorMessage };
     }
@@ -176,8 +173,7 @@ export const verifyOtp = (otpData) => async (dispatch) => {
             // Something else happened
             errorMessage = error.message || 'An unexpected error occurred. Please try again.';
         }
-        
-        console.error('OTP verification error:', error);
+
         dispatch({ type: VERIFY_OTP_FAILURE, payload: errorMessage });
         return { success: false, error: errorMessage };
     }
@@ -210,6 +206,9 @@ export const activateUserByEmail = (emailData) => async (dispatch) => {
 export const finalizeSignup = (finalData) => async (dispatch) => {
     dispatch({ type: FINALIZE_SIGNUP_REQUEST });
     try {
+        // Log the data being sent for debugging
+        console.log('Finalizing signup with data:', JSON.stringify(finalData, null, 2));
+        
         const response = await apiClient.post('onboarding/register/complete', finalData);
 
         const user = response.data.data.user
@@ -228,12 +227,41 @@ export const finalizeSignup = (finalData) => async (dispatch) => {
     } catch (error) {
         let errorMessage = 'Failed to complete registration. Please try again.';
         
+        // Log the full error for debugging
+        console.error('Signup finalization error:', error);
+        console.error('Error response:', error.response);
+        console.error('Error response data:', error.response?.data);
+        
         if (error.response) {
-            // Server responded with error status
-            errorMessage = error.response?.data?.detail 
-                || error.response?.data?.message 
-                || error.response?.data?.error 
-                || `Server error: ${error.response.status}`;
+            const responseData = error.response.data;
+            const status = error.response.status;
+            
+            // Check if response is HTML (server error page)
+            if (typeof responseData === 'string' && responseData.includes('<!doctype html>')) {
+                errorMessage = `Server error (${status}): The server encountered an internal error. Please check that all required fields are filled correctly and try again. If the problem persists, please contact support.`;
+            } else if (typeof responseData === 'object' && responseData !== null) {
+                // Handle validation errors (422)
+                if (status === 422 && responseData.errors) {
+                    const validationErrors = Object.entries(responseData.errors)
+                        .map(([field, messages]) => {
+                            const fieldName = field.replace(/_/g, ' ');
+                            const messageList = Array.isArray(messages) ? messages.join(', ') : messages;
+                            return `${fieldName}: ${messageList}`;
+                        })
+                        .join('; ');
+                    
+                    errorMessage = validationErrors || responseData.detail || responseData.message || 'Validation failed. Please check your input.';
+                } else {
+                    // Try to extract error message from various possible fields
+                    errorMessage = responseData?.detail 
+                        || responseData?.message 
+                        || responseData?.error 
+                        || responseData?.error_message
+                        || `Server error: ${status}`;
+                }
+            } else {
+                errorMessage = `Server error (${status}): Please try again or contact support if the problem persists.`;
+            }
         } else if (error.request) {
             // Request made but no response received
             if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
@@ -245,8 +273,7 @@ export const finalizeSignup = (finalData) => async (dispatch) => {
             // Something else happened
             errorMessage = error.message || 'An unexpected error occurred. Please try again.';
         }
-        
-        console.error('Signup finalization error:', error);
+
         dispatch({ type: FINALIZE_SIGNUP_FAILURE, payload: errorMessage });
         return { success: false, error: errorMessage };
     }
@@ -281,8 +308,7 @@ export const requestPasswordResetOtp = (emailData) => async (dispatch) => {
         } else {
             errorMessage = error.message || 'An unexpected error occurred. Please try again.';
         }
-        
-        console.error('Password reset OTP request error:', error);
+
         dispatch({ type: REQUEST_OTP_FAILURE, payload: errorMessage });
         return { success: false, error: errorMessage };
     }
@@ -329,8 +355,7 @@ export const verifyPasswordResetOtp = (otpData) => async (dispatch) => {
         } else {
             errorMessage = error.message || 'An unexpected error occurred. Please try again.';
         }
-        
-        console.error('Password reset OTP verification error:', error);
+
         dispatch({ type: VERIFY_RESET_OTP_FAILURE, payload: errorMessage });
         return { success: false, error: errorMessage };
     }
@@ -363,8 +388,7 @@ export const resetPassword = (resetData) => async (dispatch) => {
         } else {
             errorMessage = error.message || 'An unexpected error occurred. Please try again.';
         }
-        
-        console.error('Password reset error:', error);
+
         dispatch({ type: RESET_PASSWORD_FAILURE, payload: errorMessage });
         return { success: false, error: errorMessage };
     }

@@ -47,9 +47,11 @@
     "react": "^19.1.0",
     "react-apexcharts": "^1.7.0",
     "react-dom": "^19.1.0",
+    "react-helmet-async": "^2.0.5",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.4.1",
     "react-toastify": "^11.0.5",
+    "recharts": "^3.4.1",
     "redux-thunk": "^3.1.0",
     "simplebar-react": "^3.3.0"
   },

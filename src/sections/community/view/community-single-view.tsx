@@ -87,9 +87,6 @@ export function CommunityPostDetailView() {
       // The Redux reducer for ADD_COMMENT_SUCCESS will automatically update 'selectedPost.comments'
       // no need to manually update local state like `setPost`
       dispatch(fetchSinglePost(id));
-    } else {
-      // Error handling is managed by Redux state, which will display the Alert
-      console.error('Failed to add comment:', result.error);
     }
   }, [newCommentContent, id, dispatch, isAuthenticated, currentUser?.id]);
 
@@ -164,8 +161,7 @@ export function CommunityPostDetailView() {
                   title: post.title,
                   text: post.content.substring(0, 100) + '...', // Use post.content
                   url: window.location.href,
-                }).then(() => console.log('Successful share'))
-                  .catch((error_) => console.log('Error sharing', error_));
+                });
               } else {
                 navigator.clipboard.writeText(window.location.href);
                 alert('Link copied to clipboard!');

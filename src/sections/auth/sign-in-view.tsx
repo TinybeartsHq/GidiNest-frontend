@@ -44,7 +44,6 @@ export function SignInView() {
   const handleSignIn = useCallback(async () => {
     // Basic validation
     if (!loginIdentifier || !password) {
-      console.error('Email/Phone number and password are required.');
       return;
     }
 
@@ -62,8 +61,6 @@ export function SignInView() {
 
     if (loginSuccessful) {
       window.location.href = '/dashboard';
-    } else {
-      console.error('Sign-in failed. Error handled by Redux state.');
     }
   }, [dispatch, router, loginIdentifier, password, loginType]);
 
