@@ -240,8 +240,9 @@ export default function CreateLinkView() {
                       >
                         {savingsGoals.map((goal) => (
                           <MenuItem key={goal.id} value={goal.id}>
-                            {goal.name} - ₦{goal.target_amount.toLocaleString()}
-                            (₦{goal.current_amount.toLocaleString()} raised)
+                            {goal.name}
+                            {goal.target_amount ? ` - ₦${goal.target_amount.toLocaleString()}` : ''}
+                            {goal.current_amount !== undefined && goal.current_amount !== null ? ` (₦${goal.current_amount.toLocaleString()} raised)` : ''}
                           </MenuItem>
                         ))}
                       </TextField>
