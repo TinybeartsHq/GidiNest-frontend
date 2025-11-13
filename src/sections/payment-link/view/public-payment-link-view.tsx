@@ -54,8 +54,11 @@ export default function PublicPaymentLinkView() {
   useEffect(() => {
     if (currentLink) {
       console.log('Payment Link Data:', currentLink);
-      console.log('is_active value:', currentLink.is_active);
-      console.log('is_active type:', typeof currentLink.is_active);
+      console.log('is_active:', currentLink.is_active, typeof currentLink.is_active);
+      console.log('amount_raised:', currentLink.amount_raised, typeof currentLink.amount_raised);
+      console.log('target_amount:', currentLink.target_amount, typeof currentLink.target_amount);
+      console.log('contributors_count:', currentLink.contributors_count, typeof currentLink.contributors_count);
+      console.log('bank_details:', currentLink.bank_details);
     }
   }, [currentLink]);
 
@@ -94,16 +97,20 @@ export default function PublicPaymentLinkView() {
     }
   };
 
-  const formatCurrency = (amount: number) => new Intl.NumberFormat('en-NG', {
+  const formatCurrency = (amount: number | undefined | null) => {
+    const safeAmount = amount || 0;
+    return new Intl.NumberFormat('en-NG', {
       style: 'currency',
       currency: 'NGN',
       minimumFractionDigits: 0,
-    }).format(amount);
+    }).format(safeAmount);
+  };
 
   const calculateProgress = () => {
     if (!currentLink || !currentLink.target_amount) return 0;
+    const amountRaised = currentLink.amount_raised || 0;
     return Math.min(
-      (currentLink.amount_raised / currentLink.target_amount) * 100,
+      (amountRaised / currentLink.target_amount) * 100,
       100
     );
   };
@@ -241,7 +248,7 @@ export default function PublicPaymentLinkView() {
                   <Box display="flex" alignItems="center" gap={1}>
                     <Users size={20} />
                     <Typography variant="body2">
-                      {currentLink.contributors_count} contributors
+                      {currentLink.contributors_count || 0} contributors
                     </Typography>
                   </Box>
                 </Box>
@@ -266,7 +273,7 @@ export default function PublicPaymentLinkView() {
                 <Divider orientation="vertical" flexItem />
                 <Box textAlign="center">
                   <Typography variant="h4" fontWeight="bold" color="primary">
-                    {currentLink.contributors_count}
+                    {currentLink.contributors_count || 0}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Contributors
