@@ -9,15 +9,6 @@ import {
   TrendingUp,
   DollarSign,
 } from 'lucide-react';
-import {
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  LineChart,
-  CartesianGrid,
-  ResponsiveContainer,
-} from 'recharts';
 
 import Grid from '@mui/material/Grid';
 import {
@@ -243,37 +234,34 @@ export default function AnalyticsView() {
           </Grid>
         </Grid>
 
-        {/* Daily Stats Chart */}
+        {/* Daily Stats Table */}
         {analytics.daily_stats && analytics.daily_stats.length > 0 && (
           <Card sx={{ mb: 3 }}>
             <CardContent>
               <Typography variant="h6" fontWeight="bold" gutterBottom>
-                Contribution Trends
+                Daily Contribution Breakdown
               </Typography>
-              <Box sx={{ width: '100%', height: 300, mt: 2 }}>
-                <ResponsiveContainer>
-                  <LineChart
-                    data={analytics.daily_stats.map((stat: { date: string; amount: number; count: number }) => ({
-                      date: formatDate(stat.date),
-                      amount: stat.amount,
-                      count: stat.count,
-                    }))}
+              <Divider sx={{ my: 2 }} />
+              <List>
+                {analytics.daily_stats.slice(0, 10).map((stat: { date: string; amount: number; count: number }, index: number) => (
+                  <ListItem
+                    key={index}
+                    sx={{
+                      bgcolor: 'action.hover',
+                      borderRadius: 1,
+                      mb: 1,
+                    }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip
-                      formatter={(value: any) => formatCurrency(value)}
+                    <ListItemText
+                      primary={formatDate(stat.date)}
+                      secondary={`${stat.count} contribution${stat.count !== 1 ? 's' : ''}`}
                     />
-                    <Line
-                      type="monotone"
-                      dataKey="amount"
-                      stroke="#8884d8"
-                      strokeWidth={2}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </Box>
+                    <Typography variant="h6" fontWeight="bold" color="primary">
+                      {formatCurrency(stat.amount)}
+                    </Typography>
+                  </ListItem>
+                ))}
+              </List>
             </CardContent>
           </Card>
         )}
