@@ -30,16 +30,18 @@ export const fetchPublicPaymentLink = createAsyncThunk(
   'paymentLink/fetchPublicLink',
   async (token: string, { rejectWithValue }) => {
     try {
-      // Create axios instance without auth for public access
-      const response = await fetch(
-        `${apiClientV2.defaults.baseURL}/wallet/payment-links/${token}/`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      // Build the full URL
+      const baseURL = apiClientV2.defaults.baseURL || '/api/v2/';
+      const url = baseURL.startsWith('http')
+        ? `${baseURL}wallet/payment-links/${token}/`
+        : `${window.location.origin}${baseURL}wallet/payment-links/${token}/`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
       if (!response.ok) {
         throw new Error('Payment link not found');
