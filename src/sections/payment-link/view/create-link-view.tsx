@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { toast } from 'react-toastify';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Target, Calendar, ArrowLeft } from 'lucide-react';
@@ -10,20 +10,20 @@ import {
   Stack,
   Alert,
   Button,
-  Switch,
+  MenuItem,
   Container,
   TextField,
   Typography,
   CardContent,
   ToggleButton,
   InputAdornment,
-  FormControlLabel,
   CircularProgress,
   ToggleButtonGroup,
 } from '@mui/material';
 
-import { LinkType } from '../../../redux/paymentLink/paymentLink.types';
+import apiClient from '../../../utils/apiClient';
 import { clearCreateSuccess } from '../../../redux/paymentLink/paymentLink.slice';
+import { LinkType, type SavingsGoal } from '../../../redux/paymentLink/paymentLink.types';
 import {
   createGoalLink,
   createEventLink,
@@ -40,16 +40,37 @@ export default function CreateLinkView() {
   );
 
   const [linkType, setLinkType] = useState<LinkType>(LinkType.GOAL);
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
+  const [loadingGoals, setLoadingGoals] = useState(false);
   const [formData, setFormData] = useState({
+    selectedGoal: '',
     title: '',
     description: '',
     targetAmount: '',
     eventDate: '',
     expiresAt: '',
     allowAnonymous: true,
-    showContributors: true,
+    showContributors: 'public',
     customMessage: '',
   });
+
+  // Fetch savings goals on mount
+  useEffect(() => {
+    const fetchSavingsGoals = async () => {
+      setLoadingGoals(true);
+      try {
+        const response = await apiClient.get('/savings/goals/');
+        setSavingsGoals(response.data.data || []);
+      } catch (err) {
+        console.error('Failed to fetch savings goals:', err);
+        toast.error('Failed to load savings goals');
+      } finally {
+        setLoadingGoals(false);
+      }
+    };
+
+    fetchSavingsGoals();
+  }, []);
 
   const handleLinkTypeChange = (
     event: React.MouseEvent<HTMLElement>,
@@ -72,34 +93,32 @@ export default function CreateLinkView() {
     e.preventDefault();
 
     // Validation
-    if (!formData.title.trim()) {
-      toast.error('Please enter a title');
-      return;
-    }
-
     if (linkType === LinkType.GOAL) {
-      if (!formData.targetAmount || parseFloat(formData.targetAmount) <= 0) {
-        toast.error('Please enter a valid target amount');
+      if (!formData.selectedGoal) {
+        toast.error('Please select a savings goal');
         return;
       }
     }
 
-    if (linkType === LinkType.EVENT && !formData.eventDate) {
-      toast.error('Please select an event date');
-      return;
+    if (linkType === LinkType.EVENT) {
+      if (!formData.title.trim()) {
+        toast.error('Please enter a title');
+        return;
+      }
+      if (!formData.eventDate) {
+        toast.error('Please select an event date');
+        return;
+      }
     }
 
     try {
       if (linkType === LinkType.GOAL) {
         await dispatch(
           createGoalLink({
-            title: formData.title,
+            goal_id: formData.selectedGoal,
             description: formData.description || undefined,
-            target_amount: parseFloat(formData.targetAmount),
-            allow_anonymous: formData.allowAnonymous,
             show_contributors: formData.showContributors,
             custom_message: formData.customMessage || undefined,
-            expires_at: formData.expiresAt || undefined,
           })
         ).unwrap();
       } else {
@@ -201,43 +220,66 @@ export default function CreateLinkView() {
                 </Typography>
 
                 <Stack spacing={2.5} mt={2}>
-                  <TextField
-                    label="Title"
-                    placeholder="e.g., Baby Shower Contributions"
-                    value={formData.title}
-                    onChange={(e) => handleInputChange('title', e.target.value)}
-                    required
-                    fullWidth
-                    helperText="Give your payment link a clear, descriptive title"
-                  />
+                  {linkType === LinkType.GOAL ? (
+                    <>
+                      <TextField
+                        select
+                        label="Select Savings Goal"
+                        value={formData.selectedGoal}
+                        onChange={(e) => handleInputChange('selectedGoal', e.target.value)}
+                        required
+                        fullWidth
+                        disabled={loadingGoals}
+                        helperText={
+                          loadingGoals
+                            ? 'Loading your savings goals...'
+                            : savingsGoals.length === 0
+                            ? 'No savings goals found. Create one first.'
+                            : 'Choose which savings goal to create a payment link for'
+                        }
+                      >
+                        {savingsGoals.map((goal) => (
+                          <MenuItem key={goal.id} value={goal.id}>
+                            {goal.name} - ₦{goal.target_amount.toLocaleString()}
+                            (₦{goal.current_amount.toLocaleString()} raised)
+                          </MenuItem>
+                        ))}
+                      </TextField>
 
-                  <TextField
-                    label="Description (Optional)"
-                    placeholder="Tell people what this is for..."
-                    value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
-                    multiline
-                    rows={3}
-                    fullWidth
-                    helperText="Add context to help contributors understand the purpose"
-                  />
+                      <TextField
+                        label="Description (Optional)"
+                        placeholder="Add context about this payment link..."
+                        value={formData.description}
+                        onChange={(e) => handleInputChange('description', e.target.value)}
+                        multiline
+                        rows={3}
+                        fullWidth
+                        helperText="Additional message for people visiting this link"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <TextField
+                        label="Title"
+                        placeholder="e.g., Baby Shower Contributions"
+                        value={formData.title}
+                        onChange={(e) => handleInputChange('title', e.target.value)}
+                        required
+                        fullWidth
+                        helperText="Give your payment link a clear, descriptive title"
+                      />
 
-                  {linkType === LinkType.GOAL && (
-                    <TextField
-                      label="Target Amount"
-                      type="number"
-                      placeholder="0"
-                      value={formData.targetAmount}
-                      onChange={(e) => handleInputChange('targetAmount', e.target.value)}
-                      required
-                      fullWidth
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">₦</InputAdornment>
-                        ),
-                      }}
-                      helperText="The total amount you're aiming to raise"
-                    />
+                      <TextField
+                        label="Description (Optional)"
+                        placeholder="Tell people what this is for..."
+                        value={formData.description}
+                        onChange={(e) => handleInputChange('description', e.target.value)}
+                        multiline
+                        rows={3}
+                        fullWidth
+                        helperText="Add context to help contributors understand the purpose"
+                      />
+                    </>
                   )}
 
                   {linkType === LinkType.EVENT && (
@@ -297,29 +339,18 @@ export default function CreateLinkView() {
                     />
                   )}
 
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.allowAnonymous}
-                        onChange={(e) =>
-                          handleInputChange('allowAnonymous', e.target.checked)
-                        }
-                      />
-                    }
-                    label="Allow anonymous contributions"
-                  />
-
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.showContributors}
-                        onChange={(e) =>
-                          handleInputChange('showContributors', e.target.checked)
-                        }
-                      />
-                    }
-                    label="Show contributors list on public page"
-                  />
+                  <TextField
+                    select
+                    label="Contributor Visibility"
+                    value={formData.showContributors}
+                    onChange={(e) => handleInputChange('showContributors', e.target.value)}
+                    fullWidth
+                    helperText="Control who can see the list of contributors"
+                  >
+                    <MenuItem value="public">Public - Everyone can see</MenuItem>
+                    <MenuItem value="private">Private - Only you can see</MenuItem>
+                    <MenuItem value="anonymous">Anonymous - No names shown</MenuItem>
+                  </TextField>
 
                   <TextField
                     label="Custom Thank You Message (Optional)"

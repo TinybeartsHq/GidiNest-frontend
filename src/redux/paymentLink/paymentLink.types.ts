@@ -59,14 +59,19 @@ export interface PaymentLinkAnalytics {
   top_contributors?: Contributor[];
 }
 
-export interface CreateGoalLinkRequest {
-  title: string;
-  description?: string;
+export interface SavingsGoal {
+  id: string;
+  name: string;
   target_amount: number;
-  allow_anonymous?: boolean;
-  show_contributors?: boolean;
+  current_amount: number;
+  target_date?: string;
+}
+
+export interface CreateGoalLinkRequest {
+  goal_id: string;
+  description?: string;
+  show_contributors?: string; // 'public', 'private', 'anonymous'
   custom_message?: string;
-  expires_at?: string;
 }
 
 export interface CreateEventLinkRequest {
@@ -75,7 +80,7 @@ export interface CreateEventLinkRequest {
   event_date: string;
   target_amount?: number;
   allow_anonymous?: boolean;
-  show_contributors?: boolean;
+  show_contributors?: string; // 'public', 'private', 'anonymous'
   custom_message?: string;
 }
 
