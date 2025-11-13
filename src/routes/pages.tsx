@@ -33,6 +33,7 @@ export const TermsConditionsPage = lazy(() => import('src/pages/terms-conditions
 
 // Payment Link Pages
 export const PublicPaymentLinkPage = lazy(() => import('src/pages/payment-link/public-payment-link'));
+export const PaymentConfirmationPage = lazy(() => import('src/pages/payment-link/payment-confirmation'));
 export const MyLinksPage = lazy(() => import('src/pages/payment-link/my-links'));
 export const CreateLinkPage = lazy(() => import('src/pages/payment-link/create-link'));
 export const EditLinkPage = lazy(() => import('src/pages/payment-link/edit-link'));
@@ -93,7 +94,11 @@ export const routesSection: RouteObject[] = [
   {
     path: 'pay/:token',
     element: <PublicPaymentLinkPage />,
-  }, 
+  },
+  {
+    path: 'pay/:token/confirmed',
+    element: <PaymentConfirmationPage />,
+  },
   {
     element: (
       <AuthLayout>

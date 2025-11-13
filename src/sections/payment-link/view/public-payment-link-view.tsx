@@ -397,17 +397,6 @@ export default function PublicPaymentLinkView() {
                 </Button>
               </Box>
             </Stack>
-
-            {currentLink.custom_message && (
-              <>
-                <Divider sx={{ my: 3 }} />
-                <Alert severity="success">
-                  <Typography variant="body2">
-                    {currentLink.custom_message}
-                  </Typography>
-                </Alert>
-              </>
-            )}
             </>
           )}
           </CardContent>
