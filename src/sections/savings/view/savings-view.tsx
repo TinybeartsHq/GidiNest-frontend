@@ -332,8 +332,9 @@ export function SavingsView() {
 
   const handleSavingPlanDelete = async () => {
     if (goalData?.amount > 0) {
-      alert(
-        'You cannot delete a savings plan with a positive balance. Please withdraw the funds first.'
+      toast.error(
+        'You cannot delete a savings plan with a positive balance. Please withdraw the funds first.',
+        { autoClose: 6000 }
       );
       return;
     }
@@ -352,7 +353,7 @@ export function SavingsView() {
       dispatch(getSavingsGoals());
       handleCloseGoalInfoModal();
     } else {
-      alert(`Account validation failed: ${result.error || 'An unknown error occurred.'}`);
+      toast.error(`Failed to delete savings goal: ${result.error || 'An unknown error occurred.'}`, { autoClose: 6000 });
     }
   };
 
@@ -363,6 +364,19 @@ export function SavingsView() {
     setGoalTargetAmount('');
   }, []);
 
+  // Helper function to normalize names for comparison (handles case, extra spaces, order variations)
+  const normalizeName = useCallback((name: string): string => {
+    if (!name) return '';
+    return name
+      .toUpperCase()
+      .trim()
+      .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+      .split(' ')
+      .filter(part => part.length > 0) // Remove empty parts
+      .sort() // Sort parts alphabetically for order-independent comparison
+      .join(' ');
+  }, []);
+
   const handleSubmitWithdrawal = useCallback(async () => {
     if (
       parseFloat(withdrawalAmount) <= 0 ||
@@ -370,7 +384,7 @@ export function SavingsView() {
       !withdrawalAccountNum ||
       !withdrawalBankCode
     ) {
-      alert('Please fill in all withdrawal details.');
+      toast.error('Please fill in all withdrawal details.', { autoClose: 5000 });
       return;
     }
 
@@ -381,7 +395,7 @@ export function SavingsView() {
       || wallet?.has_transaction_pin
       || hasTransactionPin;
     if (pinIsSet && (!withdrawalPin || withdrawalPin.length !== 4)) {
-      alert('Please enter your 4-digit transaction PIN.');
+      toast.error('Please enter your 4-digit transaction PIN.', { autoClose: 5000 });
       return;
     }
 
@@ -423,7 +437,9 @@ export function SavingsView() {
         dispatch(getRecentSavingTransactions());
         handleCloseWithdrawModal();
       } else {
-        toast.error(`Withdrawal failed: ${result.error || 'Please try again or contact support'}`);
+        // Display detailed error message from backend
+        const errorMsg = result.error || 'Please try again or contact support';
+        toast.error(`Withdrawal failed: ${errorMsg}`, { autoClose: 8000 });
       }
     }
   }, [
@@ -438,6 +454,8 @@ export function SavingsView() {
     summary?.currency,
     wallet,
     hasTransactionPin,
+    normalizeName,
+    userProfile,
   ]);
 
   const handleSubmitCreateGoal = useCallback(async () => {
@@ -446,7 +464,7 @@ export function SavingsView() {
       parseFloat(goalTargetAmount) <= 0 ||
       isNaN(parseFloat(goalTargetAmount))
     ) {
-      alert('Please provide a valid goal name and target amount.');
+      toast.error('Please provide a valid goal name and target amount.', { autoClose: 5000 });
       return;
     }
 
@@ -463,7 +481,7 @@ export function SavingsView() {
       handleCloseCreateGoalModal();
       dispatch(getSavingsGoals());
     } else {
-      alert(`Failed to create goal: ${result.error || 'An unknown error occurred.'}`);
+      toast.error(`Failed to create goal: ${result.error || 'An unknown error occurred.'}`, { autoClose: 6000 });
     }
   }, [goalName, goalTargetAmount, handleCloseCreateGoalModal, dispatch, summary?.currency]);
 
@@ -1318,7 +1336,8 @@ export function SavingsView() {
                   dispatch(getSavingsGoals());
                   dispatch(getRecentSavingTransactions());
                 } else {
-                  alert(`Deposit failed: ${result.error || 'An unknown error occurred.'}`);
+                  const errorMsg = result.error || 'An unknown error occurred.';
+                  toast.error(`Deposit failed: ${errorMsg}`, { autoClose: 8000 });
                 }
               } else {
                 const result = await dispatch(
@@ -1337,11 +1356,12 @@ export function SavingsView() {
                   dispatch(getSavingsGoals());
                   dispatch(getRecentSavingTransactions());
                 } else {
-                  alert(`Withdrawal failed: ${result.error || 'An unknown error occurred.'}`);
+                  const errorMsg = result.error || 'An unknown error occurred.';
+                  toast.error(`Withdrawal failed: ${errorMsg}`, { autoClose: 8000 });
                 }
               }
             } catch (err: any) {
-              alert('An error occurred. Please try again.');
+              toast.error('An error occurred. Please try again.', { autoClose: 6000 });
             } finally {
               dispatch(getRecentSavingTransactions());
               setOpenFundsModal(false);

@@ -304,11 +304,19 @@ export const initiateWithdrawal = (withdrawalData: any) => async (dispatch: (arg
             return { success: false, error: response.data.message };
         }
     } catch (error:any) {
+        // Extract error message from various possible locations in the response
+        const errorMessage = error.response?.data?.message 
+            || error.response?.data?.detail 
+            || error.response?.data?.error
+            || (typeof error.response?.data === 'string' ? error.response.data : null)
+            || error.message 
+            || 'Network Error';
+        
         dispatch({
             type: INITIATE_WITHDRAWAL_FAILURE,
-            payload: error.response?.data?.detail || error.message || 'Network Error',
+            payload: errorMessage,
         });
-        return { success: false, error: error.response?.data?.detail || error.message || 'Network Error' };
+        return { success: false, error: errorMessage };
     }
 };
 
@@ -337,11 +345,19 @@ export const initiateWalletWithdrawal = (withdrawalData: any) => async (dispatch
             return { success: false, error: response.data.message };
         }
     }catch (error: any) {
+        // Extract error message from various possible locations in the response
+        const errorMessage = error.response?.data?.message 
+            || error.response?.data?.detail 
+            || error.response?.data?.error
+            || (typeof error.response?.data === 'string' ? error.response.data : null)
+            || error.message 
+            || 'Network Error';
+        
         dispatch({
             type: INITIATE_WALLET_WITHDRAWAL_FAILURE,
-            payload: error.response?.data?.detail || error.message || 'Network Error',
+            payload: errorMessage,
         });
-        return { success: false, error: error.response?.data?.detail || error.message || 'Network Error' };
+        return { success: false, error: errorMessage };
     }
 };
 
