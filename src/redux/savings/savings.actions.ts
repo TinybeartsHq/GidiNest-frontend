@@ -289,7 +289,7 @@ export const initiateDeposit = (depositData: any) => async (dispatch: (arg0: { t
 export const initiateWithdrawal = (withdrawalData: any) => async (dispatch: (arg0: { type: string; payload?: any; }) => void) => {
     dispatch({ type: INITIATE_WITHDRAWAL_REQUEST });
     try {
-        const response = await apiClient.post('savings/goals/contribute-withdraw', withdrawalData); // Example endpoint
+        const response = await apiClient.post('savings/goals/contribute-withdraw/', withdrawalData); // Fixed: Added trailing slash
         if (response.data.status) {
             dispatch({
                 type: INITIATE_WITHDRAWAL_SUCCESS,
