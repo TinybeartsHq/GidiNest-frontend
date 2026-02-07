@@ -2,7 +2,7 @@ import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Copy, Check, Users, Target, Calendar, Send } from 'lucide-react';
+import { Calendar, Check, Copy, Send, Target, Users } from 'lucide-react';
 
 import {
   Box,
@@ -95,8 +95,8 @@ export default function PublicPaymentLinkView() {
     }
   };
 
-  const formatCurrency = (amount: number | undefined | null) => {
-    const safeAmount = amount || 0;
+  const formatCurrency = (value: number | undefined | null) => {
+    const safeAmount = value || 0;
     return new Intl.NumberFormat('en-NG', {
       style: 'currency',
       currency: 'NGN',

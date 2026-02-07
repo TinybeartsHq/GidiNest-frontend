@@ -5,10 +5,10 @@ import apiClientV2 from '../../utils/apiClientV2';
 import type {
   PaymentLink,
   PaymentLinkAnalytics,
+  ConfirmPaymentRequest,
   CreateGoalLinkRequest,
   CreateEventLinkRequest,
   UpdatePaymentLinkRequest,
-  ConfirmPaymentRequest,
 } from './paymentLink.types';
 
 // Fetch all payment links for the current user
