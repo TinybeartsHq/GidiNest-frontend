@@ -77,7 +77,7 @@ export default function MyLinksView() {
     const url = `${window.location.origin}/pay/${link.token}`;
     try {
       await navigator.clipboard.writeText(url);
-      toast.success('Payment link copied!');
+      toast.success('Link copied!');
     } catch (err) {
       toast.error('Failed to copy link');
     }
@@ -124,7 +124,7 @@ export default function MyLinksView() {
         })
       ).unwrap();
       toast.success(
-        `Payment link ${link.is_active ? 'deactivated' : 'activated'} successfully`
+        `Gift registry ${link.is_active ? 'deactivated' : 'activated'} successfully`
       );
     } catch (err: any) {
       toast.error(err || 'Failed to toggle link status');
@@ -142,11 +142,11 @@ export default function MyLinksView() {
 
     try {
       await dispatch(deletePaymentLink(selectedLink.token)).unwrap();
-      toast.success('Payment link deleted successfully');
+      toast.success('Gift registry deleted successfully');
       setDeleteDialogOpen(false);
       setSelectedLink(null);
     } catch (err: any) {
-      toast.error(err || 'Failed to delete payment link');
+      toast.error(err || 'Failed to delete gift registry');
     }
   };
 
@@ -191,10 +191,10 @@ export default function MyLinksView() {
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
           <Box>
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              My Payment Links
+              My Gift Registry
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Create and manage your payment collection links
+              Create and manage your gift registry links
             </Typography>
           </Box>
           <Button
@@ -219,10 +219,10 @@ export default function MyLinksView() {
             <CardContent>
               <Box textAlign="center" py={6}>
                 <Typography variant="h6" color="text.secondary" gutterBottom>
-                  No payment links yet
+                  No gift registries yet
                 </Typography>
                 <Typography variant="body2" color="text.secondary" mb={3}>
-                  Create your first payment link to start collecting contributions
+                  Create your first gift registry to start collecting contributions
                 </Typography>
                 <Button
                   variant="contained"
@@ -396,7 +396,7 @@ export default function MyLinksView() {
 
         {/* Delete Confirmation Dialog */}
         <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-          <DialogTitle>Delete Payment Link?</DialogTitle>
+          <DialogTitle>Delete Gift Registry?</DialogTitle>
           <DialogContent>
             <Typography>
               Are you sure you want to delete &ldquo;{selectedLink?.title}&rdquo;? This action cannot

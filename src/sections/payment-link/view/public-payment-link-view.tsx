@@ -138,7 +138,7 @@ export default function PublicPaymentLinkView() {
       <Container maxWidth="sm">
         <Box mt={8}>
           <Alert severity="error">
-            {error || 'Payment link not found'}
+            {error || 'Gift registry not found'}
           </Alert>
           <Button
             variant="contained"
@@ -162,7 +162,7 @@ export default function PublicPaymentLinkView() {
       <Container maxWidth="sm">
         <Box mt={8}>
           <Alert severity="warning">
-            This payment link is no longer active.
+            This gift registry is no longer active.
           </Alert>
           <Button
             variant="contained"
@@ -291,7 +291,7 @@ export default function PublicPaymentLinkView() {
 
             {!currentLink.bank_details ? (
               <Alert severity="warning" sx={{ mb: 3 }}>
-                Bank account details are not yet configured for this payment link.
+                Bank account details are not yet configured for this gift registry.
                 Please contact the link owner.
               </Alert>
             ) : (

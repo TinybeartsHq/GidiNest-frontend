@@ -137,7 +137,7 @@ export default function CreateLinkView() {
         ).unwrap();
       }
 
-      toast.success('Payment link created successfully!');
+      toast.success('Gift registry created successfully!');
 
       // Navigate to the newly created link's page after a short delay
       setTimeout(() => {
@@ -145,7 +145,7 @@ export default function CreateLinkView() {
         navigate('/payment-links');
       }, 1500);
     } catch (err: any) {
-      toast.error(err || 'Failed to create payment link');
+      toast.error(err || 'Failed to create gift registry');
     }
   };
 
@@ -164,10 +164,10 @@ export default function CreateLinkView() {
             Back to My Links
           </Button>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Create Payment Link
+            Create Gift Registry
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Generate a shareable link to collect contributions
+            Generate a shareable gift registry link to collect contributions
           </Typography>
         </Box>
 
@@ -235,7 +235,7 @@ export default function CreateLinkView() {
                             ? 'Loading your savings goals...'
                             : savingsGoals.length === 0
                             ? 'No savings goals found. Create one first.'
-                            : 'Choose which savings goal to create a payment link for'
+                            : 'Choose which savings goal to create a gift registry for'
                         }
                       >
                         {savingsGoals.map((goal) => (
@@ -249,7 +249,7 @@ export default function CreateLinkView() {
 
                       <TextField
                         label="Description (Optional)"
-                        placeholder="Add context about this payment link..."
+                        placeholder="Add context about this gift registry..."
                         value={formData.description}
                         onChange={(e) => handleInputChange('description', e.target.value)}
                         multiline
@@ -267,7 +267,7 @@ export default function CreateLinkView() {
                         onChange={(e) => handleInputChange('title', e.target.value)}
                         required
                         fullWidth
-                        helperText="Give your payment link a clear, descriptive title"
+                        helperText="Give your gift registry a clear, descriptive title"
                       />
 
                       <TextField
@@ -377,7 +377,7 @@ export default function CreateLinkView() {
             {/* Success Message */}
             {createLinkSuccess && currentLink && (
               <Alert severity="success">
-                Payment link created successfully! Redirecting to your links...
+                Gift registry created successfully! Redirecting...
               </Alert>
             )}
 
@@ -399,7 +399,7 @@ export default function CreateLinkView() {
                 disabled={loading}
                 startIcon={loading ? <CircularProgress size={20} /> : null}
               >
-                {loading ? 'Creating...' : 'Create Payment Link'}
+                {loading ? 'Creating...' : 'Create Gift Registry'}
               </Button>
             </Box>
           </Stack>

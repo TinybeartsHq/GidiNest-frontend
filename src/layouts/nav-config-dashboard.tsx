@@ -39,7 +39,7 @@ export const navData = [
     icon: icon('ic-disabled'),
   },
   {
-    title: 'Payment Links',
+    title: 'Gift Registry',
     path: '/payment-links',
     icon: icon('ic-lock'),
   },

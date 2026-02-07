@@ -41,12 +41,13 @@ export default function PaymentConfirmationView() {
 
   const handleShare = () => {
     const url = `${window.location.origin}/pay/${token}`;
-    const text = `I just contributed to: ${currentLink?.title}\n\nJoin me in supporting this cause: ${url}`;
+    const title = currentLink?.title || 'this gift registry';
+    const text = `I just contributed to ${title}. You can contribute too: ${url}`;
 
     if (navigator.share) {
       navigator
         .share({
-          title: currentLink?.title || 'Payment Link',
+          title: currentLink?.title || 'Gift Registry',
           text,
           url,
         })
@@ -78,7 +79,7 @@ export default function PaymentConfirmationView() {
       <Container maxWidth="sm">
         <Box mt={8}>
           <Alert severity="error">
-            {error || 'Payment link not found'}
+            {error || 'Gift registry not found'}
           </Alert>
           <Button
             variant="contained"

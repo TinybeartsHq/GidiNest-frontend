@@ -117,7 +117,7 @@ export default function AnalyticsView() {
             Back to My Links
           </Button>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Payment Link Analytics
+            Gift Registry Analytics
           </Typography>
           {currentLink && (
             <Typography variant="body2" color="text.secondary">

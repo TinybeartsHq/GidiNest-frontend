@@ -74,7 +74,7 @@ export default function EditLinkView() {
 
   useEffect(() => {
     if (updateLinkSuccess) {
-      toast.success('Payment link updated successfully!');
+      toast.success('Gift registry updated successfully!');
       setTimeout(() => {
         dispatch(clearUpdateSuccess());
         navigate('/payment-links');
@@ -90,7 +90,7 @@ export default function EditLinkView() {
     e.preventDefault();
 
     if (!token) {
-      toast.error('Invalid payment link');
+      toast.error('Invalid gift registry');
       return;
     }
 
@@ -122,7 +122,7 @@ export default function EditLinkView() {
         })
       ).unwrap();
     } catch (err: any) {
-      toast.error(err || 'Failed to update payment link');
+      toast.error(err || 'Failed to update gift registry');
     }
   };
 
@@ -150,7 +150,7 @@ export default function EditLinkView() {
           >
             Back to My Links
           </Button>
-          <Alert severity="error">Payment link not found</Alert>
+          <Alert severity="error">Gift registry not found</Alert>
         </Box>
       </Container>
     );
@@ -169,10 +169,10 @@ export default function EditLinkView() {
             Back to My Links
           </Button>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Edit Payment Link
+            Edit Gift Registry
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Update your payment link details
+            Update your gift registry details
           </Typography>
         </Box>
 
@@ -193,7 +193,7 @@ export default function EditLinkView() {
                     onChange={(e) => handleInputChange('title', e.target.value)}
                     required
                     fullWidth
-                    helperText="Give your payment link a clear, descriptive title"
+                    helperText="Give your gift registry a clear, descriptive title"
                   />
 
                   <TextField
@@ -320,7 +320,7 @@ export default function EditLinkView() {
             {/* Success Message */}
             {updateLinkSuccess && (
               <Alert severity="success">
-                Payment link updated successfully! Redirecting...
+                Gift registry updated successfully! Redirecting...
               </Alert>
             )}
 
