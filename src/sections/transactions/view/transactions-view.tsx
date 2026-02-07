@@ -133,12 +133,13 @@ export function TransactionsView() {
                 rowCount={transactions.length} 
                 numSelected={selected.length}
                 onSort={handleSort}
-                headLabel={[ 
-                  { id: 'name', label: 'Description' }, 
-                
-                  { id: 'transaction_type_display', label: 'Type' }, 
+                headLabel={[
+                  { id: 'name', label: 'Description' },
+                  { id: 'transaction_type_display', label: 'Type' },
                   { id: 'timestamp', label: 'Date' },
                   { id: 'amount', label: 'Amount (₦)', align: 'right' },
+                  { id: 'fee', label: 'Fee (₦)', align: 'right' },
+                  { id: 'net_amount', label: 'Net (₦)', align: 'right' },
                   { id: '' },
                 ]}
               />

@@ -41,6 +41,9 @@ import { DashboardContent } from 'src/layouts/dashboard';
 import { BVNVerificationModal } from 'src/components/verification/bvn';
 import { NINVerificationModal } from 'src/components/verification/nin';
 import { TransactionPinModal } from 'src/components/verification/transaction-pin';
+import { FeeBreakdown } from 'src/components/fee-breakdown';
+
+import { useFeePreview } from 'src/hooks/use-fee-preview';
 
 import { FundsActionModal } from './fundmodal';
 import { AnalyticsWidgetSummary } from '../analytics-widget-summary';
@@ -637,6 +640,9 @@ export function SavingsView() {
     }
   }, [nin, ninFirstname, ninLastname, ninDob, dispatch]);
 
+  // Fee preview for withdrawal modal
+  const withdrawalFee = useFeePreview(parseFloat(withdrawalAmount) || 0, 'transfer');
+
   const currentSummary = summary || { totalBalance: 0, currency: '₦', lastUpdated: 'N/A' };
 
   const goalsWithImages = useMemo(
@@ -940,6 +946,11 @@ export function SavingsView() {
             automatically.
           </Alert>
 
+          <Alert severity="warning" sx={{ mb: 3 }}>
+            An Electronic Money Transfer Levy (EMTL) of ₦50 applies to deposits of ₦10,000 and
+            above. This fee is deducted from the deposited amount.
+          </Alert>
+
           <Box
             sx={{
               backgroundColor: '#f5f5f5',
@@ -1020,6 +1031,14 @@ export function SavingsView() {
             inputProps={{ min: 1 }}
             sx={{ mb: 2 }}
           />
+
+          <FeeBreakdown
+            feeData={withdrawalFee.feeData}
+            loading={withdrawalFee.loading}
+            error={withdrawalFee.error}
+            netAmountLabel="Recipient receives"
+          />
+
           <TextField
             margin="dense"
             label="Account Number"

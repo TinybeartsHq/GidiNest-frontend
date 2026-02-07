@@ -8,12 +8,14 @@ import Typography from '@mui/material/Typography';
  
 
 export type TransactionProps = {
-  id: string;  
-  description: string;  
-  transaction_type: 'credit' | 'debit'; 
-  created_at: string; 
-  wallet_account_number: number;  
+  id: string;
+  description: string;
+  transaction_type: 'credit' | 'debit';
+  created_at: string;
+  wallet_account_number: number;
   amount: number;
+  fee?: number;
+  net_amount?: number;
 }
 
 type TransactionTableRowProps = {
@@ -27,10 +29,12 @@ export function TransactionTableRow({
 
   const {
     description,
-    transaction_type, 
-    created_at,  
+    transaction_type,
+    created_at,
     wallet_account_number,
-    amount
+    amount,
+    fee,
+    net_amount,
   } = row;
 
   const [open, setOpen] = useState(null);
@@ -123,10 +127,24 @@ export function TransactionTableRow({
       {/* Amount & Type */}
       <TableCell align="right" sx={{ minWidth: 140 }}>
         <Typography variant="subtitle1" sx={{ color: transactionTypeColor, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-      
+
           ₦{amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
         </Typography>
-      
+
+      </TableCell>
+
+      {/* Fee */}
+      <TableCell align="right" sx={{ minWidth: 100 }}>
+        <Typography variant="body2" color="text.secondary">
+          {fee != null && fee > 0 ? `₦${fee.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '—'}
+        </Typography>
+      </TableCell>
+
+      {/* Net Amount */}
+      <TableCell align="right" sx={{ minWidth: 140 }}>
+        <Typography variant="subtitle2" color={net_amount != null ? 'success.main' : 'text.secondary'}>
+          {net_amount != null ? `₦${net_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '—'}
+        </Typography>
       </TableCell>
 
       {/* Status */}

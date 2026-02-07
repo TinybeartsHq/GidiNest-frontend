@@ -23,6 +23,9 @@ import {
   CircularProgress,
 } from '@mui/material';
 
+import { FeeBreakdown } from 'src/components/fee-breakdown';
+import { useFeePreview } from 'src/hooks/use-fee-preview';
+
 import { LinkType } from '../../../redux/paymentLink/paymentLink.types';
 import { clearCurrentLink } from '../../../redux/paymentLink/paymentLink.slice';
 import { fetchPublicPaymentLink, confirmPaymentContribution } from '../../../redux/paymentLink/paymentLink.actions';
@@ -42,6 +45,9 @@ export default function PublicPaymentLinkView() {
   const [showConfirmForm, setShowConfirmForm] = useState(false);
   const [contributorName, setContributorName] = useState('');
   const [amount, setAmount] = useState('');
+
+  // Fee preview for payment link contributions
+  const paymentFee = useFeePreview(parseFloat(amount) || 0, 'payment_link');
 
   useEffect(() => {
     if (token) {
@@ -393,6 +399,14 @@ export default function PublicPaymentLinkView() {
                           ),
                         }}
                       />
+
+                      <FeeBreakdown
+                        feeData={paymentFee.feeData}
+                        loading={paymentFee.loading}
+                        error={paymentFee.error}
+                        netAmountLabel="Link owner receives"
+                      />
+
                       <Button
                         variant="contained"
                         fullWidth
