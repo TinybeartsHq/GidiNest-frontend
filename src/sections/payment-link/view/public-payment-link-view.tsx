@@ -59,7 +59,7 @@ export default function PublicPaymentLinkView() {
       return;
     }
     const parsedAmount = parseFloat(amount);
-    if (!parsedAmount || parsedAmount <= 0) {
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
       toast.error('Please enter a valid amount');
       return;
     }
@@ -155,7 +155,7 @@ export default function PublicPaymentLinkView() {
 
   // Check if link is explicitly inactive (default to active if undefined)
   // Only show inactive message if is_active is explicitly false
-  const isExplicitlyInactive = currentLink.is_active === false || (currentLink.is_active as any) === 'false';
+  const isExplicitlyInactive = currentLink.is_active === false || String(currentLink.is_active) === 'false';
 
   if (isExplicitlyInactive) {
     return (

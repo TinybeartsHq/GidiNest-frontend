@@ -40,6 +40,7 @@ export default function PaymentConfirmationView() {
   }, [token, dispatch]);
 
   const handleShare = () => {
+    if (!token) return;
     const url = `${window.location.origin}/pay/${token}`;
     const title = currentLink?.title || 'this gift registry';
     const text = `I just contributed to ${title}. You can contribute too: ${url}`;
@@ -53,10 +54,10 @@ export default function PaymentConfirmationView() {
         })
         .catch(() => {
           // Fallback to copy
-          navigator.clipboard.writeText(url);
+          navigator.clipboard.writeText(url).catch(() => {});
         });
     } else {
-      navigator.clipboard.writeText(url);
+      navigator.clipboard.writeText(url).catch(() => {});
     }
   };
 

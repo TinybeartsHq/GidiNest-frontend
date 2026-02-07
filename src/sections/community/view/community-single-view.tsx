@@ -51,9 +51,17 @@ export function CommunityPostDetailView() {
 
   // Effect to fetch single post when ID changes or component mounts
   useEffect(() => {
+    let cancelled = false;
+
     if (id) {
-      dispatch(fetchSinglePost(id));
+      dispatch(fetchSinglePost(id)).then(() => {
+        if (cancelled) return;
+      });
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [dispatch, id]);
 
   // Effect to clear errors after a delay

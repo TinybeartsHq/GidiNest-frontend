@@ -198,9 +198,24 @@ export function SignUpView() {
       toast.error('Password must be at least 8 characters long.');
       return;
     }
-    if (!/[0-9]/.test(password) || !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      setPasswordError('Password must contain at least one number and one special character.');
-      toast.error('Password must contain at least one number and one special character.');
+    if (!/[a-z]/.test(password)) {
+      setPasswordError('Password must contain at least one lowercase letter.');
+      toast.error('Password must contain at least one lowercase letter.');
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      setPasswordError('Password must contain at least one uppercase letter.');
+      toast.error('Password must contain at least one uppercase letter.');
+      return;
+    }
+    if (!/[0-9]/.test(password)) {
+      setPasswordError('Password must contain at least one number.');
+      toast.error('Password must contain at least one number.');
+      return;
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      setPasswordError('Password must contain at least one special character.');
+      toast.error('Password must contain at least one special character.');
       return;
     }
     setPasswordError('');
@@ -259,9 +274,6 @@ export function SignUpView() {
       toast.error(`Please fill in all required fields: ${emptyFields.join(', ')}`);
       return;
     }
-
-    // Log payload for debugging
-    console.log('Submitting signup completion with payload:', payload);
 
     try {
     const result = await dispatch(
@@ -572,10 +584,14 @@ export function SignUpView() {
         sx={{ mb: 3 }}
         slotProps={{
           inputLabel: { shrink: true },
+          htmlInput: {
+            max: new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0],
+            min: '1920-01-01',
+          },
           input: {
             endAdornment: (
               <InputAdornment position="end">
-                <Tooltip title="Enter your date of birth as it appears on your official ID or birth certificate.">
+                <Tooltip title="Enter your date of birth as it appears on your official ID or birth certificate. You must be at least 18 years old.">
                   <IconButton edge="end" size="small">
                     <InfoOutlinedIcon sx={{ fontSize: 20 }} />
                   </IconButton>
@@ -706,7 +722,7 @@ export function SignUpView() {
             ),
           },
         }}
-        helperText="Password must be at least 8 characters long, contain a number, and a special character."
+        helperText="Password must be at least 8 characters, with uppercase, lowercase, a number, and a special character."
         required
       />
 

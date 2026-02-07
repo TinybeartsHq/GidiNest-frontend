@@ -168,9 +168,9 @@ export function TransactionsView() {
 
         <TablePagination
           component="div"
-          page={1}
+          page={page}
           count={transactions.length}
-          rowsPerPage={transactions.length-1}
+          rowsPerPage={rowsPerPage}
           onPageChange={handleChangePage}
           rowsPerPageOptions={[5, 10, 25]}
           onRowsPerPageChange={handleChangeRowsPerPage}

@@ -62,7 +62,7 @@ export function SignInView() {
     if (loginSuccessful) {
       window.location.href = '/dashboard';
     }
-  }, [dispatch, router, loginIdentifier, password, loginType]);
+  }, [dispatch, loginIdentifier, password, loginType]);
 
   const handleLoginTypeToggle = (event: React.MouseEvent<HTMLElement>, newLoginType: 'email' | 'phone') => {
     if (newLoginType !== null) {

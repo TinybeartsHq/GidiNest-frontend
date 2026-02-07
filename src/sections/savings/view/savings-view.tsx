@@ -2,7 +2,7 @@
 import { toast } from 'react-toastify';
 import { ShieldCheck } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -160,10 +160,15 @@ export function SavingsView() {
   useEffect(() => {
     if (userProfile && !userProfile.has_bvn && !userProfile.has_nin && wallet?.wallet?.account_number) {
       // Only show once per session to avoid annoyance
-      const hasShownModal = sessionStorage.getItem('verificationModalShown');
-      if (!hasShownModal) {
+      try {
+        const hasShownModal = sessionStorage.getItem('verificationModalShown');
+        if (!hasShownModal) {
+          setShowVerificationChoice(true);
+          sessionStorage.setItem('verificationModalShown', 'true');
+        }
+      } catch {
+        // sessionStorage may not be available in private browsing
         setShowVerificationChoice(true);
-        sessionStorage.setItem('verificationModalShown', 'true');
       }
     }
   }, [userProfile, wallet]);
@@ -224,6 +229,7 @@ export function SavingsView() {
     let intervalId: NodeJS.Timeout;
 
     function startPolling() {
+      clearInterval(intervalId);
       if (document.visibilityState === 'visible') {
         intervalId = setInterval(() => {
           dispatch(getWallet());
@@ -588,7 +594,7 @@ export function SavingsView() {
       setVerificationError(result.error);
       setIsAccountVerified(false);
     }
-  }, [bvn]);
+  }, [bvn, dispatch]);
 
   // NIN verification handlers
   const handleCloseNinModal = useCallback(() => {
@@ -629,7 +635,7 @@ export function SavingsView() {
       setNinVerificationError(result.error);
       setIsNinAccountVerified(false);
     }
-  }, [nin, ninFirstname, ninLastname, ninDob]);
+  }, [nin, ninFirstname, ninLastname, ninDob, dispatch]);
 
   const currentSummary = summary || { totalBalance: 0, currency: '₦', lastUpdated: 'N/A' };
 

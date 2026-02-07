@@ -54,7 +54,7 @@ export default function EditLinkView() {
     if (paymentLinks.length === 0) {
       dispatch(fetchMyPaymentLinks());
     }
-  }, [dispatch, paymentLinks.length]);
+  }, [dispatch, paymentLinks]);
 
   useEffect(() => {
     const link = paymentLinks.find((l: any) => l.token === token);

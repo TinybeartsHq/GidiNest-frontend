@@ -206,9 +206,6 @@ export const activateUserByEmail = (emailData) => async (dispatch) => {
 export const finalizeSignup = (finalData) => async (dispatch) => {
     dispatch({ type: FINALIZE_SIGNUP_REQUEST });
     try {
-        // Log the data being sent for debugging
-        console.log('Finalizing signup with data:', JSON.stringify(finalData, null, 2));
-        
         const response = await apiClient.post('onboarding/register/complete', finalData);
 
         const user = response.data.data.user
@@ -226,11 +223,6 @@ export const finalizeSignup = (finalData) => async (dispatch) => {
         return { success: true, data: response.data };
     } catch (error) {
         let errorMessage = 'Failed to complete registration. Please try again.';
-        
-        // Log the full error for debugging
-        console.error('Signup finalization error:', error);
-        console.error('Error response:', error.response);
-        console.error('Error response data:', error.response?.data);
         
         if (error.response) {
             const responseData = error.response.data;
