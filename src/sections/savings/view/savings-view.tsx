@@ -35,10 +35,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { Chip, Tooltip, Divider, IconButton, LinearProgress } from '@mui/material';
 
 import { useRouter } from 'src/routes/hooks';
+import { useFeePreview } from 'src/hooks/use-fee-preview';
 
 import { DashboardContent } from 'src/layouts/dashboard';
-
-import { useFeePreview } from 'src/hooks/use-fee-preview';
 
 import { FeeBreakdown } from 'src/components/fee-breakdown';
 import { BVNVerificationModal } from 'src/components/verification/bvn';
