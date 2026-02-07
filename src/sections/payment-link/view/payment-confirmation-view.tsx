@@ -123,12 +123,12 @@ export default function PaymentConfirmationView() {
 
               {/* Success Message */}
               <Typography variant="h4" fontWeight="bold" color="success.main">
-                Payment Confirmed!
+                Contribution Submitted!
               </Typography>
 
               <Typography variant="body1" color="text.secondary">
-                Your contribution to <strong>{currentLink.title}</strong> has been successfully
-                received and confirmed.
+                We&apos;re processing your contribution to <strong>{currentLink.title}</strong>.
+                You&apos;ll receive a confirmation once the transfer is matched.
               </Typography>
 
               {/* Custom Thank You Message */}

@@ -9,6 +9,7 @@ import {
   fetchPublicPaymentLink,
   togglePaymentLinkStatus,
   fetchPaymentLinkAnalytics,
+  confirmPaymentContribution,
 } from './paymentLink.actions';
 
 import type { PaymentLinkState } from './paymentLink.types';
@@ -21,6 +22,7 @@ const initialState: PaymentLinkState = {
   error: null,
   createLinkSuccess: false,
   updateLinkSuccess: false,
+  confirmingPayment: false,
 };
 
 const paymentLinkSlice = createSlice({
@@ -189,6 +191,20 @@ const paymentLinkSlice = createSlice({
         }
       })
       .addCase(togglePaymentLinkStatus.rejected, (state, action) => {
+        state.error = action.payload as string;
+      });
+
+    // Confirm payment contribution
+    builder
+      .addCase(confirmPaymentContribution.pending, (state) => {
+        state.confirmingPayment = true;
+        state.error = null;
+      })
+      .addCase(confirmPaymentContribution.fulfilled, (state) => {
+        state.confirmingPayment = false;
+      })
+      .addCase(confirmPaymentContribution.rejected, (state, action) => {
+        state.confirmingPayment = false;
         state.error = action.payload as string;
       });
   },

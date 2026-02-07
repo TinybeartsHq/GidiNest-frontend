@@ -84,6 +84,11 @@ export interface CreateEventLinkRequest {
   custom_message?: string;
 }
 
+export interface ConfirmPaymentRequest {
+  contributor_name: string;
+  amount: number;
+}
+
 export interface UpdatePaymentLinkRequest {
   title?: string;
   description?: string;
@@ -102,4 +107,5 @@ export interface PaymentLinkState {
   error: string | null;
   createLinkSuccess: boolean;
   updateLinkSuccess: boolean;
+  confirmingPayment: boolean;
 }

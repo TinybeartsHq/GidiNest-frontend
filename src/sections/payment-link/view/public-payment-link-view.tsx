@@ -2,7 +2,7 @@ import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Copy, Check, Users, Target, Calendar } from 'lucide-react';
+import { Copy, Check, Users, Target, Calendar, Send } from 'lucide-react';
 
 import {
   Box,
@@ -14,16 +14,18 @@ import {
   Divider,
   Tooltip,
   Container,
+  TextField,
   Typography,
   IconButton,
   CardContent,
+  InputAdornment,
   LinearProgress,
   CircularProgress,
 } from '@mui/material';
 
 import { LinkType } from '../../../redux/paymentLink/paymentLink.types';
 import { clearCurrentLink } from '../../../redux/paymentLink/paymentLink.slice';
-import { fetchPublicPaymentLink } from '../../../redux/paymentLink/paymentLink.actions';
+import { fetchPublicPaymentLink, confirmPaymentContribution } from '../../../redux/paymentLink/paymentLink.actions';
 
 import type { RootState, AppDispatch } from '../../../redux/store';
 
@@ -32,13 +34,14 @@ export default function PublicPaymentLinkView() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
-  const { currentLink, loading, error } = useSelector(
+  const { currentLink, loading, error, confirmingPayment } = useSelector(
     (state: RootState) => state.paymentLink
   );
 
-  const [copiedReference, setCopiedReference] = useState(false);
   const [copiedAccountNumber, setCopiedAccountNumber] = useState(false);
-  const [paymentReference, setPaymentReference] = useState('');
+  const [showConfirmForm, setShowConfirmForm] = useState(false);
+  const [contributorName, setContributorName] = useState('');
+  const [amount, setAmount] = useState('');
 
   useEffect(() => {
     if (token) {
@@ -50,34 +53,29 @@ export default function PublicPaymentLinkView() {
     };
   }, [token, dispatch]);
 
-  // Debug: Log the current link data
-  useEffect(() => {
-    if (currentLink) {
-      console.log('Payment Link Data:', currentLink);
-      console.log('is_active:', currentLink.is_active, typeof currentLink.is_active);
-      console.log('amount_raised:', currentLink.amount_raised, typeof currentLink.amount_raised);
-      console.log('target_amount:', currentLink.target_amount, typeof currentLink.target_amount);
-      console.log('contributors_count:', currentLink.contributors_count, typeof currentLink.contributors_count);
-      console.log('bank_details:', currentLink.bank_details);
+  const handleConfirmPayment = async () => {
+    if (!contributorName.trim()) {
+      toast.error('Please enter your name');
+      return;
     }
-  }, [currentLink]);
-
-  useEffect(() => {
-    // Generate unique payment reference with timestamp
-    if (token) {
-      const timestamp = Date.now();
-      setPaymentReference(`PL-${token}-${timestamp}`);
+    const parsedAmount = parseFloat(amount);
+    if (!parsedAmount || parsedAmount <= 0) {
+      toast.error('Please enter a valid amount');
+      return;
     }
-  }, [token]);
+    if (!token) return;
 
-  const handleCopyReference = async () => {
     try {
-      await navigator.clipboard.writeText(paymentReference);
-      setCopiedReference(true);
-      toast.success('Payment reference copied!');
-      setTimeout(() => setCopiedReference(false), 2000);
-    } catch (err) {
-      toast.error('Failed to copy reference');
+      await dispatch(
+        confirmPaymentContribution({
+          token,
+          data: { contributor_name: contributorName.trim(), amount: parsedAmount },
+        })
+      ).unwrap();
+      toast.success('Contribution confirmed!');
+      navigate(`/pay/${token}/confirmed`);
+    } catch (err: any) {
+      toast.error(err || 'Failed to confirm payment');
     }
   };
 
@@ -299,10 +297,15 @@ export default function PublicPaymentLinkView() {
             ) : (
               <>
                 <Alert severity="info" sx={{ mb: 3 }}>
-                  Transfer any amount to the account below and use the unique payment reference
+                  Transfer to the account below, then come back and tap &quot;I&apos;ve sent the money&quot;
                 </Alert>
 
                 <Stack spacing={2.5}>
+                  {/* Step 1: Bank Details */}
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Step 1: Transfer to this account
+                  </Typography>
+
                   {/* Bank Name */}
                   <Box>
                     <Typography variant="caption" color="text.secondary" display="block">
@@ -322,83 +325,103 @@ export default function PublicPaymentLinkView() {
                       <Typography variant="h6" fontWeight="bold">
                         {currentLink.bank_details.account_number || 'Not provided'}
                       </Typography>
-                  <Tooltip title={copiedAccountNumber ? 'Copied!' : 'Copy'}>
-                    <IconButton
-                      size="small"
-                      onClick={handleCopyAccountNumber}
-                      sx={{
-                        bgcolor: copiedAccountNumber ? 'success.main' : 'primary.main',
-                        color: 'white',
-                        '&:hover': {
-                          bgcolor: copiedAccountNumber ? 'success.dark' : 'primary.dark',
-                        },
-                      }}
+                      <Tooltip title={copiedAccountNumber ? 'Copied!' : 'Copy'}>
+                        <IconButton
+                          size="small"
+                          onClick={handleCopyAccountNumber}
+                          sx={{
+                            bgcolor: copiedAccountNumber ? 'success.main' : 'primary.main',
+                            color: 'white',
+                            '&:hover': {
+                              bgcolor: copiedAccountNumber ? 'success.dark' : 'primary.dark',
+                            },
+                          }}
+                        >
+                          {copiedAccountNumber ? <Check size={16} /> : <Copy size={16} />}
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </Box>
+
+                  {/* Account Name */}
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Account Name
+                    </Typography>
+                    <Typography variant="body1" fontWeight="medium">
+                      {currentLink.bank_details.account_name || 'Not provided'}
+                    </Typography>
+                  </Box>
+
+                  <Divider />
+
+                  {/* Step 2: Confirm Payment */}
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Step 2: Confirm your transfer
+                  </Typography>
+
+                  {!showConfirmForm ? (
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      size="large"
+                      startIcon={<Send size={20} />}
+                      onClick={() => setShowConfirmForm(true)}
+                      sx={{ mt: 1 }}
                     >
-                      {copiedAccountNumber ? <Check size={16} /> : <Copy size={16} />}
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </Box>
-
-              {/* Account Name */}
-              <Box>
-                <Typography variant="caption" color="text.secondary" display="block">
-                  Account Name
-                </Typography>
-                <Typography variant="body1" fontWeight="medium">
-                  {currentLink.bank_details.account_name || 'Not provided'}
-                </Typography>
-              </Box>
-
-              <Divider />
-
-              {/* Payment Reference */}
-              <Box>
-                <Alert severity="warning" sx={{ mb: 2 }}>
-                  <Typography variant="body2" fontWeight="bold">
-                    IMPORTANT: You MUST use this payment reference
-                  </Typography>
-                </Alert>
-
-                <Typography variant="caption" color="text.secondary" display="block" mb={1}>
-                  Payment Reference
-                </Typography>
-
-                <Box
-                  sx={{
-                    p: 2,
-                    bgcolor: '#f5f5f5',
-                    borderRadius: 1,
-                    border: '2px dashed',
-                    borderColor: 'primary.main',
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    fontFamily="monospace"
-                    fontWeight="bold"
-                    textAlign="center"
-                    sx={{ wordBreak: 'break-all' }}
-                  >
-                    {paymentReference}
-                  </Typography>
-                </Box>
-
-                <Button
-                  variant="contained"
-                  fullWidth
-                  size="large"
-                  startIcon={copiedReference ? <Check /> : <Copy />}
-                  onClick={handleCopyReference}
-                  sx={{ mt: 2 }}
-                  color={copiedReference ? 'success' : 'primary'}
-                >
-                  {copiedReference ? 'Copied!' : 'Copy Payment Reference'}
-                </Button>
-              </Box>
-            </Stack>
-            </>
-          )}
+                      I&apos;ve sent the money
+                    </Button>
+                  ) : (
+                    <Stack spacing={2}>
+                      <TextField
+                        label="Your Name"
+                        value={contributorName}
+                        onChange={(e) => setContributorName(e.target.value)}
+                        fullWidth
+                        placeholder="Enter your name"
+                      />
+                      <TextField
+                        label="Amount Sent"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        fullWidth
+                        type="number"
+                        placeholder="0"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">&#8358;</InputAdornment>
+                          ),
+                        }}
+                      />
+                      <Button
+                        variant="contained"
+                        fullWidth
+                        size="large"
+                        onClick={handleConfirmPayment}
+                        disabled={confirmingPayment}
+                        startIcon={
+                          confirmingPayment ? (
+                            <CircularProgress size={20} color="inherit" />
+                          ) : (
+                            <Check size={20} />
+                          )
+                        }
+                      >
+                        {confirmingPayment ? 'Confirming...' : 'Confirm Payment'}
+                      </Button>
+                      <Button
+                        variant="text"
+                        fullWidth
+                        onClick={() => setShowConfirmForm(false)}
+                        disabled={confirmingPayment}
+                      >
+                        Cancel
+                      </Button>
+                    </Stack>
+                  )}
+                </Stack>
+              </>
+            )}
           </CardContent>
         </Card>
 

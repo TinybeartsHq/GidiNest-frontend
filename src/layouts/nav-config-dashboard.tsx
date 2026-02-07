@@ -39,6 +39,11 @@ export const navData = [
     icon: icon('ic-disabled'),
   },
   {
+    title: 'Payment Links',
+    path: '/payment-links',
+    icon: icon('ic-lock'),
+  },
+  {
     title: 'My Profile',
     path: '/profile',
     icon: icon('ic-user'),

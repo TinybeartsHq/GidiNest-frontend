@@ -8,6 +8,7 @@ import type {
   CreateGoalLinkRequest,
   CreateEventLinkRequest,
   UpdatePaymentLinkRequest,
+  ConfirmPaymentRequest,
 } from './paymentLink.types';
 
 // Fetch all payment links for the current user
@@ -141,6 +142,41 @@ export const deletePaymentLink = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to delete payment link'
+      );
+    }
+  }
+);
+
+// Confirm payment link contribution (public, no auth)
+export const confirmPaymentContribution = createAsyncThunk(
+  'paymentLink/confirmPayment',
+  async (
+    { token, data }: { token: string; data: ConfirmPaymentRequest },
+    { rejectWithValue }
+  ) => {
+    try {
+      const baseURL = apiClientV2.defaults.baseURL || '/api/v2/';
+      const url = baseURL.startsWith('http')
+        ? `${baseURL}wallet/payment-links/${token}/confirm-payment`
+        : `${window.location.origin}${baseURL}wallet/payment-links/${token}/confirm-payment`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(
+          errorData?.message || 'Failed to confirm payment'
+        );
+      }
+
+      return await response.json();
+    } catch (error: any) {
+      return rejectWithValue(
+        error.message || 'Failed to confirm payment'
       );
     }
   }
