@@ -23,8 +23,9 @@ import {
   CircularProgress,
 } from '@mui/material';
 
-import { FeeBreakdown } from 'src/components/fee-breakdown';
 import { useFeePreview } from 'src/hooks/use-fee-preview';
+
+import { FeeBreakdown } from 'src/components/fee-breakdown';
 
 import { LinkType } from '../../../redux/paymentLink/paymentLink.types';
 import { clearCurrentLink } from '../../../redux/paymentLink/paymentLink.slice';

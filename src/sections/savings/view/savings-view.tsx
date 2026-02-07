@@ -38,12 +38,12 @@ import { useRouter } from 'src/routes/hooks';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
+import { useFeePreview } from 'src/hooks/use-fee-preview';
+
+import { FeeBreakdown } from 'src/components/fee-breakdown';
 import { BVNVerificationModal } from 'src/components/verification/bvn';
 import { NINVerificationModal } from 'src/components/verification/nin';
 import { TransactionPinModal } from 'src/components/verification/transaction-pin';
-import { FeeBreakdown } from 'src/components/fee-breakdown';
-
-import { useFeePreview } from 'src/hooks/use-fee-preview';
 
 import { FundsActionModal } from './fundmodal';
 import { AnalyticsWidgetSummary } from '../analytics-widget-summary';

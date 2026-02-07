@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import apiClientV2 from '../utils/apiClientV2';
 
@@ -28,7 +28,7 @@ export function useFeePreview(amount: number, type: FeeType) {
       setFeeData(null);
       setError(null);
       setLoading(false);
-      return;
+      return undefined;
     }
 
     setLoading(true);
