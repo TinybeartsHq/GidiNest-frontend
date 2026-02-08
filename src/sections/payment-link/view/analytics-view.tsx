@@ -61,18 +61,28 @@ export default function AnalyticsView() {
     }).format(safeAmount);
   };
 
-  const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', {
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '—';
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
     });
+  };
 
-  const formatDateTime = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', {
+  const formatDateTime = (dateString: string) => {
+    if (!dateString) return '—';
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
 
   if (loading) {
     return (
