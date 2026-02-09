@@ -229,7 +229,7 @@ export const getRecentSavingTransactions = (page?: any, rowsPerPage?: any, order
 export const createSavingsGoal = (goalData: any) => async (dispatch: (arg0: { type: string; payload?: any; }) => void) => {
     dispatch({ type: CREATE_SAVINGS_GOAL_REQUEST });
     try {
-        const response = await apiClient.post('savings/goals', goalData); // Example endpoint
+        const response = await apiClient.post('savings/goals/', goalData);
         if (response.data.status) {
             dispatch({
                 type: CREATE_SAVINGS_GOAL_SUCCESS,
