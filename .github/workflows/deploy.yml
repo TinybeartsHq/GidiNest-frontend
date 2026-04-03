@@ -1,0 +1,43 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build
+        run: yarn build
+        env:
+          VITE_API_BASE_URL: http://gidinest-prod.eba-maj8eez2.af-south-1.elasticbeanstalk.com/api/v1/
+          VITE_API_BASE_URL_V2: http://gidinest-prod.eba-maj8eez2.af-south-1.elasticbeanstalk.com/api/v2/
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::922544547054:role/GitHubActionsRole
+          aws-region: af-south-1
+
+      - name: Sync to S3
+        run: aws s3 sync ./dist s3://gidinest-app-prod --delete
+
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id E27K75VE9RGIB9 \
+            --paths "/*" \
+            --region us-east-1
