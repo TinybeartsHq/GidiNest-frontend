@@ -1,6 +1,5 @@
-import type { IconifyProps } from 'src/components/iconify';
-
 import { useCallback } from 'react';
+import { Icon } from '@iconify/react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -16,9 +15,6 @@ import CardContent from '@mui/material/CardContent';
 import { useRouter } from 'src/routes/hooks';
 
 import { Logo } from 'src/components/logo';
-import { Iconify } from 'src/components/iconify';
-
-type LandingIcon = IconifyProps['icon'];
 
 // ----------------------------------------------------------------------
 
@@ -33,25 +29,25 @@ const HOW_IT_WORKS_MOTHER = [
     step: '01',
     title: 'Sign Up',
     description: 'Name, email, phone. No KYC at signup — zero friction.',
-    icon: 'solar:user-plus-bold-duotone' as LandingIcon,
+    icon: 'solar:user-plus-bold-duotone',
   },
   {
     step: '02',
     title: 'Create Baby Fund',
     description: 'Fund name, target amount, due date, and a thank-you message. One screen.',
-    icon: 'solar:heart-bold-duotone' as LandingIcon,
+    icon: 'solar:heart-bold-duotone',
   },
   {
     step: '03',
     title: 'Share the Link',
     description: 'Get a shareable link — send via WhatsApp, Instagram, or copy it.',
-    icon: 'solar:share-bold-duotone' as LandingIcon,
+    icon: 'solar:share-bold-duotone',
   },
   {
     step: '04',
     title: 'Receive & Withdraw',
     description: 'Get notified when gifts land. Withdraw to your bank anytime.',
-    icon: 'solar:wallet-money-bold-duotone' as LandingIcon,
+    icon: 'solar:wallet-money-bold-duotone',
   },
 ];
 
@@ -60,50 +56,50 @@ const HOW_IT_WORKS_SENDER = [
     step: '01',
     title: 'Open the Link',
     description: 'See the fund details, progress bar, and the mother\'s thank-you message.',
-    icon: 'solar:link-bold-duotone' as LandingIcon,
+    icon: 'solar:link-bold-duotone',
   },
   {
     step: '02',
     title: 'Enter Your Gift',
     description: 'Amount, your name, and an optional message. No account needed.',
-    icon: 'solar:gift-bold-duotone' as LandingIcon,
+    icon: 'solar:gift-bold-duotone',
   },
   {
     step: '03',
     title: 'Pay Securely',
     description: 'Card, bank transfer, or USSD — Paystack handles it all.',
-    icon: 'solar:shield-check-bold-duotone' as LandingIcon,
+    icon: 'solar:shield-check-bold-duotone',
   },
 ];
 
 const FEATURES = [
   {
-    icon: 'solar:hand-money-bold-duotone' as LandingIcon,
+    icon: 'solar:hand-money-bold-duotone',
     title: 'No Manual Bank Transfers',
     description: 'No more "send to 0123456789, GTBank, use PL-REF-123". Just tap and gift.',
   },
   {
-    icon: 'solar:lock-bold-duotone' as LandingIcon,
+    icon: 'solar:lock-bold-duotone',
     title: 'Secure Payments',
     description: 'Powered by Paystack — card, bank transfer, USSD. All verified and encrypted.',
   },
   {
-    icon: 'solar:bell-bold-duotone' as LandingIcon,
+    icon: 'solar:bell-bold-duotone',
     title: 'Real-Time Notifications',
     description: 'Mothers get instant push and email alerts when every gift arrives.',
   },
   {
-    icon: 'solar:chart-2-bold-duotone' as LandingIcon,
+    icon: 'solar:chart-2-bold-duotone',
     title: 'Track Your Fund',
     description: 'See who gifted, how much has been raised, and your progress toward target.',
   },
   {
-    icon: 'solar:global-bold-duotone' as LandingIcon,
+    icon: 'solar:global-bold-duotone',
     title: 'Diaspora Support',
     description: 'Family abroad can gift in GBP, USD, or CAD with premium international features.',
   },
   {
-    icon: 'solar:hospital-bold-duotone' as LandingIcon,
+    icon: 'solar:hospital-bold-duotone',
     title: 'Hospital Integration',
     description: 'Withdraw directly to verified hospitals for bills, or to your personal bank.',
   },
@@ -325,10 +321,10 @@ export function LandingView() {
                   '"The money hasn\'t reflected. Let me check with my bank..."',
                 ].map((text) => (
                   <Stack key={text} direction="row" spacing={1.5} alignItems="flex-start">
-                    <Iconify
-                      icon={'solar:close-circle-bold' as LandingIcon}
+                    <Icon
+                      icon="solar:close-circle-bold"
                       width={24}
-                      sx={{ color: 'error.main', mt: 0.3, flexShrink: 0 }}
+                      style={{ color: theme.palette.error.main, marginTop: 2.4, flexShrink: 0 }}
                     />
                     <Typography variant="body1" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
                       {text}
@@ -355,10 +351,10 @@ export function LandingView() {
                   'No reference codes. No "pending" anxiety. No chasing receipts.',
                 ].map((text) => (
                   <Stack key={text} direction="row" spacing={1.5} alignItems="flex-start">
-                    <Iconify
-                      icon={'solar:check-circle-bold' as LandingIcon}
+                    <Icon
+                      icon="solar:check-circle-bold"
                       width={24}
-                      sx={{ color: 'success.main', mt: 0.3, flexShrink: 0 }}
+                      style={{ color: theme.palette.success.main, marginTop: 2.4, flexShrink: 0 }}
                     />
                     <Typography variant="body1" sx={{ color: 'text.secondary' }}>
                       {text}
@@ -425,7 +421,7 @@ export function LandingView() {
                         mb: 2,
                       }}
                     >
-                      <Iconify icon={item.icon} width={32} sx={{ color: 'primary.main' }} />
+                      <Icon icon={item.icon} width={32} style={{ color: theme.palette.primary.main }} />
                     </Box>
                     <Typography
                       variant="caption"
@@ -481,7 +477,7 @@ export function LandingView() {
                         mb: 2,
                       }}
                     >
-                      <Iconify icon={item.icon} width={32} sx={{ color: 'secondary.main' }} />
+                      <Icon icon={item.icon} width={32} style={{ color: theme.palette.secondary.main }} />
                     </Box>
                     <Typography
                       variant="caption"
@@ -542,7 +538,7 @@ export function LandingView() {
                         mb: 2.5,
                       }}
                     >
-                      <Iconify icon={feature.icon} width={28} sx={{ color: 'primary.main' }} />
+                      <Icon icon={feature.icon} width={28} style={{ color: theme.palette.primary.main }} />
                     </Box>
                     <Typography variant="h6" sx={{ mb: 1 }}>
                       {feature.title}
@@ -581,10 +577,10 @@ export function LandingView() {
                   }}
                 >
                   <CardContent>
-                    <Iconify
-                      icon={'solar:quote-up-square-bold' as LandingIcon}
+                    <Icon
+                      icon="solar:quote-up-square-bold"
                       width={32}
-                      sx={{ color: 'primary.lighter', mb: 2 }}
+                      style={{ color: theme.palette.primary.lighter, marginBottom: 16 }}
                     />
                     <Typography
                       variant="body1"
@@ -730,7 +726,7 @@ export function LandingView() {
                     '&:hover': { bgcolor: 'rgba(255,255,255,0.16)' },
                   }}
                 >
-                  <Iconify icon={'mdi:instagram' as LandingIcon} width={20} />
+                  <Icon icon="mdi:instagram" width={20} />
                 </Box>
                 <Box
                   sx={{
@@ -745,7 +741,7 @@ export function LandingView() {
                     '&:hover': { bgcolor: 'rgba(255,255,255,0.16)' },
                   }}
                 >
-                  <Iconify icon={'mdi:twitter' as LandingIcon} width={20} />
+                  <Icon icon="mdi:twitter" width={20} />
                 </Box>
                 <Box
                   sx={{
@@ -760,7 +756,7 @@ export function LandingView() {
                     '&:hover': { bgcolor: 'rgba(255,255,255,0.16)' },
                   }}
                 >
-                  <Iconify icon={'mdi:whatsapp' as LandingIcon} width={20} />
+                  <Icon icon="mdi:whatsapp" width={20} />
                 </Box>
               </Stack>
             </Grid>
