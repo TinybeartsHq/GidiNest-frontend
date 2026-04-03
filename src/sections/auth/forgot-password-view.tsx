@@ -97,7 +97,7 @@ export function ForgotPasswordView() {
         autoClose: 2000,
       });
       setTimeout(() => {
-        router.push('/');
+        router.push('/sign-in');
       }, 2000);
     } else if (result.error) {
       toast.error(result.error);

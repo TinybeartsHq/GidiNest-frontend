@@ -17,7 +17,7 @@ export default function Page() {
     useEffect(() => {
       const logoutRequest = async () => {
         await dispatch(logout());
-        window.location.href = '/';
+        window.location.href = '/sign-in';
       };
   
       logoutRequest();

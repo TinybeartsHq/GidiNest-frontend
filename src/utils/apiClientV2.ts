@@ -30,7 +30,7 @@ export const setupResponseInterceptorV2 = (store: any) => {
     (error) => {
       if (error.response && error.response.status === 401) {
         store.dispatch(logout());
-        window.location.href = '/';
+        window.location.href = '/sign-in';
       }
       return Promise.reject(error);
     }

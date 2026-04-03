@@ -57,7 +57,7 @@ export function EmailActivationView() {
           <Typography variant="body2" sx={{ mt: 1, mb: 3 }}>
             Your account has been successfully activated. You can now log in.
           </Typography>
-          <Button variant="contained" onClick={() => router.push('/')}>
+          <Button variant="contained" onClick={() => router.push('/sign-in')}>
             Proceed to Login
           </Button>
         </>

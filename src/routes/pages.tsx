@@ -10,6 +10,7 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 import { AuthLayout } from 'src/layouts/auth';
 import { DashboardLayout } from 'src/layouts/dashboard';
 
+export const LandingPage = lazy(() => import('src/pages/landing'));
 export const SignInPage = lazy(() => import('src/pages/auth/sign-in'));
 export const SignUpPage = lazy(() => import('src/pages/auth/sign-up'));
 export const ForgotPasswordPage = lazy(() => import('src/pages/auth/forgot-password'));
@@ -100,12 +101,16 @@ export const routesSection: RouteObject[] = [
     element: <PaymentConfirmationPage />,
   },
   {
+    index: true,
+    element: <LandingPage />,
+  },
+  {
+    path: 'sign-in',
     element: (
       <AuthLayout>
         <SignInPage />
       </AuthLayout>
     ),
-    index: true,
   },
 
   {

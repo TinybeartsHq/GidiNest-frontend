@@ -259,7 +259,7 @@ export function SavingsView() {
       startPolling();
       document.addEventListener('visibilitychange', handleVisibilityChange);
     } else if (isAuthenticated === false) {
-      router.push('/');
+      router.push('/sign-in');
     }
 
     return () => {

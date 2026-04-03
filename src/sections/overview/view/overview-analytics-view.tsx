@@ -41,7 +41,7 @@ export function OverviewAnalyticsView() {
       dispatch(getDashboardAnalytics());
       dispatch(getSavingsGoals());
     } else if (isAuthenticated === false) {
-      router.push('/');
+      router.push('/sign-in');
     }
   }, [dispatch, isAuthenticated, router]);
 
