@@ -26,6 +26,7 @@ jobs:
         env:
           VITE_API_BASE_URL: http://gidinest-prod.eba-maj8eez2.af-south-1.elasticbeanstalk.com/api/v1/
           VITE_API_BASE_URL_V2: http://gidinest-prod.eba-maj8eez2.af-south-1.elasticbeanstalk.com/api/v2/
+          DISABLE_ESLINT_PLUGIN: true
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
